@@ -1,8 +1,8 @@
 # Ajokeli nyt
 
-Ajokeli nyt näyttää Suomen tiesääasemien ajantasaiset mittaukset kartalla, laskee niistä läpinäkyvän keliriski-indikaattorin ja kokoaa ajoreitin läheiset keli-, ennuste-, sade- ja liikennetiedot yhteen.
+Ajokeli nyt näyttää Suomen tiesääasemien ajantasaiset mittaukset kartalla, laskee niistä läpinäkyvän keliriski-indikaattorin ja kokoaa ajoreitin läheiset keli-, ennuste- ja liikennetiedot yhteen.
 
-Nykyinen versio on **1.7.0 beta**.
+Nykyinen versio on **1.7.1 beta**.
 
 ## Käytetyt palvelut
 
@@ -16,32 +16,22 @@ Fintrafficin Digitraffic-rajapinnat:
 - aktiiviset tietyöt: `/api/traffic-message/v2/roadworks`
 - aktiiviset liikennetiedotteet: `/api/traffic-message/v2/traffic-announcements`
 
-Ilmatieteen laitoksen avoin data:
-
-- sadetutkan Suomen yhdistelmäaineiston metatiedot: WFS-kysely `fmi::radar::composite::rr`
-- sadetutkan lataus: FMI Download Service, `image/geotiff`
-
 Reittitoiminnot käyttävät lisäksi:
 
 - Nominatimia käyttäjän käynnistämään paikkahakuun
 - OSRM:n julkista demo-reititystä ajoreitin laskentaan
 - OpenStreetMap-aineistoa paikkoihin ja reitteihin
 - OpenFreeMapia karttataustaan
-- GeoTIFF.js-kirjastoa FMI:n tutka-aineiston käsittelyyn selaimessa
 
 ## Ominaisuudet
 
 - Suomen kartta ja aktiivisesti mittaavat tiesääasemat
+- havaintoihin perustuva keliriski-indikaattori
+- ajoreitin pituus, ajoaika ja reitin läheiset tiesääasemat
 - aktiiviset tietyöt ja liikennetiedotteet kartalla
 - tiejaksoennusteet valitulle reitille ja lähtöajalle
 - lähtöaikojen ennustevertailu
-- valinnainen, oletuksena pois päältä oleva sadetutkakerros
-- pehmeäreunainen sateen visualisointi ja tummennettu sade-tila
-- kartan tasovalinnat: **Sade**, **Tieinfot** ja **Asemat**
-- reitin sadeosuuden ja voimakkaimman tutkahavainnon arvio
-- havaintoihin perustuva keliriski-indikaattori
-- reitin pituus, ajoaika ja reitin läheiset tiesääasemat
-- reitin ajokelin, liikennetilanteen, ennusteen ja sateen tiivis yhteenveto
+- reitin ajokelin, liikennetilanteen ja ennusteen tiivis yhteenveto
 - yksityiskohtien avaaminen tarvittaessa
 - jaettava reittilinkki lähtöpaikalla, määränpäällä ja ennusteajalla
 - selainpaikannus ja lähin kelikamera
@@ -49,26 +39,7 @@ Reittitoiminnot käyttävät lisäksi:
 - erilliset virhe- ja uudelleenyritystilat
 - ulkoisten API-pyyntöjen aikakatkaisut
 - näkyvä beta-versio, tietosuojakuvaus ja palautelinkki
-- automaattiset riski-, reitti-, ennuste-, liikenne-, sade-, beta- ja käyttöliittymätestit
-
-## Yhtenäinen sade- ja tiekartta
-
-Versio 1.7.0 kokoaa olennaiset tiedot yhteen karttanäkymään:
-
-1. karttapohja tummennetaan kevyesti sadetutkan ollessa päällä
-2. pehmennetyt sadealueet piirretään karttapohjan päälle
-3. tiejaksoennusteet näytetään sadealueiden päällä
-4. ajoreitti säilyy kirkkaana ja selvästi näkyvänä
-5. tietyöt ja liikenteen häiriöt näytetään reitin päällä
-6. reitin tiesääasemat ja vakavimmat muut asemat näkyvät ylimpänä
-
-Mobiilissa kartan alareunassa on kompakti kolmen painikkeen palkki:
-
-- **Sade** näyttää tai piilottaa sadetutkan ja avaa tutkakuvan lisäasetukset
-- **Tieinfot** näyttää tai piilottaa tiejaksoennusteet, tietyöt ja liikennetiedotteet
-- **Asemat** näyttää tai piilottaa tiesääasemat
-
-Kun sadetutka on päällä ilman aktiivista reittiä, kartta näyttää oletuksena vain vaikeat, erittäin vaikeat ja erikseen valitun tiesääaseman. Aktiivisella reitillä näytetään reitin läheiset asemat.
+- automaattiset riski-, reitti-, ennuste-, liikenne-, beta- ja käyttöliittymätestit
 
 ## Reitin ajokeli
 
@@ -98,24 +69,6 @@ Vertailu käyttää Digitrafficin luokkia `NORMAL_CONDITION`, `POOR_CONDITION` j
 
 Keliennustetta ei haeta `?demo=1`-tilassa.
 
-## Sadetutka
-
-Kartan **Sade**-painike hakee käyttäjän valinnasta Ilmatieteen laitoksen uusimman Suomen sadetutkan yhdistelmäaineiston. Ominaisuus:
-
-- käyttää FMI:n WFS-latauspalvelua uusimman tutkahavainnon löytämiseen
-- lataa varsinaisen aineiston `image/geotiff`-muodossa
-- muuntaa sademäärän intensiteetin selaimessa läpinäkyväksi karttatasoksi
-- pehmentää sadealueiden reunoja kartan luettavuuden parantamiseksi
-- näyttää heikon, kohtalaisen, voimakkaan ja rankan sateen erillisin värein
-- päivittyy käytössä ollessaan noin viiden minuutin välein
-- arvioi reitin kohdalla sateisen matkan pituuden ja voimakkaimman havaitun intensiteetin
-- kertoo erikseen, jos tutkakuvassa ei ole havaittua sadetta tai jos sadetta on muualla mutta ei reitillä
-- tarjoaa **Näytä sadealueet** -painikkeen, kun tutkakuvassa havaitaan sadepikseleitä
-
-Tutkakerros on oletuksena pois päältä. Tutkahavainto kuvaa mennyttä tai nykyistä tilannetta eikä ole sade- tai ajokeliennuste. Kerros näyttää sateen intensiteetin, ei pilvipeitettä. Reittiarvio perustuu karttarasterin pikseleihin, joten se on suuntaa-antava.
-
-FMI:n tavallista WMS-kuvanäkymää ei käytetä suoraan sovelluksen karttakerroksena. Toteutus käyttää Download Service -käyttötapaa ja GeoTIFF-aineistoa.
-
 ## Reitin liikennetilanne
 
 Palvelu yhdistää reittiin Digitrafficin tietyöt ja liikennetiedotteet. Yhteenveto näyttää:
@@ -141,14 +94,14 @@ Jaetun linkin avaaminen ei käynnistä paikkahakuja automaattisesti. Käyttäjä
 
 ## Beta-vakautus
 
-Versiossa 1.7.0:
+Versiossa 1.7.1:
 
-- Nominatimin, OSRM:n, Digitrafficin ja FMI:n API-pyynnöillä on hallitut aikakatkaisut
-- reittiyhteenveto näyttää nykyisen ajokelin, liikennetilanteen, ennusteen ja sadetutkan tilan
-- asemat, ennustejaksot, häiriöt ja sadetutkan yksityiskohdat ovat avattavissa tarvittaessa
+- sadetutka ja sen selainpuolen GeoTIFF-käsittely poistettiin suorituskyky- ja luotettavuusongelmien vuoksi
+- Nominatimin, OSRM:n ja Digitrafficin API-pyynnöillä on hallitut aikakatkaisut
+- reittiyhteenveto näyttää nykyisen ajokelin, liikennetilanteen ja ennusteen
+- asemat, ennustejaksot ja häiriöt ovat avattavissa tarvittaessa
 - selaimen välimuisti ohitetaan versiokohtaisilla moduuliosoitteilla
-- sadetutkan tyhjä näkymä erotetaan selkeästi lataus- ja virhetilanteista
-- kartan tasot ovat erikseen hallittavissa myös mobiilissa
+- pitkät reitit, kuten Vantaa–Vaasa, kuuluvat beta-testauksen hyväksymisehtoihin
 - beta-testaukselle on oma [tarkistuslista](./BETA_TESTING.md)
 - palvelulla on oma [tietosuojakuvaus](./privacy.html)
 
@@ -232,9 +185,6 @@ Yli 15 minuuttia vanha mittaus näytetään harmaana.
 - `traffic-feature.js` ja `traffic.js`: liikennetiedotteet ja reittiosumat
 - `forecast-bootstrap.js`, `forecast-feature.js` ja `forecast.js`: tiejaksoennusteet ja lähtöaikavertailu
 - `beta-feature.js` ja `beta.js`: tiivis yhteenveto, jaettavat reitit ja beta-käyttöliittymä
-- `radar-feature.js` ja `radar.js`: FMI:n GeoTIFF-tutkakerros ja reitin sadeanalyysi
-- `radar-ux-hotfix.js` ja `radar-polish.js`: sadetutkan tila- ja näkyvyyskorjaukset
-- `unified-map-mode.js`: pehmeä sadevisualisointi, karttatasojen järjestys ja mobiilin karttapalkki
 - `privacy.html`: tietosuojakuvaus
 - `BETA_TESTING.md`: manuaalisen beta-testauksen tarkistuslista
 - `tests/`: Node.js-testit
@@ -244,16 +194,14 @@ Kartta käyttää MapLibre GL JS 5.24.0:aa CDN:stä ja OpenFreeMapin Positron-ty
 ## Data ja lisenssit
 
 - Fintraffic / Digitraffic: CC BY 4.0
-- Ilmatieteen laitoksen avoin tutka-aineisto: CC BY 4.0
 - OpenStreetMapin data: ODbL
 - OpenFreeMap: MIT
 - MapLibre GL JS: BSD-3-Clause
-- GeoTIFF.js: MIT
 - Nominatim: OpenStreetMap-aineiston hakupalvelu
 - OSRM: BSD-2-Clause, reititys OpenStreetMap-aineistolla
 
-Digitraffic-haut käyttävät ajonaikaisesti tunnistetta `AjokeliNyt/MVP 1.7.0`. Tunniste ei sisällä henkilötietoja.
+Digitraffic-haut käyttävät ajonaikaisesti tunnistetta `AjokeliNyt/MVP 1.7.1`. Tunniste ei sisällä henkilötietoja.
 
 ## Vastuunrajaus
 
-Palvelu havainnollistaa yksittäisten tiesääasemien mittauksia, tiejaksoennusteita, FMI:n sadetutkahavaintoja ja Digitrafficin liikennetiedotteita. Se ei korvaa Fintrafficin virallisia liikennetiedotteita, Ilmatieteen laitoksen varoituksia, varsinaista navigointipalvelua tai kuljettajan omaa harkintaa. Olosuhteet, ennuste, sade ja liikennetilanne voivat muuttua nopeasti.
+Palvelu havainnollistaa yksittäisten tiesääasemien mittauksia, tiejaksoennusteita ja Digitrafficin liikennetiedotteita. Se ei korvaa Fintrafficin virallisia liikennetiedotteita, Ilmatieteen laitoksen varoituksia, varsinaista navigointipalvelua tai kuljettajan omaa harkintaa. Olosuhteet, ennuste ja liikennetilanne voivat muuttua nopeasti.
