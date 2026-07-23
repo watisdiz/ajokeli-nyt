@@ -7,6 +7,33 @@ Versiot noudattavat semanttista versionumerointia.
 
 Ei vielä julkaisemattomia muutoksia.
 
+## 1.4.0 – 2026-07-23
+
+### Lisätty
+
+- Digitrafficin yksinkertaiset tiejaksot ja niiden keliennusteet valitulle reitille
+- tiejaksojen tunnistaminen enintään 5 km:n etäisyydeltä reitistä
+- lähtöajan valinta todellisten ennusteajankohtien perusteella
+- eri lähtöaikojen ennustetun kelitilanteen vertailu
+- valitun lähtöajan huonoin ennustettu keliluokka ja olosuhdeperusteet
+- ennustetut tiejaksot kartalle keliluokan mukaisilla väreillä
+- tiejakson ennusteen lämpötila-, tuuli- ja olosuhdetiedot karttaponnahdusikkunaan
+- keliennusteen ja lähtöaikavertailun automaattiset testit
+
+### Muutettu
+
+- `app.js` käynnistää myös tiejaksoennuste- ja lähtöaikatoiminnot
+- Digitraffic-haut käyttävät tunnistetta `AjokeliNyt/MVP 1.4`
+- README kuvaa ennusterajapinnat, vertailulogiikan ja uuden teknisen rakenteen
+- projektin versio päivitettiin versioon `1.4.0`
+
+### Huomioitavaa
+
+- vertailu käyttää Digitrafficin tiejaksokohtaisia keliluokkia eikä nykyisen havaintoindikaattorin pisteytystä
+- vertailun suotuisin lähtöaika on laskennallinen ennustevertailu, ei ajo- tai turvallisuussuositus
+- ennustetoiminto käsittelee omat virheensä erikseen, joten nykyiset havainnot ja liikennetilanne toimivat edelleen
+- keliennustetta ei haeta `?demo=1`-tilassa
+
 ## 1.3.0 – 2026-07-23
 
 ### Lisätty
