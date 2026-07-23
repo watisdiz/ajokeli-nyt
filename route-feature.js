@@ -534,6 +534,8 @@ function addRouteLayers() {
     const stationId = Number(event.features?.[0]?.properties?.stationId);
     if (stationId) showStation(stationId, true);
   });
+
+  renderMapRoute(Boolean(state.route));
 }
 
 function emptyFeatureCollection() {
