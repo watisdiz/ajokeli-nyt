@@ -1,9 +1,9 @@
 {
   "name": "ajokeli-nyt-mvp",
-  "version": "1.6.2",
+  "version": "1.7.0",
   "private": true,
   "type": "module",
-  "description": "Suomen tiesääasemien ajantasainen keliriski, reittiyhteenveto, liikennetilanne, tiejaksoennuste ja valinnainen sadetutka.",
+  "description": "Suomen tiesääasemien ajantasainen keliriski, reittiyhteenveto, liikennetilanne, tiejaksoennuste ja yhtenäinen sadetutkakartta.",
   "scripts": {
     "test": "node --test",
     "serve": "python3 -m http.server 8000"
