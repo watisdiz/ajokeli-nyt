@@ -8,15 +8,17 @@ import {
 import { demoCameras, demoMeasurements, demoMetadata } from "./demo-data.js";
 
 const API_BASE = "https://tie.digitraffic.fi";
-const USER_HEADER = "AjokeliNyt/MVP 1.0";
+const USER_HEADER = "AjokeliNyt/MVP 1.1";
 const REFRESH_SECONDS = 60;
 const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
 const MAP_SOURCE_ID = "weather-stations";
 const MAP_LAYER_ID = "weather-station-points";
+const MOBILE_BREAKPOINT = 760;
 
 const state = {
   map: null,
   mapReady: false,
+  mapLoadTimer: null,
   stations: [],
   cameras: [],
   selectedStationId: null,
@@ -25,6 +27,9 @@ const state = {
   refreshRemaining: REFRESH_SECONDS,
   refreshTimer: null,
   loading: false,
+  sidebarOpen: false,
+  errorKind: null,
+  locationMarker: null,
   demoMode: new URLSearchParams(window.location.search).get("demo") === "1",
 };
 
@@ -32,6 +37,7 @@ const elements = {
   liveStatus: document.querySelector("#live-status"),
   refreshButton: document.querySelector("#refresh-button"),
   stationSearch: document.querySelector("#station-search"),
+  stationResults: document.querySelector("#station-results"),
   riskFilters: document.querySelector("#risk-filters"),
   selectAllButton: document.querySelector("#select-all-button"),
   locateButton: document.querySelector("#locate-button"),
@@ -39,12 +45,29 @@ const elements = {
   dataTimestamp: document.querySelector("#data-timestamp"),
   refreshCountdown: document.querySelector("#refresh-countdown"),
   mapError: document.querySelector("#map-error"),
+  mapLoading: document.querySelector("#map-loading"),
   detailsPanel: document.querySelector("#details-panel"),
   methodologyDialog: document.querySelector("#methodology-dialog"),
   methodologyLink: document.querySelector("#methodology-link"),
   closeMethodology: document.querySelector("#close-methodology"),
   modeIndicator: document.querySelector("#mode-indicator"),
+  filterSidebar: document.querySelector("#filter-sidebar"),
+  mobileFilterButton: document.querySelector("#mobile-filter-button"),
+  closeSidebarButton: document.querySelector("#close-sidebar-button"),
+  sidebarBackdrop: document.querySelector("#sidebar-backdrop"),
+  srStatus: document.querySelector("#sr-status"),
 };
+
+function isMobile() {
+  return window.innerWidth <= MOBILE_BREAKPOINT;
+}
+
+function announce(message) {
+  elements.srStatus.textContent = "";
+  window.setTimeout(() => {
+    elements.srStatus.textContent = message;
+  }, 20);
+}
 
 function initMap() {
   state.map = new maplibregl.Map({
@@ -66,8 +89,26 @@ function initMap() {
     "bottom-right",
   );
 
+  state.mapLoadTimer = window.setTimeout(() => {
+    if (state.mapReady) return;
+    elements.mapLoading.classList.add("hidden");
+    showError(
+      `Karttaa ei saatu ladattua. Tarkista verkkoyhteys ja yritä uudelleen.
+       <div class="message-actions">
+         <button class="button button-secondary" type="button" data-action="reload-map">
+           Lataa kartta uudelleen
+         </button>
+       </div>`,
+      "map",
+    );
+  }, 15_000);
+
   state.map.on("load", () => {
     state.mapReady = true;
+    window.clearTimeout(state.mapLoadTimer);
+    elements.mapLoading.classList.add("hidden");
+    hideError("map");
+
     state.map.addSource(MAP_SOURCE_ID, {
       type: "geojson",
       data: emptyFeatureCollection(),
@@ -78,11 +119,16 @@ function initMap() {
       type: "circle",
       source: MAP_SOURCE_ID,
       paint: {
-        "circle-radius": ["interpolate", ["linear"], ["zoom"], 4, 5, 8, 8, 13, 12],
+        "circle-radius": ["interpolate", ["linear"], ["zoom"], 4, 6, 8, 9, 13, 13],
         "circle-color": ["get", "color"],
         "circle-stroke-width": ["case", ["boolean", ["get", "selected"], false], 4, 1.5],
-        "circle-stroke-color": ["case", ["boolean", ["get", "selected"], false], "#ffffff", "#07101d"],
-        "circle-opacity": 0.9,
+        "circle-stroke-color": [
+          "case",
+          ["boolean", ["get", "selected"], false],
+          "#ffffff",
+          "#07101d",
+        ],
+        "circle-opacity": 0.92,
       },
     });
 
@@ -145,10 +191,12 @@ async function loadLiveData() {
 
 async function refreshData() {
   if (state.loading) return;
+
   state.loading = true;
-  setStatus("loading", "Päivitetään…");
   elements.refreshButton.disabled = true;
-  hideError();
+  elements.refreshButton.setAttribute("aria-busy", "true");
+  setStatus("loading", "Päivitetään…");
+  hideError("data");
 
   try {
     const payload = state.demoMode
@@ -182,16 +230,31 @@ async function refreshData() {
 
     state.refreshRemaining = REFRESH_SECONDS;
     renderAll();
+    announce(`${state.stations.length} tiesääasemaa päivitetty.`);
   } catch (error) {
     console.error(error);
+    const retainedText = state.stations.length
+      ? " Aiemmin ladatut havainnot jäävät näkyviin."
+      : "";
+
     setStatus("error", "Datan haku epäonnistui");
     showError(
-      `Digitrafficin dataa ei saatu ladattua (${error.message}). Tarkista verkkoyhteys tai avaa ` +
-        `<a href="${window.location.pathname}?demo=1">demo-tila</a>.`,
+      `Digitrafficin dataa ei saatu ladattua (${escapeHtml(error.message)}).${retainedText}
+       <div class="message-actions">
+         <button class="button button-secondary" type="button" data-action="retry-data">
+           Yritä uudelleen
+         </button>
+         <a class="button button-secondary" href="${window.location.pathname}?demo=1">
+           Avaa demo
+         </a>
+       </div>`,
+      "data",
     );
+    announce("Ajantasaisen datan lataaminen epäonnistui.");
   } finally {
     state.loading = false;
     elements.refreshButton.disabled = false;
+    elements.refreshButton.removeAttribute("aria-busy");
   }
 }
 
@@ -199,7 +262,12 @@ function renderAll() {
   renderRiskFilters();
   renderSummary();
   renderMapData();
-  if (state.selectedStationId) renderStationDetails(state.selectedStationId);
+
+  if (state.selectedStationId) {
+    const stillExists = state.stations.some((station) => station.id === state.selectedStationId);
+    if (stillExists) renderStationDetails(state.selectedStationId);
+    else closeDetails();
+  }
 }
 
 function filteredStations() {
@@ -211,8 +279,69 @@ function filteredStations() {
   });
 }
 
+function searchMatches() {
+  const query = state.search.trim().toLocaleLowerCase("fi-FI");
+  if (query.length < 2) return [];
+
+  return state.stations
+    .filter((station) => station.name.toLocaleLowerCase("fi-FI").includes(query))
+    .sort((a, b) => {
+      const aStarts = a.name.toLocaleLowerCase("fi-FI").startsWith(query);
+      const bStarts = b.name.toLocaleLowerCase("fi-FI").startsWith(query);
+      if (aStarts !== bStarts) return aStarts ? -1 : 1;
+      return a.name.localeCompare(b.name, "fi-FI");
+    })
+    .slice(0, 8);
+}
+
+function renderSearchResults() {
+  const query = state.search.trim();
+  const matches = searchMatches();
+
+  if (query.length < 2) {
+    hideSearchResults();
+    return;
+  }
+
+  elements.stationResults.classList.remove("hidden");
+  elements.stationSearch.setAttribute("aria-expanded", "true");
+
+  if (!matches.length) {
+    elements.stationResults.innerHTML = `
+      <p class="search-empty">Hakusanalla “${escapeHtml(query)}” ei löytynyt tiesääasemaa.</p>
+    `;
+    return;
+  }
+
+  elements.stationResults.innerHTML = matches
+    .map(
+      (station) => `
+        <button
+          class="search-result"
+          type="button"
+          role="option"
+          data-station-id="${station.id}"
+        >
+          <span class="search-result-main">
+            <i class="legend-dot risk-${station.level.key}" aria-hidden="true"></i>
+            <span>${escapeHtml(station.name)}</span>
+          </span>
+          <span class="search-result-meta">${escapeHtml(station.level.label)}</span>
+        </button>
+      `,
+    )
+    .join("");
+}
+
+function hideSearchResults() {
+  elements.stationResults.classList.add("hidden");
+  elements.stationResults.innerHTML = "";
+  elements.stationSearch.setAttribute("aria-expanded", "false");
+}
+
 function renderMapData() {
   if (!state.mapReady) return;
+
   const features = filteredStations().map((station) => ({
     type: "Feature",
     geometry: { type: "Point", coordinates: station.coordinates },
@@ -226,6 +355,7 @@ function renderMapData() {
       selected: station.id === state.selectedStationId,
     },
   }));
+
   state.map.getSource(MAP_SOURCE_ID)?.setData({ type: "FeatureCollection", features });
 }
 
@@ -237,13 +367,22 @@ function riskCounts() {
 
 function renderRiskFilters() {
   const counts = riskCounts();
+  const allSelected = state.activeRisks.size === Object.keys(RISK_LEVELS).length;
+
+  elements.selectAllButton.textContent = allSelected ? "Poista kaikki" : "Näytä kaikki";
+  elements.selectAllButton.setAttribute("aria-pressed", String(allSelected));
+
   elements.riskFilters.innerHTML = Object.values(RISK_LEVELS)
     .map(
       (level) => `
         <div class="risk-filter">
           <label>
-            <input type="checkbox" data-risk="${level.key}" ${state.activeRisks.has(level.key) ? "checked" : ""} />
-            <i class="legend-dot risk-${level.key}"></i>
+            <input
+              type="checkbox"
+              data-risk="${level.key}"
+              ${state.activeRisks.has(level.key) ? "checked" : ""}
+            />
+            <i class="legend-dot risk-${level.key}" aria-hidden="true"></i>
             ${level.label}
           </label>
           <span class="filter-count">${counts[level.key]}</span>
@@ -251,14 +390,6 @@ function renderRiskFilters() {
       `,
     )
     .join("");
-
-  elements.riskFilters.querySelectorAll("input[data-risk]").forEach((input) => {
-    input.addEventListener("change", () => {
-      if (input.checked) state.activeRisks.add(input.dataset.risk);
-      else state.activeRisks.delete(input.dataset.risk);
-      renderMapData();
-    });
-  });
 }
 
 function renderSummary() {
@@ -275,24 +406,39 @@ function renderSummary() {
     .join("");
 }
 
-function selectStation(stationId, flyTo = false) {
-  state.selectedStationId = stationId;
+function selectStation(stationId, flyTo = false, ensureVisible = false) {
   const station = state.stations.find((item) => item.id === stationId);
   if (!station) return;
-  if (flyTo && state.mapReady) {
-    state.map.easeTo({ center: station.coordinates, zoom: Math.max(state.map.getZoom(), 8), duration: 700 });
+
+  if (ensureVisible && !state.activeRisks.has(station.level.key)) {
+    state.activeRisks.add(station.level.key);
+    renderRiskFilters();
   }
+
+  state.selectedStationId = stationId;
+
+  if (flyTo && state.mapReady) {
+    state.map.easeTo({
+      center: station.coordinates,
+      zoom: Math.max(state.map.getZoom(), 8),
+      duration: 700,
+    });
+  }
+
   renderMapData();
   renderStationDetails(stationId);
+  announce(`${station.name} valittu.`);
 }
 
 function renderStationDetails(stationId) {
   const station = state.stations.find((item) => item.id === stationId);
   if (!station) return;
+
   const camera = nearestCamera(station.coordinates);
   const scoreText = station.score === null ? "Ei laskettu" : `${station.score} pistettä`;
   const metrics = station.metrics;
 
+  elements.detailsPanel.classList.add("has-content");
   elements.detailsPanel.innerHTML = `
     <div class="detail-header">
       <div>
@@ -300,10 +446,20 @@ function renderStationDetails(stationId) {
         <h2>${escapeHtml(station.name)}</h2>
         <p class="muted small">Havainto ${relativeAge(station.latestTime)}</p>
       </div>
-      <span class="risk-badge">
-        <i class="risk-dot risk-${station.level.key}"></i>
-        ${station.level.label}
-      </span>
+      <div class="detail-header-actions">
+        <span class="risk-badge">
+          <i class="risk-dot risk-${station.level.key}" aria-hidden="true"></i>
+          ${escapeHtml(station.level.label)}
+        </span>
+        <button
+          id="close-details-button"
+          class="icon-button detail-close-button"
+          type="button"
+          aria-label="Sulje aseman tiedot"
+        >
+          ×
+        </button>
+      </div>
     </div>
 
     <section class="detail-section">
@@ -333,10 +489,24 @@ function renderStationDetails(stationId) {
 
     <section class="detail-section">
       <p class="muted small">
-        Luokitus kuvaa aseman lähiympäristön havaintoja. Olosuhteet voivat muuttua nopeasti ja poiketa tieosuuden muissa kohdissa.
+        Luokitus kuvaa aseman lähiympäristön havaintoja. Olosuhteet voivat muuttua
+        nopeasti ja poiketa tieosuuden muissa kohdissa.
       </p>
     </section>
   `;
+}
+
+function closeDetails() {
+  state.selectedStationId = null;
+  elements.detailsPanel.classList.remove("has-content");
+  elements.detailsPanel.innerHTML = `
+    <div class="empty-state">
+      <div class="empty-icon" aria-hidden="true">◎</div>
+      <h2>Valitse tiesääasema</h2>
+      <p>Klikkaa kartan pistettä nähdäksesi mittaukset ja luokituksen perustelut.</p>
+    </div>
+  `;
+  renderMapData();
 }
 
 function metricRow(label, value) {
@@ -349,11 +519,14 @@ function formatMetric(value, unit) {
 
 function nearestCamera(coordinates) {
   let nearest = null;
+
   for (const feature of state.cameras) {
     const distanceKm = haversineKm(coordinates, feature.geometry.coordinates);
     if (distanceKm > 25) continue;
+
     const preset = feature.properties.presets.find((item) => item.inCollection);
     if (!preset) continue;
+
     if (!nearest || distanceKm < nearest.distanceKm) {
       nearest = {
         name: feature.properties.name || feature.properties.id,
@@ -362,11 +535,13 @@ function nearestCamera(coordinates) {
       };
     }
   }
+
   return nearest;
 }
 
 function renderCamera(camera) {
   const imageUrl = `https://weathercam.digitraffic.fi/${encodeURIComponent(camera.presetId)}.jpg?thumbnail=true`;
+
   return `
     <section class="detail-section">
       <div class="camera-heading">
@@ -374,7 +549,12 @@ function renderCamera(camera) {
         <span class="muted small">${formatNumber(camera.distanceKm)} km</span>
       </div>
       <div class="camera-card">
-        <img src="${imageUrl}" alt="Kelikamerakuva: ${escapeHtml(camera.name)}" loading="lazy" onerror="this.closest('.camera-card').style.display='none'" />
+        <img
+          src="${imageUrl}"
+          alt="Kelikamerakuva: ${escapeHtml(camera.name)}"
+          loading="lazy"
+          onerror="this.closest('.camera-card').style.display='none'"
+        />
         <div class="camera-card-body">
           <strong>${escapeHtml(camera.name)}</strong>
           <p class="muted small">Kuva päivittyy Digitrafficin kamerarytmin mukaisesti.</p>
@@ -387,6 +567,7 @@ function renderCamera(camera) {
 function formatDateTime(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
+
   return new Intl.DateTimeFormat("fi-FI", {
     dateStyle: "short",
     timeStyle: "short",
@@ -398,13 +579,17 @@ function setStatus(type, text) {
   elements.liveStatus.textContent = text;
 }
 
-function showError(message) {
+function showError(message, kind) {
+  state.errorKind = kind;
   elements.mapError.innerHTML = message;
   elements.mapError.classList.remove("hidden");
 }
 
-function hideError() {
+function hideError(kind = null) {
+  if (kind && state.errorKind !== kind) return;
+  state.errorKind = null;
   elements.mapError.classList.add("hidden");
+  elements.mapError.innerHTML = "";
 }
 
 function escapeHtml(value) {
@@ -416,25 +601,108 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+function setSidebarOpen(open) {
+  state.sidebarOpen = open && isMobile();
+  elements.filterSidebar.classList.toggle("mobile-open", state.sidebarOpen);
+  elements.sidebarBackdrop.classList.toggle("visible", state.sidebarOpen);
+  elements.mobileFilterButton.setAttribute("aria-expanded", String(state.sidebarOpen));
+  document.body.classList.toggle("sidebar-open", state.sidebarOpen);
+
+  if (state.sidebarOpen) {
+    window.setTimeout(() => elements.stationSearch.focus(), 180);
+  } else {
+    hideSearchResults();
+  }
+}
+
 function startRefreshTimer() {
   clearInterval(state.refreshTimer);
   state.refreshTimer = setInterval(() => {
     state.refreshRemaining -= 1;
+
     if (state.refreshRemaining <= 0) {
       state.refreshRemaining = REFRESH_SECONDS;
       refreshData();
     }
+
     elements.refreshCountdown.textContent = `Päivittyy ${state.refreshRemaining} s`;
   }, 1000);
 }
 
+function handleSearchInput(event) {
+  state.search = event.target.value;
+  renderMapData();
+  renderSearchResults();
+}
+
+function handleSearchKeydown(event) {
+  const resultButtons = [...elements.stationResults.querySelectorAll(".search-result")];
+
+  if (event.key === "ArrowDown" && resultButtons.length) {
+    event.preventDefault();
+    resultButtons[0].focus();
+  } else if (event.key === "Escape") {
+    hideSearchResults();
+    elements.stationSearch.select();
+  } else if (event.key === "Enter") {
+    const matches = searchMatches();
+    if (matches.length === 1) {
+      event.preventDefault();
+      chooseSearchResult(matches[0].id);
+    }
+  }
+}
+
+function chooseSearchResult(stationId) {
+  const station = state.stations.find((item) => item.id === stationId);
+  if (!station) return;
+
+  state.search = station.name;
+  elements.stationSearch.value = station.name;
+  hideSearchResults();
+  selectStation(station.id, true, true);
+  setSidebarOpen(false);
+}
+
 function bindEvents() {
   elements.refreshButton.addEventListener("click", refreshData);
-  elements.stationSearch.addEventListener("input", (event) => {
-    state.search = event.target.value;
+  elements.stationSearch.addEventListener("input", handleSearchInput);
+  elements.stationSearch.addEventListener("keydown", handleSearchKeydown);
+  elements.stationSearch.addEventListener("focus", renderSearchResults);
+
+  elements.stationResults.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-station-id]");
+    if (!button) return;
+    chooseSearchResult(Number(button.dataset.stationId));
+  });
+
+  elements.stationResults.addEventListener("keydown", (event) => {
+    const buttons = [...elements.stationResults.querySelectorAll(".search-result")];
+    const currentIndex = buttons.indexOf(document.activeElement);
+
+    if (event.key === "ArrowDown" && buttons.length) {
+      event.preventDefault();
+      buttons[(currentIndex + 1) % buttons.length].focus();
+    } else if (event.key === "ArrowUp" && buttons.length) {
+      event.preventDefault();
+      if (currentIndex <= 0) elements.stationSearch.focus();
+      else buttons[currentIndex - 1].focus();
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      elements.stationSearch.focus();
+      hideSearchResults();
+    }
+  });
+
+  elements.riskFilters.addEventListener("change", (event) => {
+    const input = event.target.closest("input[data-risk]");
+    if (!input) return;
+
+    if (input.checked) state.activeRisks.add(input.dataset.risk);
+    else state.activeRisks.delete(input.dataset.risk);
+
+    renderRiskFilters();
     renderMapData();
-    const matches = filteredStations();
-    if (state.search.trim().length >= 3 && matches.length === 1) selectStation(matches[0].id, true);
   });
 
   elements.selectAllButton.addEventListener("click", () => {
@@ -446,21 +714,66 @@ function bindEvents() {
 
   elements.locateButton.addEventListener("click", () => {
     if (!navigator.geolocation) {
-      showError("Selaimesi ei tue paikannusta.");
+      showError("Selaimesi ei tue paikannusta.", "data");
       return;
     }
+
+    const originalText = elements.locateButton.textContent;
+    elements.locateButton.disabled = true;
+    elements.locateButton.textContent = "Haetaan sijaintia…";
+
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
-        hideError();
-        state.map?.easeTo({ center: [coords.longitude, coords.latitude], zoom: 9, duration: 900 });
-        new maplibregl.Marker({ color: "#62a8ff" })
+        hideError("data");
+        state.map?.easeTo({
+          center: [coords.longitude, coords.latitude],
+          zoom: 9,
+          duration: 900,
+        });
+
+        state.locationMarker?.remove();
+        state.locationMarker = new maplibregl.Marker({ color: "#2563eb" })
           .setLngLat([coords.longitude, coords.latitude])
           .setPopup(new maplibregl.Popup().setText("Sijaintisi"))
           .addTo(state.map);
+
+        elements.locateButton.disabled = false;
+        elements.locateButton.textContent = originalText;
+        setSidebarOpen(false);
+        announce("Sijaintisi näytetään kartalla.");
       },
-      () => showError("Sijaintia ei voitu hakea. Tarkista selaimen paikannuslupa."),
+      () => {
+        elements.locateButton.disabled = false;
+        elements.locateButton.textContent = originalText;
+        showError(
+          `Sijaintia ei voitu hakea. Tarkista selaimen paikannuslupa.
+           <div class="message-actions">
+             <button class="button button-secondary" type="button" data-action="dismiss-error">
+               Sulje
+             </button>
+           </div>`,
+          "data",
+        );
+      },
       { enableHighAccuracy: false, timeout: 10_000 },
     );
+  });
+
+  elements.mobileFilterButton.addEventListener("click", () => setSidebarOpen(true));
+  elements.closeSidebarButton.addEventListener("click", () => setSidebarOpen(false));
+  elements.sidebarBackdrop.addEventListener("click", () => setSidebarOpen(false));
+
+  elements.detailsPanel.addEventListener("click", (event) => {
+    if (event.target.closest("#close-details-button")) closeDetails();
+  });
+
+  elements.mapError.addEventListener("click", (event) => {
+    const action = event.target.closest("[data-action]")?.dataset.action;
+    if (!action) return;
+
+    if (action === "retry-data") refreshData();
+    if (action === "reload-map") window.location.reload();
+    if (action === "dismiss-error") hideError();
   });
 
   elements.methodologyLink.addEventListener("click", (event) => {
@@ -471,9 +784,50 @@ function bindEvents() {
   elements.methodologyDialog.addEventListener("click", (event) => {
     if (event.target === elements.methodologyDialog) elements.methodologyDialog.close();
   });
+
+  document.addEventListener("click", (event) => {
+    if (
+      !elements.stationResults.contains(event.target) &&
+      event.target !== elements.stationSearch
+    ) {
+      hideSearchResults();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+
+    if (state.sidebarOpen) {
+      setSidebarOpen(false);
+      elements.mobileFilterButton.focus();
+      return;
+    }
+
+    if (state.selectedStationId) closeDetails();
+  });
+
+  window.addEventListener("resize", () => {
+    if (!isMobile() && state.sidebarOpen) setSidebarOpen(false);
+    state.map?.resize();
+  });
 }
 
-initMap();
+try {
+  initMap();
+} catch (error) {
+  console.error(error);
+  elements.mapLoading.classList.add("hidden");
+  showError(
+    `Karttaa ei voitu käynnistää (${escapeHtml(error.message)}).
+     <div class="message-actions">
+       <button class="button button-secondary" type="button" data-action="reload-map">
+         Yritä uudelleen
+       </button>
+     </div>`,
+    "map",
+  );
+}
+
 bindEvents();
 renderRiskFilters();
 renderSummary();
