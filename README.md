@@ -1,6 +1,6 @@
-# Ajokeli nyt MVP
+# Ajokeli nyt
 
-Ajokeli nyt näyttää Suomen tiesääasemien ajantasaiset mittaukset kartalla ja laskee niistä läpinäkyvän keliriski-indikaattorin.
+Ajokeli nyt näyttää Suomen tiesääasemien ajantasaiset mittaukset kartalla, laskee niistä läpinäkyvän keliriski-indikaattorin ja kokoaa ajoreitin läheiset havainnot yhteen.
 
 Palvelu käyttää Fintrafficin Digitraffic-rajapintoja:
 
@@ -8,20 +8,43 @@ Palvelu käyttää Fintrafficin Digitraffic-rajapintoja:
 - uusimmat mittaukset: `/api/weather/v1/stations/data`
 - kelikameroiden sijainnit: `/api/weathercam/v1/stations`
 
-## MVP:n ominaisuudet
+Reittitoiminnot käyttävät:
+
+- Nominatimia käyttäjän käynnistämään paikkahakuun
+- OSRM:n julkista demo-reititystä ajoreitin laskentaan
+- OpenStreetMap-aineistoa paikkoihin ja reitteihin
+
+## Ominaisuudet
 
 - Suomen kartta ja kaikki aktiivisesti mittaavat tiesääasemat
-- neljä keliluokkaa sekä vanhentuneen/puuttuvan datan luokka
+- neljä keliluokkaa sekä vanhentuneen tai puuttuvan datan luokka
 - automaattinen päivitys kerran minuutissa
 - suodatus riskiluokan ja aseman nimen perusteella
 - hakutulokset listana ja näppäimistökäyttö
-- mobiilissa avattava suodatinpaneeli ja suljettava aseman tietopaneeli
+- mobiilissa avattava reitti- ja suodatinpaneeli
 - aseman mittaukset ja luokituksen perustelut
 - lähin aktiivinen kelikamera enintään 25 km:n etäisyydeltä
 - selainpaikannus
 - erillinen demo-tila ilman Digitraffic-yhteyttä
 - lataus-, virhe- ja uudelleenyritystilat
-- automaattiset riskilaskennan ja käyttöliittymän smoke-testit
+- automaattiset riskilaskennan, reittianalyysin ja käyttöliittymän testit
+
+## Reitin ajokeli
+
+Käyttäjä hakee ja valitsee lähtöpaikan sekä määränpään. Palvelu näyttää:
+
+- ajoreitin kartalla
+- reitin pituuden ja arvioidun ajoajan
+- tiesääasemat enintään 8 km:n etäisyydeltä reitistä
+- reitin vaikeimman luotettavan keliluokan
+- merkittävimmät havaintoperusteet
+- asemat ajoreitin mukaisessa järjestyksessä
+
+Yhteenveto perustuu yksittäisiin havaintoasemiin. Se ei ole sääennuste, navigointiohje tai virallinen ajokelivaroitus.
+
+Nominatimin julkista palvelua ei käytetä automaattiseen kirjoitushetken hakuehdotukseen. Paikkahaku käynnistyy vain käyttäjän painaessa **Hae**, tulokset välimuistitetaan selausistunnon ajaksi ja pyynnöt jonotetaan vähintään sekunnin välein.
+
+OSRM:n reitityspalvelu ja julkinen Nominatim ovat MVP:n ulkoisia demo- tai yhteisöpalveluita ilman palvelutasolupausta. Suuremmassa tai kaupallisessa käytössä ne tulee vaihtaa sovittuun palveluntarjoajaan tai itse ylläpidettyyn ratkaisuun.
 
 ## Käynnistä paikallisesti
 
@@ -48,11 +71,11 @@ Sivua ei kannata avata suoraan `file://`-osoitteesta, koska selaimet estävät u
 
 ## Julkaisu GitHub Pagesiin
 
-Repossa on valmis GitHub Actions -workflow. Avaa repositorion **Settings → Pages** ja valitse lähteeksi **GitHub Actions**. Jokainen push `main`-haaraan julkaisee sivun.
+Repossa on valmis GitHub Actions -workflow. Avaa repositorion **Settings → Pages** ja valitse lähteeksi **GitHub Actions**. Jokainen push `main`-haaraan suorittaa testit ja julkaisee sivun testien onnistuessa.
 
 ## Versiohistoria
 
-Nykyinen versio on `1.1.0`. Käyttäjälle ja ylläpidolle merkittävät muutokset kirjataan tiedostoon [CHANGELOG.md](./CHANGELOG.md).
+Nykyinen versio on `1.2.0`. Käyttäjälle ja ylläpidolle merkittävät muutokset kirjataan tiedostoon [CHANGELOG.md](./CHANGELOG.md).
 
 ## Keliriski-indikaattori
 
@@ -88,14 +111,17 @@ Yli 15 minuuttia vanha mittaus näytetään harmaana.
 
 - `index.html`: käyttöliittymä ja saavutettavuuden perusrakenne
 - `styles.css`: responsiivinen desktop-, tabletti- ja mobiiliasettelu
-- `app.js`: Digitraffic-integraatio, kartta ja käyttöliittymä
+- `app.js`: käynnistää ydinsovelluksen ja reittitoiminnot
+- `app-core.js`: Digitraffic-integraatio, tiesääasemakartta ja nykyinen käyttöliittymä
+- `route-feature.js`: paikkahaku, reititys ja reittiyhteenvedon käyttöliittymä
+- `route.js`: reitin etäisyyslaskenta, asemien valinta ja yhteenveto
 - `risk.js`: testattava riskilaskenta
 - `demo-data.js`: paikallinen demo
 - `tests/`: Node.js-testit
 - `favicon.svg`: sovelluksen kuvake
 - `CHANGELOG.md`: versiohistoria
 
-Kartta käyttää MapLibre GL JS 5.24.0:aa CDN:stä ja OpenFreeMapin Positron-tyyliä. Kartta-aineisto perustuu OpenStreetMapiin.
+Kartta käyttää MapLibre GL JS 5.24.0:aa CDN:stä ja OpenFreeMapin Positron-tyyliä. Kartta-, paikka- ja reittiaineisto perustuu OpenStreetMapiin.
 
 ## Data ja lisenssit
 
@@ -103,9 +129,11 @@ Kartta käyttää MapLibre GL JS 5.24.0:aa CDN:stä ja OpenFreeMapin Positron-ty
 - OpenStreetMapin data: ODbL
 - OpenFreeMap: MIT
 - MapLibre GL JS: BSD-3-Clause
+- Nominatim: OpenStreetMap-aineiston hakupalvelu
+- OSRM: BSD-2-Clause, reititys OpenStreetMap-aineistolla
 
-Sovellus lähettää Digitrafficille tunnisteen `AjokeliNyt/MVP 1.1`. Se ei sisällä henkilötietoja.
+Reittianalyysin Digitraffic-haut käyttävät tunnistetta `AjokeliNyt/MVP 1.2`. Tunniste ei sisällä henkilötietoja.
 
 ## Vastuunrajaus
 
-Palvelu havainnollistaa yksittäisten tiesääasemien mittauksia. Se ei korvaa Fintrafficin virallisia liikennetiedotteita, Ilmatieteen laitoksen varoituksia tai kuljettajan omaa harkintaa. Olosuhteet voivat muuttua nopeasti ja poiketa mittausaseman ympäristöstä.
+Palvelu havainnollistaa yksittäisten tiesääasemien mittauksia. Se ei korvaa Fintrafficin virallisia liikennetiedotteita, Ilmatieteen laitoksen varoituksia, varsinaista navigointipalvelua tai kuljettajan omaa harkintaa. Olosuhteet voivat muuttua nopeasti ja poiketa mittausaseman ympäristöstä.
