@@ -1,12 +1,14 @@
 # Ajokeli nyt
 
-Ajokeli nyt näyttää Suomen tiesääasemien ajantasaiset mittaukset kartalla, laskee niistä läpinäkyvän keliriski-indikaattorin ja kokoaa ajoreitin läheiset havainnot yhteen.
+Ajokeli nyt näyttää Suomen tiesääasemien ajantasaiset mittaukset kartalla, laskee niistä läpinäkyvän keliriski-indikaattorin ja kokoaa ajoreitin läheiset keli- ja liikennetiedot yhteen.
 
 Palvelu käyttää Fintrafficin Digitraffic-rajapintoja:
 
 - tiesääasemien sijainnit: `/api/weather/v1/stations`
 - uusimmat mittaukset: `/api/weather/v1/stations/data`
 - kelikameroiden sijainnit: `/api/weathercam/v1/stations`
+- aktiiviset tietyöt: `/api/traffic-message/v2/roadworks`
+- aktiiviset liikennetiedotteet: `/api/traffic-message/v2/traffic-announcements`
 
 Reittitoiminnot käyttävät:
 
@@ -17,17 +19,18 @@ Reittitoiminnot käyttävät:
 ## Ominaisuudet
 
 - Suomen kartta ja kaikki aktiivisesti mittaavat tiesääasemat
+- aktiiviset tietyöt ja liikennetiedotteet kartalla
 - neljä keliluokkaa sekä vanhentuneen tai puuttuvan datan luokka
-- automaattinen päivitys kerran minuutissa
+- automaattinen tiesäädatan päivitys kerran minuutissa
 - suodatus riskiluokan ja aseman nimen perusteella
 - hakutulokset listana ja näppäimistökäyttö
 - mobiilissa avattava reitti- ja suodatinpaneeli
 - aseman mittaukset ja luokituksen perustelut
 - lähin aktiivinen kelikamera enintään 25 km:n etäisyydeltä
 - selainpaikannus
-- erillinen demo-tila ilman Digitraffic-yhteyttä
-- lataus-, virhe- ja uudelleenyritystilat
-- automaattiset riskilaskennan, reittianalyysin ja käyttöliittymän testit
+- erillinen demo-tila tiesääaineistolle
+- erilliset virhe- ja uudelleenyritystilat tiesäälle ja liikennetiedoille
+- automaattiset riskilaskennan, reitti-, liikenne- ja käyttöliittymätestit
 
 ## Reitin ajokeli
 
@@ -41,6 +44,19 @@ Käyttäjä hakee ja valitsee lähtöpaikan sekä määränpään. Palvelu näyt
 - asemat ajoreitin mukaisessa järjestyksessä
 
 Yhteenveto perustuu yksittäisiin havaintoasemiin. Se ei ole sääennuste, navigointiohje tai virallinen ajokelivaroitus.
+
+## Reitin liikennetilanne
+
+Kun reitti on laskettu, palvelu yhdistää siihen Digitrafficin Simppeli JSON -muotoiset tietyöt ja liikennetiedotteet. Yhteenveto näyttää:
+
+- reitin lähellä olevien tietöiden ja liikennetiedotteiden määrät
+- vakaviksi tulkittujen kohteiden määrän
+- kohteiden kuvaukset, voimassaoloajat ja etäisyyden reitistä
+- kohteet kartalla sekä avattavan lisätietonäkymän
+
+Reittiin liitetään aktiiviset, geometrian sisältävät kohteet enintään 2 km:n etäisyydeltä reittiviivasta. Tietyön vakavuus käytetään ensisijaisesti Digitrafficin työvaiheen `severity`-arvosta. Liikennetiedotteen vakavuus johdetaan tiedotteen sisällöstä, joten se on sovelluksen oma tulkinta eikä viranomaisluokitus.
+
+Liikennetiedot eivät muuta OSRM:n valitsemaa reittiä automaattisesti. Jos liikennetiedotteiden haku epäonnistuu, reitin ajokeli ja tiesääasemien tiedot toimivat edelleen.
 
 Nominatimin julkista palvelua ei käytetä automaattiseen kirjoitushetken hakuehdotukseen. Paikkahaku käynnistyy vain käyttäjän painaessa **Hae**, tulokset välimuistitetaan selausistunnon ajaksi ja pyynnöt jonotetaan vähintään sekunnin välein.
 
@@ -75,7 +91,7 @@ Repossa on valmis GitHub Actions -workflow. Avaa repositorion **Settings → Pag
 
 ## Versiohistoria
 
-Nykyinen versio on `1.2.0`. Käyttäjälle ja ylläpidolle merkittävät muutokset kirjataan tiedostoon [CHANGELOG.md](./CHANGELOG.md).
+Nykyinen versio on `1.3.0`. Käyttäjälle ja ylläpidolle merkittävät muutokset kirjataan tiedostoon [CHANGELOG.md](./CHANGELOG.md).
 
 ## Keliriski-indikaattori
 
@@ -111,12 +127,14 @@ Yli 15 minuuttia vanha mittaus näytetään harmaana.
 
 - `index.html`: käyttöliittymä ja saavutettavuuden perusrakenne
 - `styles.css`: responsiivinen desktop-, tabletti- ja mobiiliasettelu
-- `app.js`: käynnistää ydinsovelluksen ja reittitoiminnot
+- `app.js`: käynnistää ydinsovelluksen, reittitoiminnot ja liikennetilanteen
 - `app-core.js`: Digitraffic-integraatio, tiesääasemakartta ja nykyinen käyttöliittymä
 - `route-feature.js`: paikkahaku, reititys ja reittiyhteenvedon käyttöliittymä
 - `route.js`: reitin etäisyyslaskenta, asemien valinta ja yhteenveto
+- `traffic-feature.js`: liikennetiedotteiden haku, karttatasot ja käyttöliittymä
+- `traffic.js`: liikennetiedotteiden normalisointi, voimassaolo, vakavuus ja reittiosumat
 - `risk.js`: testattava riskilaskenta
-- `demo-data.js`: paikallinen demo
+- `demo-data.js`: paikallinen tiesäädemo
 - `tests/`: Node.js-testit
 - `favicon.svg`: sovelluksen kuvake
 - `CHANGELOG.md`: versiohistoria
@@ -132,8 +150,8 @@ Kartta käyttää MapLibre GL JS 5.24.0:aa CDN:stä ja OpenFreeMapin Positron-ty
 - Nominatim: OpenStreetMap-aineiston hakupalvelu
 - OSRM: BSD-2-Clause, reititys OpenStreetMap-aineistolla
 
-Reittianalyysin Digitraffic-haut käyttävät tunnistetta `AjokeliNyt/MVP 1.2`. Tunniste ei sisällä henkilötietoja.
+Digitraffic-haut käyttävät tunnistetta `AjokeliNyt/MVP 1.3`. Tunniste ei sisällä henkilötietoja.
 
 ## Vastuunrajaus
 
-Palvelu havainnollistaa yksittäisten tiesääasemien mittauksia. Se ei korvaa Fintrafficin virallisia liikennetiedotteita, Ilmatieteen laitoksen varoituksia, varsinaista navigointipalvelua tai kuljettajan omaa harkintaa. Olosuhteet voivat muuttua nopeasti ja poiketa mittausaseman ympäristöstä.
+Palvelu havainnollistaa yksittäisten tiesääasemien mittauksia ja Digitrafficin liikennetiedotteita. Se ei korvaa Fintrafficin virallisia liikennetiedotteita, Ilmatieteen laitoksen varoituksia, varsinaista navigointipalvelua tai kuljettajan omaa harkintaa. Olosuhteet ja liikennetilanne voivat muuttua nopeasti.
