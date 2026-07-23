@@ -2,7 +2,11 @@
 
 Ajokeli nyt näyttää Suomen tiesääasemien ajantasaiset mittaukset kartalla, laskee niistä läpinäkyvän keliriski-indikaattorin ja kokoaa ajoreitin läheiset keli-, ennuste- ja liikennetiedot yhteen.
 
-Palvelu käyttää Fintrafficin Digitraffic-rajapintoja:
+Nykyinen versio on **1.5.0 beta**.
+
+## Käytetyt palvelut
+
+Fintrafficin Digitraffic-rajapinnat:
 
 - tiesääasemien sijainnit: `/api/weather/v1/stations`
 - uusimmat mittaukset: `/api/weather/v1/stations/data`
@@ -12,29 +16,30 @@ Palvelu käyttää Fintrafficin Digitraffic-rajapintoja:
 - aktiiviset tietyöt: `/api/traffic-message/v2/roadworks`
 - aktiiviset liikennetiedotteet: `/api/traffic-message/v2/traffic-announcements`
 
-Reittitoiminnot käyttävät:
+Reittitoiminnot käyttävät lisäksi:
 
 - Nominatimia käyttäjän käynnistämään paikkahakuun
 - OSRM:n julkista demo-reititystä ajoreitin laskentaan
 - OpenStreetMap-aineistoa paikkoihin ja reitteihin
+- OpenFreeMapia karttataustaan
 
 ## Ominaisuudet
 
-- Suomen kartta ja kaikki aktiivisesti mittaavat tiesääasemat
+- Suomen kartta ja aktiivisesti mittaavat tiesääasemat
 - aktiiviset tietyöt ja liikennetiedotteet kartalla
 - tiejaksoennusteet valitulle reitille ja lähtöajalle
-- lähtöaikojen vertailu nykyhetkestä seuraaviin ennusteaikoihin
-- neljä keliluokkaa sekä vanhentuneen tai puuttuvan datan luokka
-- automaattinen tiesäädatan päivitys kerran minuutissa
-- suodatus riskiluokan ja aseman nimen perusteella
-- hakutulokset listana ja näppäimistökäyttö
-- mobiilissa avattava reitti- ja suodatinpaneeli
-- aseman mittaukset ja luokituksen perustelut
-- lähin aktiivinen kelikamera enintään 25 km:n etäisyydeltä
-- selainpaikannus
-- erillinen demo-tila tiesääaineistolle
-- erilliset virhe- ja uudelleenyritystilat tiesäälle, ennusteelle ja liikennetiedoille
-- automaattiset riskilaskennan, reitti-, ennuste-, liikenne- ja käyttöliittymätestit
+- lähtöaikojen ennustevertailu
+- havaintoihin perustuva keliriski-indikaattori
+- reitin pituus, ajoaika ja reitin läheiset tiesääasemat
+- reitin ajokelin, liikennetilanteen ja ennusteen tiivis yhteenveto
+- yksityiskohtien avaaminen tarvittaessa
+- jaettava reittilinkki lähtöpaikalla, määränpäällä ja ennusteajalla
+- selainpaikannus ja lähin kelikamera
+- mobiilin reitti- ja suodatinpaneeli
+- erilliset virhe- ja uudelleenyritystilat
+- ulkoisten API-pyyntöjen aikakatkaisut
+- näkyvä beta-versio, tietosuojakuvaus ja palautelinkki
+- automaattiset riski-, reitti-, ennuste-, liikenne-, beta- ja käyttöliittymätestit
 
 ## Reitin ajokeli
 
@@ -43,7 +48,7 @@ Käyttäjä hakee ja valitsee lähtöpaikan sekä määränpään. Palvelu näyt
 - ajoreitin kartalla
 - reitin pituuden ja arvioidun ajoajan
 - tiesääasemat enintään 8 km:n etäisyydeltä reitistä
-- reitin vaikeimman luotettavan keliluokan
+- reitin vaikeimman luotettavan havaintoluokan
 - merkittävimmät havaintoperusteet
 - asemat ajoreitin mukaisessa järjestyksessä
 
@@ -51,39 +56,64 @@ Havaintoyhteenveto perustuu yksittäisiin tiesääasemiin. Se ei ole sääennust
 
 ## Keliennuste ja lähtöaika
 
-Kun reitti on laskettu, palvelu hakee Digitrafficin yksinkertaiset tiejaksot ja niiden ajantasaiset keliennusteet reitin rajaamalta alueelta. Palvelu:
+Reitin laskemisen jälkeen palvelu hakee Digitrafficin tiejaksot ja niiden keliennusteet reitin alueelta. Palvelu:
 
 - tunnistaa tiejaksot enintään 5 km:n etäisyydeltä reitistä
 - näyttää tiejaksot kartalla ennustetun keliluokan väreillä
-- muodostaa vertailuajat lähimmistä todellisista ennusteajoista
+- muodostaa lähtöaikavaihtoehdot todellisista ennusteajoista
 - näyttää valitun lähtöajan huonoimman tiejaksokohtaisen keliluokan
-- vertailee, millä tarkastelluista lähtöajoista ennustettu kokonaisuus on suotuisin
-- näyttää tiejaksojen lämpötiloja, tuulta ja ilmoitettuja olosuhdesyitä
+- vertailee tarkasteltujen lähtöaikojen ennustettua kokonaisuutta
+- näyttää tiejaksojen lämpötiloja, tuulta ja olosuhdesyitä
 
-Vertailu käyttää Digitrafficin luokkia `NORMAL_CONDITION`, `POOR_CONDITION` ja `EXTREMELY_POOR_CONDITION`. Suotuisin vertailuaika on sovelluksen laskennallinen vertailu, ei ajo- tai turvallisuussuositus. Ennustetiedot päivittyvät Digitrafficissa noin viiden minuutin välein.
+Vertailu käyttää Digitrafficin luokkia `NORMAL_CONDITION`, `POOR_CONDITION` ja `EXTREMELY_POOR_CONDITION`. Suotuisin vertailuaika on laskennallinen vertailu, ei ajo- tai turvallisuussuositus.
 
-Keliennustetta ei haeta `?demo=1`-tilassa, jotta tiesäädemo toimii ilman Digitraffic-yhteyttä.
+Keliennustetta ei haeta `?demo=1`-tilassa.
 
 ## Reitin liikennetilanne
 
-Kun reitti on laskettu, palvelu yhdistää siihen Digitrafficin Simppeli JSON -muotoiset tietyöt ja liikennetiedotteet. Yhteenveto näyttää:
+Palvelu yhdistää reittiin Digitrafficin tietyöt ja liikennetiedotteet. Yhteenveto näyttää:
 
 - reitin lähellä olevien tietöiden ja liikennetiedotteiden määrät
 - vakaviksi tulkittujen kohteiden määrän
-- kohteiden kuvaukset, voimassaoloajat ja etäisyyden reitistä
+- kuvaukset, voimassaoloajat ja etäisyyden reitistä
 - kohteet kartalla sekä avattavan lisätietonäkymän
 
-Reittiin liitetään aktiiviset, geometrian sisältävät kohteet enintään 2 km:n etäisyydeltä reittiviivasta. Tietyön vakavuus käytetään ensisijaisesti Digitrafficin työvaiheen `severity`-arvosta. Liikennetiedotteen vakavuus johdetaan tiedotteen sisällöstä, joten se on sovelluksen oma tulkinta eikä viranomaisluokitus.
+Reittiin liitetään aktiiviset, geometrian sisältävät kohteet enintään 2 km:n etäisyydeltä reittiviivasta. Tietyön vakavuus luetaan ensisijaisesti Digitrafficin työvaiheen `severity`-arvosta. Liikennetiedotteen vakavuus on sovelluksen oma tulkinta.
 
-Liikennetiedot eivät muuta OSRM:n valitsemaa reittiä automaattisesti. Jos liikennetiedotteiden haku epäonnistuu, reitin ajokeli ja tiesääasemien tiedot toimivat edelleen.
+Liikennetiedot eivät muuta OSRM:n valitsemaa reittiä automaattisesti.
 
-Nominatimin julkista palvelua ei käytetä automaattiseen kirjoitushetken hakuehdotukseen. Paikkahaku käynnistyy vain käyttäjän painaessa **Hae**, tulokset välimuistitetaan selausistunnon ajaksi ja pyynnöt jonotetaan vähintään sekunnin välein.
+## Jaettava reitti
 
-OSRM:n reitityspalvelu ja julkinen Nominatim ovat MVP:n ulkoisia demo- tai yhteisöpalveluita ilman palvelutasolupausta. Suuremmassa tai kaupallisessa käytössä ne tulee vaihtaa sovittuun palveluntarjoajaan tai itse ylläpidettyyn ratkaisuun.
+Kun reitti on laskettu, **Jaa reitti** kopioi selaimen osoitteen, johon sisältyvät:
+
+- lähtöpaikka
+- määränpää
+- valittu ennusteaika, jos sellainen on saatavilla
+
+Jaetun linkin avaaminen ei käynnistä paikkahakuja automaattisesti. Käyttäjän pitää painaa **Lataa jaettu reitti**, jonka jälkeen sovellus hakee paikat ja laskee reitin. Käyttäjän tulee tarkistaa, että valitut paikat ovat oikeat.
+
+## Beta-vakautus
+
+Versiossa 1.5.0:
+
+- Nominatimin, OSRM:n ja Digitrafficin API-pyynnöillä on hallitut aikakatkaisut
+- reittiyhteenveto näyttää ensin kolme ydintietoa: nykyinen ajokeli, liikennetilanne ja ennuste
+- asemat, ennustejaksot ja häiriöt ovat oletuksena piilotettavissa yksityiskohtiin
+- havaintojen, liikennetietojen ja ennusteiden päivitysaikoja näytetään yhteenvedossa
+- beta-testaukselle on oma [tarkistuslista](./BETA_TESTING.md)
+- palvelulla on oma [tietosuojakuvaus](./privacy.html)
+
+Cloudflare Web Analyticsia tai muuta analytiikkaa ei ole otettu käyttöön.
+
+## Paikkahaun ja reitityksen rajaus
+
+Nominatimia ei käytetä automaattiseen kirjoitushetken hakuehdotukseen. Paikkahaku käynnistyy Hae-painikkeesta, tulokset välimuistitetaan selausistunnon ajaksi ja pyynnöt jonotetaan vähintään sekunnin välein.
+
+Julkiset Nominatim- ja OSRM-palvelut ovat MVP:n demo- tai yhteisöpalveluita ilman palvelutasolupausta. Laajemmassa tai kaupallisessa käytössä ne tulee vaihtaa sovittuun palveluntarjoajaan tai itse ylläpidettyyn ratkaisuun.
 
 ## Käynnistä paikallisesti
 
-Sovellus on tarkoituksella toteutettu ilman build-vaihetta ja npm-riippuvuuksia.
+Sovellus toimii ilman build-vaihetta ja npm-riippuvuuksia.
 
 ```bash
 npm test
@@ -106,11 +136,11 @@ Sivua ei kannata avata suoraan `file://`-osoitteesta, koska selaimet estävät u
 
 ## Julkaisu GitHub Pagesiin
 
-Repossa on valmis GitHub Actions -workflow. Avaa repositorion **Settings → Pages** ja valitse lähteeksi **GitHub Actions**. Jokainen push `main`-haaraan suorittaa testit ja julkaisee sivun testien onnistuessa.
+Repossa on GitHub Actions -workflow. Jokainen push `main`-haaraan suorittaa testit ja julkaisee sivun testien onnistuessa.
 
 ## Versiohistoria
 
-Nykyinen versio on `1.4.0`. Käyttäjälle ja ylläpidolle merkittävät muutokset kirjataan tiedostoon [CHANGELOG.md](./CHANGELOG.md).
+Käyttäjälle ja ylläpidolle merkittävät muutokset kirjataan tiedostoon [CHANGELOG.md](./CHANGELOG.md).
 
 ## Keliriski-indikaattori
 
@@ -144,22 +174,18 @@ Yli 15 minuuttia vanha mittaus näytetään harmaana.
 
 ## Tekninen rakenne
 
-- `index.html`: käyttöliittymä ja saavutettavuuden perusrakenne
-- `styles.css`: responsiivinen desktop-, tabletti- ja mobiiliasettelu
-- `app.js`: käynnistää ydinsovelluksen, reitti-, liikenne- ja ennustetoiminnot
-- `app-core.js`: Digitraffic-integraatio, tiesääasemakartta ja nykyinen käyttöliittymä
-- `route-feature.js`: paikkahaku, reititys ja reittiyhteenvedon käyttöliittymä
-- `route.js`: reitin etäisyyslaskenta, asemien valinta ja yhteenveto
-- `traffic-feature.js`: liikennetiedotteiden haku, karttatasot ja käyttöliittymä
-- `traffic.js`: liikennetiedotteiden normalisointi, voimassaolo, vakavuus ja reittiosumat
-- `forecast-bootstrap.js`: rajaa ennustetoiminnon DOM-seurannan merkityksellisiin muutoksiin
-- `forecast-feature.js`: tiejaksoennusteiden haku, lähtöaikavalinta, karttatasot ja käyttöliittymä
-- `forecast.js`: tiejaksojen reittiosumat, ennusteajan valinta ja lähtöaikojen vertailu
-- `risk.js`: testattava riskilaskenta
-- `demo-data.js`: paikallinen tiesäädemo
+- `index.html`: käyttöliittymän perusrakenne
+- `styles.css`: responsiivinen asettelu
+- `app.js`: ominaisuuksien käynnistysjärjestys
+- `request-guard.js`: ulkoisten API-pyyntöjen aikakatkaisut ja päivitysajat
+- `app-core.js`: tiesääasemakartta ja nykyiset havainnot
+- `route-feature.js` ja `route.js`: paikkahaku, reititys ja havaintoanalyysi
+- `traffic-feature.js` ja `traffic.js`: liikennetiedotteet ja reittiosumat
+- `forecast-bootstrap.js`, `forecast-feature.js` ja `forecast.js`: tiejaksoennusteet ja lähtöaikavertailu
+- `beta-feature.js` ja `beta.js`: tiivis yhteenveto, jaettavat reitit ja beta-käyttöliittymä
+- `privacy.html`: tietosuojakuvaus
+- `BETA_TESTING.md`: manuaalisen beta-testauksen tarkistuslista
 - `tests/`: Node.js-testit
-- `favicon.svg`: sovelluksen kuvake
-- `CHANGELOG.md`: versiohistoria
 
 Kartta käyttää MapLibre GL JS 5.24.0:aa CDN:stä ja OpenFreeMapin Positron-tyyliä. Kartta-, paikka- ja reittiaineisto perustuu OpenStreetMapiin.
 
@@ -172,7 +198,7 @@ Kartta käyttää MapLibre GL JS 5.24.0:aa CDN:stä ja OpenFreeMapin Positron-ty
 - Nominatim: OpenStreetMap-aineiston hakupalvelu
 - OSRM: BSD-2-Clause, reititys OpenStreetMap-aineistolla
 
-Digitraffic-haut käyttävät tunnistetta `AjokeliNyt/MVP 1.4`. Tunniste ei sisällä henkilötietoja.
+Digitraffic-haut käyttävät ajonaikaisesti tunnistetta `AjokeliNyt/MVP 1.5`. Tunniste ei sisällä henkilötietoja.
 
 ## Vastuunrajaus
 

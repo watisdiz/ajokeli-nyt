@@ -1,0 +1,73 @@
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import test from "node:test";
+
+import {
+  APP_VERSION,
+  buildShareUrl,
+  normalizeShareLabel,
+  parseSharedRoute,
+  pickClosestDeparture,
+} from "../beta.js";
+
+test("share labels are normalized", () => {
+  assert.equal(normalizeShareLabel("  Vantaa   keskusta "), "Vantaa keskusta");
+});
+
+test("share URL preserves unrelated parameters and stores the route", () => {
+  const url = buildShareUrl("https://example.test/?demo=1#map", {
+    from: " Vantaa ",
+    to: "Tampere",
+    departure: "2026-07-23T15:00:00Z",
+  });
+
+  const parsed = new URL(url);
+  assert.equal(parsed.searchParams.get("demo"), "1");
+  assert.equal(parsed.searchParams.get("from"), "Vantaa");
+  assert.equal(parsed.searchParams.get("to"), "Tampere");
+  assert.equal(parsed.searchParams.get("departure"), "2026-07-23T15:00:00Z");
+  assert.equal(parsed.hash, "");
+});
+
+test("shared route requires both endpoints", () => {
+  assert.equal(parseSharedRoute("?from=Vantaa"), null);
+  assert.deepEqual(parseSharedRoute("?from=Vantaa&to=Tampere"), {
+    from: "Vantaa",
+    to: "Tampere",
+    departure: "",
+  });
+});
+
+test("closest forecast option is selected when exact time is unavailable", () => {
+  const options = [
+    { value: "2026-07-23T12:00:00Z" },
+    { value: "2026-07-23T15:00:00Z" },
+    { value: "2026-07-23T18:00:00Z" },
+  ];
+
+  assert.equal(
+    pickClosestDeparture(options, "2026-07-23T16:00:00Z"),
+    "2026-07-23T15:00:00Z",
+  );
+});
+
+test("beta runtime files include timeout, summary, privacy and feedback controls", async () => {
+  const [app, guard, feature, privacy, checklist] = await Promise.all([
+    readFile(new URL("../app.js", import.meta.url), "utf8"),
+    readFile(new URL("../request-guard.js", import.meta.url), "utf8"),
+    readFile(new URL("../beta-feature.js", import.meta.url), "utf8"),
+    readFile(new URL("../privacy.html", import.meta.url), "utf8"),
+    readFile(new URL("../BETA_TESTING.md", import.meta.url), "utf8"),
+  ]);
+
+  assert.equal(APP_VERSION, "1.5.0");
+  assert.match(app, /request-guard\.js/);
+  assert.match(app, /beta-feature\.js/);
+  assert.match(guard, /TimeoutError/);
+  assert.match(guard, /AjokeliNyt\/MVP \$\{APP_VERSION\}/);
+  assert.match(feature, /beta-route-overview/);
+  assert.match(feature, /route-share-button/);
+  assert.match(feature, /load-shared-route-button/);
+  assert.match(privacy, /ei käytä evästeitä, kirjautumista tai analytiikkaa/i);
+  assert.match(checklist, /Vantaa → Tampere/);
+});

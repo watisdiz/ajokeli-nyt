@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="fi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Ajokeli nyt -palvelun tietosuojakuvaus." />
+    <meta name="theme-color" content="#0b1220" />
+    <title>Tietosuoja · Ajokeli nyt</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+    <style>
+      .privacy-shell {
+        width: min(760px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 36px 0 60px;
+      }
+
+      .privacy-shell .panel {
+        margin-top: 18px;
+      }
+
+      .privacy-shell h2 {
+        margin-top: 22px;
+      }
+
+      .privacy-shell li {
+        margin-top: 8px;
+        line-height: 1.55;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="privacy-shell">
+      <a class="text-button" href="./">← Takaisin Ajokeli nyt -palveluun</a>
+      <p class="eyebrow">Beta · versio 1.5.0</p>
+      <h1>Tietosuojakuvaus</h1>
+      <p class="subtitle">
+        Ajokeli nyt on selainpohjainen avoimen datan palvelu ilman omaa käyttäjätiliä tai
+        palvelinpuolen käyttäjärekisteriä.
+      </p>
+
+      <section class="panel">
+        <h2>Mitä palvelu tallentaa?</h2>
+        <p>
+          Palvelu ei käytä evästeitä, kirjautumista tai analytiikkaa. Reittihakuja,
+          sijaintia ja käyttäjän tunnistetietoja ei tallenneta omaan taustajärjestelmään.
+        </p>
+
+        <h2>Selaimen sijainti</h2>
+        <p>
+          Sijaintia pyydetään vain käyttäjän painaessa sijaintipainiketta. Sijaintia
+          käytetään kartan keskittämiseen selaimessa, eikä sovellus tallenna sitä.
+        </p>
+
+        <h2>Ulkoiset palvelut</h2>
+        <p>Selain hakee tietoja suoraan seuraavista palveluista:</p>
+        <ul>
+          <li>Fintraffic / Digitraffic: tiesää, kelikamerat, ennusteet ja liikennetiedotteet</li>
+          <li>Nominatim: käyttäjän käynnistämä paikkahaku</li>
+          <li>OSRM: ajoreitin laskenta</li>
+          <li>OpenFreeMap ja OpenStreetMap: kartta-aineisto</li>
+          <li>unpkg: MapLibre GL JS -kirjasto</li>
+        </ul>
+        <p>
+          Näihin palveluihin välittyy tavalliseen verkkopyyntöön liittyviä teknisiä
+          tietoja, kuten IP-osoite ja selaimen perustiedot. Paikkahakuun välittyy
+          käyttäjän kirjoittama hakuteksti, ja reititykseen valittujen paikkojen
+          koordinaatit.
+        </p>
+
+        <h2>Jaettavat reittilinkit</h2>
+        <p>
+          Jaa reitti -toiminto lisää lähtöpaikan, määränpään ja mahdollisen ennusteajan
+          selaimen osoitteeseen. Linkki tallentuu tai välittyy vain käyttäjän omien
+          toimien kautta. Älä käytä linkissä tietoja, joita et halua jakaa.
+        </p>
+
+        <h2>Palaute</h2>
+        <p>
+          GitHubiin lähetetty palaute käsitellään GitHubin palvelussa ja sen omien
+          tietosuojakäytäntöjen mukaisesti.
+        </p>
+
+        <p class="muted small">Päivitetty 23.7.2026.</p>
+      </section>
+    </main>
+  </body>
+</html>
