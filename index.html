@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="fi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Ajokeli nyt näyttää Suomen tiesääasemien ajantasaiset havainnot ja läpinäkyvän keliriski-indikaattorin."
+    />
+    <meta name="theme-color" content="#0b1220" />
+    <title>Ajokeli nyt</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <noscript>Tämä palvelu tarvitsee JavaScriptin toimiakseen.</noscript>
+
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Suomen tiesääasemat</p>
+          <h1>Ajokeli nyt</h1>
+          <p class="subtitle">
+            Ajantasaisiin kelihavaintoihin perustuva, läpinäkyvä keliriski-indikaattori.
+          </p>
+        </div>
+        <div class="topbar-actions">
+          <span id="live-status" class="status-pill status-loading">Ladataan dataa…</span>
+          <button id="refresh-button" class="button button-secondary" type="button">
+            Päivitä
+          </button>
+        </div>
+      </header>
+
+      <main class="main-layout">
+        <aside class="sidebar" aria-label="Karttasuodattimet">
+          <section class="panel controls-panel">
+            <label class="search-label" for="station-search">Hae tiesääasemaa</label>
+            <input
+              id="station-search"
+              class="search-input"
+              type="search"
+              autocomplete="off"
+              placeholder="Esim. Lahti, Tie 4…"
+            />
+
+            <div class="filter-header">
+              <h2>Näytä kartalla</h2>
+              <button id="select-all-button" class="text-button" type="button">Kaikki</button>
+            </div>
+            <div id="risk-filters" class="risk-filters"></div>
+
+            <div class="control-row">
+              <button id="locate-button" class="button button-secondary full-width" type="button">
+                Näytä sijaintini
+              </button>
+            </div>
+          </section>
+
+          <section class="panel summary-panel" aria-labelledby="summary-heading">
+            <div class="panel-heading-row">
+              <h2 id="summary-heading">Tilanne nyt</h2>
+              <span id="refresh-countdown" class="muted">Päivittyy 60 s</span>
+            </div>
+            <div id="summary-grid" class="summary-grid"></div>
+            <p id="data-timestamp" class="muted small"></p>
+          </section>
+
+          <section class="panel explainer-panel">
+            <details>
+              <summary>Miten luokitus toimii?</summary>
+              <p>
+                Indikaattori painottaa tienpinnan keliluokkaa, lämpötilaa, sadetta,
+                näkyvyyttä ja tuulta. Se ei ole virallinen ajokelivaroitus eikä ennuste.
+              </p>
+              <a href="#methodology" id="methodology-link">Näytä pisteytys</a>
+            </details>
+          </section>
+        </aside>
+
+        <section class="map-section" aria-label="Ajokelikartta">
+          <div id="map" class="map"></div>
+          <div id="map-error" class="map-message hidden" role="alert"></div>
+          <div class="map-legend" aria-label="Karttamerkkien selite">
+            <span><i class="legend-dot risk-normal"></i> Normaali</span>
+            <span><i class="legend-dot risk-attention"></i> Huomio</span>
+            <span><i class="legend-dot risk-difficult"></i> Vaikea</span>
+            <span><i class="legend-dot risk-extreme"></i> Erittäin vaikea</span>
+            <span><i class="legend-dot risk-stale"></i> Data puuttuu / vanha</span>
+          </div>
+        </section>
+
+        <aside id="details-panel" class="details-panel" aria-live="polite">
+          <div class="empty-state">
+            <div class="empty-icon" aria-hidden="true">◎</div>
+            <h2>Valitse tiesääasema</h2>
+            <p>Klikkaa kartan pistettä nähdäksesi mittaukset ja luokituksen perustelut.</p>
+          </div>
+        </aside>
+      </main>
+
+      <footer class="footer">
+        <p>
+          Data: Fintraffic / Digitraffic, lisenssi CC BY 4.0. Kartta: MapLibre GL JS.
+          Tarkista viralliset liikenne- ja kelivaroitukset ennen ajoa.
+        </p>
+        <p id="mode-indicator"></p>
+      </footer>
+    </div>
+
+    <dialog id="methodology-dialog" class="methodology-dialog">
+      <div class="dialog-header">
+        <div>
+          <p class="eyebrow">Läpinäkyvä laskenta</p>
+          <h2 id="methodology">Keliriski-indikaattorin pisteytys</h2>
+        </div>
+        <button id="close-methodology" class="icon-button" type="button" aria-label="Sulje">×</button>
+      </div>
+      <div class="methodology-content">
+        <h3>Tienpinta</h3>
+        <p>Jää +4, kuura/lumi/sohjo +3, märkä tai kostea +1.</p>
+        <h3>Lämpötila</h3>
+        <p>Tienpinta alle −1 °C +2, välillä −1…+1 °C +1.</p>
+        <h3>Sade</h3>
+        <p>Jäätävä sade +4, lumi/räntä/rakeet +2, vesisade/tihku +1.</p>
+        <h3>Näkyvyys ja tuuli</h3>
+        <p>Näkyvyys alle 0,5 km +3, alle 2 km +2, alle 5 km +1. Puuska vähintään 25 m/s +3, 17 m/s +2, 12 m/s +1.</p>
+        <h3>Luokat</h3>
+        <p>0–1 normaali, 2–3 huomio, 4–6 vaikea, vähintään 7 erittäin vaikea.</p>
+        <p class="muted small">
+          Jos mittaus on yli 15 minuuttia vanha tai keskeiset arvot puuttuvat, asema näytetään harmaana eikä sille lasketa luotettavaa luokkaa.
+        </p>
+      </div>
+    </dialog>
+
+    <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
