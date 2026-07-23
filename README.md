@@ -86,11 +86,13 @@ Yli 15 minuuttia vanha mittaus näytetään harmaana.
 - `demo-data.js`: paikallinen demo
 - `tests/`: Node.js-testit
 
-Kartta käyttää MapLibre GL JS 5.24.0:aa CDN:stä ja MapLibren demo-tyyliä. Suurempaan tuotantokäyttöön karttataustalle kannattaa valita erillinen tuotantoon tarkoitettu tile-palvelu.
+Kartta käyttää MapLibre GL JS 5.24.0:aa CDN:stä ja OpenFreeMapin Positron-tyyliä. Kartta-aineisto perustuu OpenStreetMapiin.
 
 ## Data ja lisenssit
 
 - Fintraffic / Digitraffic: CC BY 4.0
+- OpenStreetMapin data: ODbL
+- OpenFreeMap: MIT
 - MapLibre GL JS: BSD-3-Clause
 
 Sovellus lähettää Digitrafficille tunnisteen `AjokeliNyt/MVP 1.0`. Se ei sisällä henkilötietoja.
