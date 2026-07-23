@@ -1,6 +1,6 @@
 # Beta-testauksen tarkistuslista
 
-Tämä lista tukee Ajokeli nyt -version 1.6.0 manuaalista päästä päähän -testausta ennen laajempaa jakamista.
+Tämä lista tukee Ajokeli nyt -version 1.7.0 manuaalista päästä päähän -testausta ennen laajempaa jakamista.
 
 ## Testireitit
 
@@ -21,17 +21,36 @@ Tämä lista tukee Ajokeli nyt -version 1.6.0 manuaalista päästä päähän -t
 - Jaa reitti -linkki voidaan kopioida
 - jaettu reitti voidaan ladata uudessa yksityisessä selainikkunassa
 
+## Yhtenäisen kartan tarkistukset
+
+- kartan alareunan tai oikean reunan ohjaimessa näkyvät **Sade**, **Tieinfot** ja **Asemat**
+- Sade-painike näyttää ja piilottaa sadetutkan
+- Tieinfot-painike näyttää ja piilottaa tiejaksoennusteet, tietyöt ja liikennetiedotteet
+- Asemat-painike näyttää ja piilottaa tiesääasemat
+- reittiviiva säilyy sadetutkan ja tiejaksoennusteiden päällä
+- tietyöt ja liikenteen häiriöt säilyvät selvästi näkyvissä
+- mobiilin karttapalkki ei peitä koko karttaa eikä aiheuta vaakasuuntaista vieritystä
+- sadetutkan asetuspaneeli avautuu karttapalkin yläpuolelle
+
 ## Sadetutkan tarkistukset
 
-- Sade nyt -kerros on sivun avautuessa pois päältä
+- Sade-kerros on sivun avautuessa pois päältä
 - kerroksen avaaminen näyttää lataustilan ja uusimman havaintoajan
-- sadealueet näkyvät kartan päällä mutta reitti ja karttamerkit säilyvät luettavina
+- sadealueet näkyvät pehmeäreunaisina kartan päällä
+- sade-tilassa karttapohja tummenee kevyesti
+- reitti ja karttamerkit säilyvät luettavina
 - läpinäkyvyyden säädin muuttaa tutkakerrosta
 - sateen voimakkuuden selite näkyy
 - reittiyhteenveto näyttää sateisen matkan pituuden ja voimakkaimman havainnon
-- tutkakerroksen sulkeminen piilottaa karttatason
+- tutkakerroksen sulkeminen piilottaa sadealueet ja poistaa tummennuksen
 - kerroksen avaaminen uudelleen hyödyntää tuoretta muistissa olevaa aineistoa
 - FMI:n virhe ei estä tiesäätä, ennustetta tai liikennetilannetta
+
+## Asemien yksinkertaistaminen
+
+- ilman reittiä ja sadetutkan ollessa päällä kartalla näkyvät vain vaikeat, erittäin vaikeat ja valittu asema
+- reitin laskemisen jälkeen näkyvät reitin läheiset asemat
+- sadetutkan sulkeminen palauttaa normaalin asemansuodatuksen
 
 ## Näyttökoot
 
@@ -41,7 +60,7 @@ Tämä lista tukee Ajokeli nyt -version 1.6.0 manuaalista päästä päähän -t
 - kannettava noin 1366 × 768
 - suuri desktop-näyttö
 
-Tarkista erityisesti, ettei sivulle synny vaakasuuntaista vieritystä ja että kartta, paneelit, sadetutkan säädin sekä sulkemispainikkeet ovat käytettävissä.
+Tarkista erityisesti, ettei sivulle synny vaakasuuntaista vieritystä ja että kartta, paneelit, karttatasojen painikkeet sekä sulkemispainikkeet ovat käytettävissä.
 
 ## Virhetilanteet
 
@@ -59,7 +78,7 @@ Testaa selaimen kehittäjätyökaluilla hidas yhteys ja offline-tila:
 
 - koko reittihaku onnistuu näppäimistöllä
 - fokus näkyy painikkeissa ja kentissä
-- Sade nyt -painikkeen painettu tila välittyy `aria-pressed`-attribuutilla
+- karttatasojen painetut tilat välittyvät `aria-pressed`-attribuutilla
 - Escape sulkee hakutulokset ja mobiilipaneelin
 - ruudunlukijan tilailmoitukset eivät toistu jatkuvasti
 - kosketuskohteet ovat riittävän suuria
@@ -70,6 +89,7 @@ Beta voidaan jakaa laajemmin, kun:
 
 - kaikki neljä testireittiä toimivat desktopilla ja puhelimella
 - sadetutka toimii vähintään yhdellä sateisella ja yhdellä sateettomalla testikerralla
+- karttatasojen kolme painiketta toimivat mobiilissa ja desktopilla
 - kriittisiä JavaScript-virheitä ei näy konsolissa
 - ulkoisen rajapinnan virheestä pystyy palautumaan ilman sivun uudelleenlatausta
 - tietosuojalinkki, palautelinkki, versio ja muutoshistoria ovat näkyvissä

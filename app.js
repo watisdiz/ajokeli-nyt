@@ -1,4 +1,4 @@
-const BUILD_VERSION = "1.6.2";
+const BUILD_VERSION = "1.7.0";
 const asset = (path) => `${path}?v=${BUILD_VERSION}`;
 
 await import(asset("./request-guard.js"));
@@ -28,6 +28,7 @@ await import(asset("./beta-feature.js"));
 await import(asset("./radar-feature.js"));
 await import(asset("./radar-ux-hotfix.js"));
 await import(asset("./radar-polish.js"));
+await import(asset("./unified-map-mode.js"));
 
 const footerText = document.querySelector(".footer p");
 if (footerText && !footerText.textContent.includes("Ilmatieteen laitos")) {

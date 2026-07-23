@@ -1,4 +1,4 @@
-const APP_VERSION = "1.6.2";
+const APP_VERSION = "1.7.0";
 const RADAR_SOURCE_ID = "fmi-radar-image";
 const RADAR_BOUNDS = Object.freeze({ west: 19.1, south: 59.7, east: 31.7, north: 70.1 });
 const map = window.__ajokeliMap ?? null;

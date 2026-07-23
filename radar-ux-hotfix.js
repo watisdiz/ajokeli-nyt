@@ -1,4 +1,4 @@
-const APP_VERSION = "1.6.2";
+const APP_VERSION = "1.7.0";
 const map = window.__ajokeliMap ?? null;
 let lastObservationLabel = "";
 

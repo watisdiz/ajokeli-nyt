@@ -7,6 +7,31 @@ Versiot noudattavat semanttista versionumerointia.
 
 Ei vielä julkaisemattomia muutoksia.
 
+## 1.7.0 – 2026-07-23
+
+### Lisätty
+
+- yhtenäinen sade-, reitti-, tiejakso-, liikenne- ja tiesääasemakartta
+- kartan tasovalinnat **Sade**, **Tieinfot** ja **Asemat**
+- mobiilin alareunaan kompakti kolmen painikkeen karttapalkki
+- pehmeäreunainen ja voimakkaammin erottuva sadevisualisointi
+- sade-tilaan kevyt vihertävä kartan tummennus
+- automaattinen karttatasojen järjestys, jossa reitti ja liikennetiedot säilyvät sateen päällä
+
+### Muutettu
+
+- tiejaksoennusteet näytetään sadetutkan päällä ja ajoreitti niiden päällä
+- tietyöt ja liikenteen häiriöt säilyvät kartan ylimmissä tietotasoissa
+- sadetutkan ollessa päällä ilman reittiä näytetään oletuksena vain vaikeat, erittäin vaikeat ja erikseen valittu tiesääasema
+- aktiivisella reitillä näytetään reitin läheiset tiesääasemat
+- sadetutkan asetuspaneeli avautuu mobiilissa karttapalkin yläpuolelle koko ruudun levyisen laatikon sijaan
+- projektin ja selaimeen ladattavien moduulien versio päivitettiin versioon `1.7.0`
+
+### Huomioitavaa
+
+- sadealueiden pehmennys on visuaalinen esitystapa eikä muuta FMI:n alkuperäisiä mittausarvoja tai reitin sadeanalyysiä
+- Cloudflare Web Analyticsia tai muuta analytiikkaa ei ole otettu käyttöön
+
 ## 1.6.2 – 2026-07-23
 
 ### Korjattu
