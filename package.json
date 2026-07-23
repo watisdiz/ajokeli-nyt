@@ -1,0 +1,14 @@
+{
+  "name": "ajokeli-nyt-mvp",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Suomen tiesääasemien ajantasainen keliriski-indikaattori.",
+  "scripts": {
+    "test": "node --test",
+    "serve": "python3 -m http.server 8000"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
