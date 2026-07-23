@@ -1,4 +1,7 @@
-await import("./request-guard.js");
+const BUILD_VERSION = "1.6.1";
+const asset = (path) => `${path}?v=${BUILD_VERSION}`;
+
+await import(asset("./request-guard.js"));
 
 const OriginalMap = window.maplibregl?.Map;
 
@@ -12,17 +15,18 @@ if (OriginalMap) {
   });
 }
 
-await import("./app-core.js");
+await import(asset("./app-core.js"));
 
 if (OriginalMap) {
   window.maplibregl.Map = OriginalMap;
 }
 
-await import("./route-feature.js");
-await import("./traffic-feature.js");
-await import("./forecast-bootstrap.js");
-await import("./beta-feature.js");
-await import("./radar-feature.js");
+await import(asset("./route-feature.js"));
+await import(asset("./traffic-feature.js"));
+await import(asset("./forecast-bootstrap.js"));
+await import(asset("./beta-feature.js"));
+await import(asset("./radar-feature.js"));
+await import(asset("./radar-ux-hotfix.js"));
 
 const footerText = document.querySelector(".footer p");
 if (footerText && !footerText.textContent.includes("Ilmatieteen laitos")) {
