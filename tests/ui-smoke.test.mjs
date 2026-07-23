@@ -10,15 +10,10 @@ const [
   trafficFeature,
   forecastBootstrap,
   forecastFeature,
-  radarFeature,
-  radarHelp,
-  radarPolish,
-  unifiedMap,
   css,
   route,
   traffic,
   forecast,
-  radar,
 ] = await Promise.all([
   readFile(new URL("../index.html", import.meta.url), "utf8"),
   readFile(new URL("../app.js", import.meta.url), "utf8"),
@@ -27,15 +22,10 @@ const [
   readFile(new URL("../traffic-feature.js", import.meta.url), "utf8"),
   readFile(new URL("../forecast-bootstrap.js", import.meta.url), "utf8"),
   readFile(new URL("../forecast-feature.js", import.meta.url), "utf8"),
-  readFile(new URL("../radar-feature.js", import.meta.url), "utf8"),
-  readFile(new URL("../radar-ux-hotfix.js", import.meta.url), "utf8"),
-  readFile(new URL("../radar-polish.js", import.meta.url), "utf8"),
-  readFile(new URL("../unified-map-mode.js", import.meta.url), "utf8"),
   readFile(new URL("../styles.css", import.meta.url), "utf8"),
   readFile(new URL("../route.js", import.meta.url), "utf8"),
   readFile(new URL("../traffic.js", import.meta.url), "utf8"),
   readFile(new URL("../forecast.js", import.meta.url), "utf8"),
-  readFile(new URL("../radar.js", import.meta.url), "utf8"),
 ]);
 
 test("mobile controls and accessible station search remain present", () => {
@@ -47,17 +37,14 @@ test("mobile controls and accessible station search remain present", () => {
   assert.match(html, /aria-controls="station-results"/);
 });
 
-test("wrapper cache-busts and loads all application features", () => {
-  assert.match(wrapper, /BUILD_VERSION = "1\.7\.0"/);
+test("wrapper cache-busts and loads the stable application features", () => {
+  assert.match(wrapper, /BUILD_VERSION = "1\.7\.1"/);
   assert.match(wrapper, /asset\("\.\/app-core\.js"\)/);
   assert.match(wrapper, /asset\("\.\/route-feature\.js"\)/);
   assert.match(wrapper, /asset\("\.\/traffic-feature\.js"\)/);
   assert.match(wrapper, /asset\("\.\/forecast-bootstrap\.js"\)/);
   assert.match(wrapper, /asset\("\.\/beta-feature\.js"\)/);
-  assert.match(wrapper, /asset\("\.\/radar-feature\.js"\)/);
-  assert.match(wrapper, /asset\("\.\/radar-ux-hotfix\.js"\)/);
-  assert.match(wrapper, /asset\("\.\/radar-polish\.js"\)/);
-  assert.match(wrapper, /asset\("\.\/unified-map-mode\.js"\)/);
+  assert.doesNotMatch(wrapper, /radar-feature|radar-polish|unified-map-mode/);
   assert.match(wrapper, /window\.__ajokeliMap/);
   assert.match(forecastBootstrap, /await import\("\.\/forecast-feature\.js"\)/);
   assert.match(core, /function setSidebarOpen/);
@@ -98,33 +85,6 @@ test("forecast feature uses current simple forecast-section endpoints and depart
   assert.match(forecast, /buildDepartureOptions/);
   assert.match(forecast, /compareDepartureOptions/);
   assert.match(forecast, /FORECAST_CORRIDOR_KM/);
-});
-
-test("radar feature uses FMI Download Service GeoTIFF data and explains empty views", () => {
-  assert.match(radarFeature, /id="radar-toggle-button"/);
-  assert.match(radarFeature, /aria-pressed="false"/);
-  assert.match(radarFeature, /fmi-radar-layer/);
-  assert.match(radarFeature, /image\/geotiff/);
-  assert.match(radarFeature, /geotiff@2\.1\.3/);
-  assert.match(radarFeature, /radar-summary-section/);
-  assert.match(radar, /fmi::radar::composite::rr/);
-  assert.match(radar, /buildRadarGeoTiffUrl/);
-  assert.match(radar, /analyzeRouteRain/);
-  assert.match(radarHelp, /ei pilvipeitettä/i);
-  assert.match(radarHelp, /Näytä koko Suomi/);
-  assert.match(radarPolish, /Ei havaittua sadetta Suomessa/);
-  assert.match(radarPolish, /Näytä sadealueet/);
-});
-
-test("unified map mode keeps route and road information above softened rain", () => {
-  assert.match(unifiedMap, /road-info-layer-toggle/);
-  assert.match(unifiedMap, /station-layer-toggle/);
-  assert.match(unifiedMap, /radar-map-dim-layer/);
-  assert.match(unifiedMap, /route-weather-forecast-casing/);
-  assert.match(unifiedMap, /traffic-incidents-points/);
-  assert.match(unifiedMap, /blur\(5px\)/);
-  assert.match(unifiedMap, /bottom: 12px/);
-  assert.match(unifiedMap, /difficult", "extreme/);
 });
 
 test("production map style and responsive bottom sheet remain configured", () => {
