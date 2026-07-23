@@ -2,17 +2,31 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-const [html, wrapper, core, routeFeature, trafficFeature, css, route, traffic] =
-  await Promise.all([
-    readFile(new URL("../index.html", import.meta.url), "utf8"),
-    readFile(new URL("../app.js", import.meta.url), "utf8"),
-    readFile(new URL("../app-core.js", import.meta.url), "utf8"),
-    readFile(new URL("../route-feature.js", import.meta.url), "utf8"),
-    readFile(new URL("../traffic-feature.js", import.meta.url), "utf8"),
-    readFile(new URL("../styles.css", import.meta.url), "utf8"),
-    readFile(new URL("../route.js", import.meta.url), "utf8"),
-    readFile(new URL("../traffic.js", import.meta.url), "utf8"),
-  ]);
+const [
+  html,
+  wrapper,
+  core,
+  routeFeature,
+  trafficFeature,
+  forecastBootstrap,
+  forecastFeature,
+  css,
+  route,
+  traffic,
+  forecast,
+] = await Promise.all([
+  readFile(new URL("../index.html", import.meta.url), "utf8"),
+  readFile(new URL("../app.js", import.meta.url), "utf8"),
+  readFile(new URL("../app-core.js", import.meta.url), "utf8"),
+  readFile(new URL("../route-feature.js", import.meta.url), "utf8"),
+  readFile(new URL("../traffic-feature.js", import.meta.url), "utf8"),
+  readFile(new URL("../forecast-bootstrap.js", import.meta.url), "utf8"),
+  readFile(new URL("../forecast-feature.js", import.meta.url), "utf8"),
+  readFile(new URL("../styles.css", import.meta.url), "utf8"),
+  readFile(new URL("../route.js", import.meta.url), "utf8"),
+  readFile(new URL("../traffic.js", import.meta.url), "utf8"),
+  readFile(new URL("../forecast.js", import.meta.url), "utf8"),
+]);
 
 test("mobile controls and accessible station search remain present", () => {
   assert.match(html, /id="mobile-filter-button"/);
@@ -23,11 +37,13 @@ test("mobile controls and accessible station search remain present", () => {
   assert.match(html, /aria-controls="station-results"/);
 });
 
-test("wrapper preserves the core app and loads route and traffic features", () => {
+test("wrapper preserves the core app and loads route, traffic and forecast features", () => {
   assert.match(wrapper, /await import\("\.\/app-core\.js"\)/);
   assert.match(wrapper, /await import\("\.\/route-feature\.js"\)/);
   assert.match(wrapper, /await import\("\.\/traffic-feature\.js"\)/);
+  assert.match(wrapper, /await import\("\.\/forecast-bootstrap\.js"\)/);
   assert.match(wrapper, /window\.__ajokeliMap/);
+  assert.match(forecastBootstrap, /await import\("\.\/forecast-feature\.js"\)/);
   assert.match(core, /function setSidebarOpen/);
   assert.match(core, /function renderSearchResults/);
 });
@@ -52,6 +68,20 @@ test("traffic feature uses current Digitraffic simple JSON endpoints", () => {
   assert.match(trafficFeature, /traffic-incidents-line/);
   assert.match(traffic, /analyzeRouteTraffic/);
   assert.match(traffic, /TRAFFIC_CORRIDOR_KM/);
+});
+
+test("forecast feature uses current simple forecast-section endpoints and departure comparison", () => {
+  assert.match(forecastFeature, /\/api\/weather\/v1\/forecast-sections-simple/);
+  assert.match(
+    forecastFeature,
+    /\/api\/weather\/v1\/forecast-sections-simple\/forecasts/,
+  );
+  assert.match(forecastFeature, /id="forecast-departure-select"/);
+  assert.match(forecastFeature, /forecast-summary-section/);
+  assert.match(forecastFeature, /route-weather-forecast-lines/);
+  assert.match(forecast, /buildDepartureOptions/);
+  assert.match(forecast, /compareDepartureOptions/);
+  assert.match(forecast, /FORECAST_CORRIDOR_KM/);
 });
 
 test("production map style and responsive bottom sheet remain configured", () => {
