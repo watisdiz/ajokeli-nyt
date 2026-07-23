@@ -10,6 +10,7 @@ import { demoCameras, demoMeasurements, demoMetadata } from "./demo-data.js";
 const API_BASE = "https://tie.digitraffic.fi";
 const USER_HEADER = "AjokeliNyt/MVP 1.0";
 const REFRESH_SECONDS = 60;
+const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
 const MAP_SOURCE_ID = "weather-stations";
 const MAP_LAYER_ID = "weather-station-points";
 
@@ -48,7 +49,7 @@ const elements = {
 function initMap() {
   state.map = new maplibregl.Map({
     container: "map",
-    style: "https://demotiles.maplibre.org/style.json",
+    style: MAP_STYLE_URL,
     center: [25.2, 64.4],
     zoom: 4.35,
     minZoom: 3.5,
