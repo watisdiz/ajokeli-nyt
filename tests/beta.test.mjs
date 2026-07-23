@@ -60,14 +60,19 @@ test("beta runtime files include timeout, summary, privacy and feedback controls
     readFile(new URL("../BETA_TESTING.md", import.meta.url), "utf8"),
   ]);
 
-  assert.equal(APP_VERSION, "1.5.0");
+  assert.equal(APP_VERSION, "1.6.0");
   assert.match(app, /request-guard\.js/);
   assert.match(app, /beta-feature\.js/);
+  assert.match(app, /radar-feature\.js/);
   assert.match(guard, /TimeoutError/);
   assert.match(guard, /AjokeliNyt\/MVP \$\{APP_VERSION\}/);
+  assert.match(guard, /opendata\.fmi\.fi/);
+  assert.match(guard, /openwms\.fmi\.fi/);
   assert.match(feature, /beta-route-overview/);
   assert.match(feature, /route-share-button/);
   assert.match(feature, /load-shared-route-button/);
   assert.match(privacy, /ei käytä evästeitä, kirjautumista tai analytiikkaa/i);
+  assert.match(privacy, /Ilmatieteen laitos/);
   assert.match(checklist, /Vantaa → Tampere/);
+  assert.match(checklist, /Sadetutkan tarkistukset/);
 });
