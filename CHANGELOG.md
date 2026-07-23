@@ -7,6 +7,35 @@ Versiot noudattavat semanttista versionumerointia.
 
 Ei vielä julkaisemattomia muutoksia.
 
+## 1.5.0 – 2026-07-23
+
+### Lisätty
+
+- tiivis reittiyhteenveto nykyiselle ajokelille, liikennetilanteelle ja ennusteelle
+- yksityiskohtaisten asemien, häiriöiden ja ennustejaksojen avaaminen tarvittaessa
+- Jaa reitti -toiminto lähtöpaikalle, määränpäälle ja valitulle ennusteajalle
+- jaetun reitin käyttäjän käynnistämä palautus paikkahaun kautta
+- Nominatimin, OSRM:n ja Digitrafficin pyyntöjen hallitut aikakatkaisut
+- havaintojen, liikennetietojen ja ennusteiden päivitysaikojen yhteenveto
+- näkyvä beta- ja versionumeromerkintä
+- tietosuojakuvaus ja palautelinkki
+- manuaalisen päästä päähän -testauksen tarkistuslista
+- jaettavien reittien ja beta-toimintojen automaattiset testit
+
+### Muutettu
+
+- `app.js` käynnistää verkkopyyntöjen suojauksen ennen muita ominaisuuksia
+- Digitraffic-tunniste normalisoidaan ajonaikaisesti arvoon `AjokeliNyt/MVP 1.5`
+- reittiyhteenvedon yksityiskohdat ovat oletuksena tiivistettyinä
+- projektin versio päivitettiin versioon `1.5.0`
+
+### Huomioitavaa
+
+- jaetun linkin avaaminen ei käynnistä paikkahakuja ilman käyttäjän painallusta
+- jaetun reitin ensimmäinen paikkahakutulos valitaan, joten käyttäjän tulee tarkistaa paikat
+- Cloudflare Web Analyticsia tai muuta analytiikkaa ei ole otettu käyttöön
+- julkaistun palvelun neljän reitin selain- ja mobiilitestaus on edelleen tehtävä tarkistuslistan mukaisesti
+
 ## 1.4.0 – 2026-07-23
 
 ### Lisätty
