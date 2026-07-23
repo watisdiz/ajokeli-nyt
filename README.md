@@ -2,7 +2,7 @@
 
 Ajokeli nyt näyttää Suomen tiesääasemien ajantasaiset mittaukset kartalla, laskee niistä läpinäkyvän keliriski-indikaattorin ja kokoaa ajoreitin läheiset keli-, ennuste-, sade- ja liikennetiedot yhteen.
 
-Nykyinen versio on **1.6.0 beta**.
+Nykyinen versio on **1.6.2 beta**.
 
 ## Käytetyt palvelut
 
@@ -88,8 +88,11 @@ Kartan **Sade nyt** -painike hakee käyttäjän valinnasta Ilmatieteen laitoksen
 - näyttää heikon, kohtalaisen, voimakkaan ja rankan sateen erillisin värein
 - päivittyy käytössä ollessaan noin viiden minuutin välein
 - arvioi reitin kohdalla sateisen matkan pituuden ja voimakkaimman havaitun intensiteetin
+- kertoo erikseen, jos tutkakuvassa ei ole havaittua sadetta tai jos sadetta on muualla mutta ei reitillä
+- tarjoaa **Näytä sadealueet** -painikkeen, kun tutkakuvassa havaitaan sadepikseleitä
+- käyttää mobiilissa kompaktia oikean yläkulman ohjainta koko ruudun levyisen paneelin sijaan
 
-Tutkakerros on oletuksena pois päältä. Tutkahavainto kuvaa mennyttä tai nykyistä tilannetta eikä ole sade- tai ajokeliennuste. Reittiarvio perustuu karttarasterin pikseleihin, joten se on suuntaa-antava.
+Tutkakerros on oletuksena pois päältä. Tutkahavainto kuvaa mennyttä tai nykyistä tilannetta eikä ole sade- tai ajokeliennuste. Kerros näyttää sateen intensiteetin, ei pilvipeitettä. Reittiarvio perustuu karttarasterin pikseleihin, joten se on suuntaa-antava.
 
 FMI:n tavallista WMS-kuvanäkymää ei käytetä suoraan sovelluksen karttakerroksena. Toteutus käyttää Download Service -käyttötapaa ja GeoTIFF-aineistoa.
 
@@ -118,11 +121,13 @@ Jaetun linkin avaaminen ei käynnistä paikkahakuja automaattisesti. Käyttäjä
 
 ## Beta-vakautus
 
-Versiossa 1.6.0:
+Versiossa 1.6.2:
 
 - Nominatimin, OSRM:n, Digitrafficin ja FMI:n API-pyynnöillä on hallitut aikakatkaisut
 - reittiyhteenveto näyttää nykyisen ajokelin, liikennetilanteen, ennusteen ja sadetutkan tilan
 - asemat, ennustejaksot, häiriöt ja sadetutkan yksityiskohdat ovat avattavissa tarvittaessa
+- selaimen välimuisti ohitetaan versiokohtaisilla moduuliosoitteilla
+- sadetutkan tyhjä näkymä erotetaan selkeästi lataus- ja virhetilanteista
 - beta-testaukselle on oma [tarkistuslista](./BETA_TESTING.md)
 - palvelulla on oma [tietosuojakuvaus](./privacy.html)
 
@@ -207,6 +212,7 @@ Yli 15 minuuttia vanha mittaus näytetään harmaana.
 - `forecast-bootstrap.js`, `forecast-feature.js` ja `forecast.js`: tiejaksoennusteet ja lähtöaikavertailu
 - `beta-feature.js` ja `beta.js`: tiivis yhteenveto, jaettavat reitit ja beta-käyttöliittymä
 - `radar-feature.js` ja `radar.js`: FMI:n GeoTIFF-tutkakerros ja reitin sadeanalyysi
+- `radar-ux-hotfix.js` ja `radar-polish.js`: sadetutkan tila-, välimuisti- ja mobiilikäytettävyyskorjaukset
 - `privacy.html`: tietosuojakuvaus
 - `BETA_TESTING.md`: manuaalisen beta-testauksen tarkistuslista
 - `tests/`: Node.js-testit
@@ -224,7 +230,7 @@ Kartta käyttää MapLibre GL JS 5.24.0:aa CDN:stä ja OpenFreeMapin Positron-ty
 - Nominatim: OpenStreetMap-aineiston hakupalvelu
 - OSRM: BSD-2-Clause, reititys OpenStreetMap-aineistolla
 
-Digitraffic-haut käyttävät ajonaikaisesti tunnistetta `AjokeliNyt/MVP 1.6`. Tunniste ei sisällä henkilötietoja.
+Digitraffic-haut käyttävät ajonaikaisesti tunnistetta `AjokeliNyt/MVP 1.6.2`. Tunniste ei sisällä henkilötietoja.
 
 ## Vastuunrajaus
 

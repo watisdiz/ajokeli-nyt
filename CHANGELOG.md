@@ -7,6 +7,20 @@ Versiot noudattavat semanttista versionumerointia.
 
 Ei vielä julkaisemattomia muutoksia.
 
+## 1.6.2 – 2026-07-23
+
+### Korjattu
+
+- sadetutkan mobiiliohjain muutettiin kompaktiksi oikean yläkulman valikoksi koko ruudun levyisen laatikon sijaan
+- sadetutkan tila kertoo nyt erikseen, jos tutkakuvassa ei ole havaittua sadetta Suomessa tai jos sadetta on muualla mutta ei valitulla reitillä
+- näkyvät sadepikselit tunnistetaan muodostetusta tutkakuvasta ja **Näytä sadealueet** siirtää kartan niiden alueelle
+- sadetutkan yhteydessä kerrotaan näkyvästi, että kerros näyttää mitattua sadetta eikä pilvipeitettä
+- selaimeen ladattavat moduulit saavat uuden versionumeron `1.6.2`, jotta mobiili- ja desktop-näkymät eivät käytä vanhaa välimuistiversiota
+
+### Huomioitavaa
+
+- tavallinen verkkosivu ei voi estää laitteen kuvakaappauksia; mahdollinen kuvakaappausesto tulee selaimesta, sovelluksen sisäisestä selaimesta tai laitteen suojausasetuksesta
+
 ## 1.6.1 – 2026-07-23
 
 ### Korjattu
