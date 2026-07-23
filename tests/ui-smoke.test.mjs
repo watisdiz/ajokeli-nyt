@@ -12,6 +12,7 @@ const [
   forecastFeature,
   radarFeature,
   radarHelp,
+  radarPolish,
   css,
   route,
   traffic,
@@ -27,6 +28,7 @@ const [
   readFile(new URL("../forecast-feature.js", import.meta.url), "utf8"),
   readFile(new URL("../radar-feature.js", import.meta.url), "utf8"),
   readFile(new URL("../radar-ux-hotfix.js", import.meta.url), "utf8"),
+  readFile(new URL("../radar-polish.js", import.meta.url), "utf8"),
   readFile(new URL("../styles.css", import.meta.url), "utf8"),
   readFile(new URL("../route.js", import.meta.url), "utf8"),
   readFile(new URL("../traffic.js", import.meta.url), "utf8"),
@@ -44,7 +46,7 @@ test("mobile controls and accessible station search remain present", () => {
 });
 
 test("wrapper cache-busts and loads all application features", () => {
-  assert.match(wrapper, /BUILD_VERSION = "1\.6\.1"/);
+  assert.match(wrapper, /BUILD_VERSION = "1\.6\.2"/);
   assert.match(wrapper, /asset\("\.\/app-core\.js"\)/);
   assert.match(wrapper, /asset\("\.\/route-feature\.js"\)/);
   assert.match(wrapper, /asset\("\.\/traffic-feature\.js"\)/);
@@ -52,6 +54,7 @@ test("wrapper cache-busts and loads all application features", () => {
   assert.match(wrapper, /asset\("\.\/beta-feature\.js"\)/);
   assert.match(wrapper, /asset\("\.\/radar-feature\.js"\)/);
   assert.match(wrapper, /asset\("\.\/radar-ux-hotfix\.js"\)/);
+  assert.match(wrapper, /asset\("\.\/radar-polish\.js"\)/);
   assert.match(wrapper, /window\.__ajokeliMap/);
   assert.match(forecastBootstrap, /await import\("\.\/forecast-feature\.js"\)/);
   assert.match(core, /function setSidebarOpen/);
@@ -106,6 +109,9 @@ test("radar feature uses FMI Download Service GeoTIFF data and explains empty vi
   assert.match(radar, /analyzeRouteRain/);
   assert.match(radarHelp, /ei pilvipeitettä/i);
   assert.match(radarHelp, /Näytä koko Suomi/);
+  assert.match(radarPolish, /Ei havaittua sadetta Suomessa/);
+  assert.match(radarPolish, /Näytä sadealueet/);
+  assert.match(radarPolish, /max-width: min\(204px/);
 });
 
 test("production map style and responsive bottom sheet remain configured", () => {
