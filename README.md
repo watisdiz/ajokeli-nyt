@@ -14,11 +14,14 @@ Palvelu käyttää Fintrafficin Digitraffic-rajapintoja:
 - neljä keliluokkaa sekä vanhentuneen/puuttuvan datan luokka
 - automaattinen päivitys kerran minuutissa
 - suodatus riskiluokan ja aseman nimen perusteella
+- hakutulokset listana ja näppäimistökäyttö
+- mobiilissa avattava suodatinpaneeli ja suljettava aseman tietopaneeli
 - aseman mittaukset ja luokituksen perustelut
 - lähin aktiivinen kelikamera enintään 25 km:n etäisyydeltä
 - selainpaikannus
 - erillinen demo-tila ilman Digitraffic-yhteyttä
-- automaattiset testit riskilaskennalle
+- lataus-, virhe- ja uudelleenyritystilat
+- automaattiset riskilaskennan ja käyttöliittymän smoke-testit
 
 ## Käynnistä paikallisesti
 
@@ -79,12 +82,13 @@ Yli 15 minuuttia vanha mittaus näytetään harmaana.
 
 ## Tekninen rakenne
 
-- `index.html`: käyttöliittymä
-- `styles.css`: responsiivinen ulkoasu
+- `index.html`: käyttöliittymä ja saavutettavuuden perusrakenne
+- `styles.css`: responsiivinen desktop-, tabletti- ja mobiiliasettelu
 - `app.js`: Digitraffic-integraatio, kartta ja käyttöliittymä
 - `risk.js`: testattava riskilaskenta
 - `demo-data.js`: paikallinen demo
 - `tests/`: Node.js-testit
+- `favicon.svg`: sovelluksen kuvake
 
 Kartta käyttää MapLibre GL JS 5.24.0:aa CDN:stä ja OpenFreeMapin Positron-tyyliä. Kartta-aineisto perustuu OpenStreetMapiin.
 
@@ -95,7 +99,7 @@ Kartta käyttää MapLibre GL JS 5.24.0:aa CDN:stä ja OpenFreeMapin Positron-ty
 - OpenFreeMap: MIT
 - MapLibre GL JS: BSD-3-Clause
 
-Sovellus lähettää Digitrafficille tunnisteen `AjokeliNyt/MVP 1.0`. Se ei sisällä henkilötietoja.
+Sovellus lähettää Digitrafficille tunnisteen `AjokeliNyt/MVP 1.1`. Se ei sisällä henkilötietoja.
 
 ## Vastuunrajaus
 
