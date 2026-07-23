@@ -5,7 +5,33 @@ Versiot noudattavat semanttista versionumerointia.
 
 ## Unreleased
 
-Seuraava suunniteltu kokonaisuus on reittihaku ja reitin kelitilanteen yhteenveto.
+Ei vielä julkaisemattomia muutoksia.
+
+## 1.2.0 – 2026-07-23
+
+### Lisätty
+
+- käyttäjän käynnistämä lähtöpaikan ja määränpään haku Suomessa
+- ajoreitin laskenta ja reittiviiva kartalle
+- reitin pituus ja arvioitu ajoaika
+- reitin läheiset tiesääasemat enintään 8 km:n etäisyydeltä
+- reitin vaikein luotettava keliluokka
+- merkittävimpien kelihavaintojen yhteenveto
+- asemalista ajoreitin mukaisessa järjestyksessä
+- mahdollisuus avata aseman tiedot suoraan reittiyhteenvedosta
+- reittianalyysin automaattiset testit
+
+### Muutettu
+
+- kartalla näytetään reitin ollessa aktiivinen vain reitin läheiset tiesääasemat
+- mobiilin karttapainike avaa nyt reitti- ja suodatinpaneelin
+- reittianalyysin Digitraffic-haut käyttävät tunnistetta `AjokeliNyt/MVP 1.2`
+- paikkahaut välimuistitetaan istunnon ajaksi ja jonotetaan vähintään sekunnin välein
+
+### Huomioitavaa
+
+- reittiyhteenveto perustuu havaintoihin, ei ennusteeseen
+- julkiset Nominatim- ja OSRM-palvelut eivät tarjoa palvelutasolupausta
 
 ## 1.1.0 – 2026-07-23
 
