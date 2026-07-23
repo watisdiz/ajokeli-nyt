@@ -8,7 +8,22 @@
       content="Ajokeli nyt näyttää Suomen tiesääasemien ajantasaiset havainnot ja läpinäkyvän keliriski-indikaattorin."
     />
     <meta name="theme-color" content="#0b1220" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="fi_FI" />
+    <meta property="og:site_name" content="Watisdis" />
+    <meta property="og:title" content="Ajokeli nyt" />
+    <meta
+      property="og:description"
+      content="Suomen tiesääasemien ajantasaiset havainnot, kelikamerat ja läpinäkyvä keliriski-indikaattori."
+    />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Ajokeli nyt" />
+    <meta
+      name="twitter:description"
+      content="Suomen tiesääasemien ajantasaiset havainnot ja keliriski-indikaattori."
+    />
     <title>Ajokeli nyt</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
     <link
       rel="stylesheet"
       href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css"
@@ -28,7 +43,9 @@
           </p>
         </div>
         <div class="topbar-actions">
-          <span id="live-status" class="status-pill status-loading">Ladataan dataa…</span>
+          <span id="live-status" class="status-pill status-loading" role="status">
+            Ladataan dataa…
+          </span>
           <button id="refresh-button" class="button button-secondary" type="button">
             Päivitä
           </button>
@@ -36,7 +53,30 @@
       </header>
 
       <main class="main-layout">
-        <aside class="sidebar" aria-label="Karttasuodattimet">
+        <button
+          id="sidebar-backdrop"
+          class="sidebar-backdrop"
+          type="button"
+          aria-label="Sulje suodattimet"
+          tabindex="-1"
+        ></button>
+
+        <aside id="filter-sidebar" class="sidebar" aria-label="Karttasuodattimet">
+          <div class="sidebar-header">
+            <div>
+              <p class="eyebrow">Karttanäkymä</p>
+              <h2>Suodattimet</h2>
+            </div>
+            <button
+              id="close-sidebar-button"
+              class="icon-button"
+              type="button"
+              aria-label="Sulje suodattimet"
+            >
+              ×
+            </button>
+          </div>
+
           <section class="panel controls-panel">
             <label class="search-label" for="station-search">Hae tiesääasemaa</label>
             <input
@@ -45,7 +85,17 @@
               type="search"
               autocomplete="off"
               placeholder="Esim. Lahti, Tie 4…"
+              role="combobox"
+              aria-autocomplete="list"
+              aria-controls="station-results"
+              aria-expanded="false"
             />
+            <div
+              id="station-results"
+              class="search-results hidden"
+              role="listbox"
+              aria-label="Hakutulokset"
+            ></div>
 
             <div class="filter-header">
               <h2>Näytä kartalla</h2>
@@ -83,7 +133,25 @@
 
         <section class="map-section" aria-label="Ajokelikartta">
           <div id="map" class="map"></div>
+
+          <button
+            id="mobile-filter-button"
+            class="map-action-button mobile-only"
+            type="button"
+            aria-controls="filter-sidebar"
+            aria-expanded="false"
+          >
+            <span aria-hidden="true">☰</span>
+            Suodattimet
+          </button>
+
+          <div id="map-loading" class="map-loading" role="status">
+            <span class="spinner" aria-hidden="true"></span>
+            <span>Ladataan karttaa…</span>
+          </div>
+
           <div id="map-error" class="map-message hidden" role="alert"></div>
+
           <div class="map-legend" aria-label="Karttamerkkien selite">
             <span><i class="legend-dot risk-normal"></i> Normaali</span>
             <span><i class="legend-dot risk-attention"></i> Huomio</span>
@@ -93,7 +161,12 @@
           </div>
         </section>
 
-        <aside id="details-panel" class="details-panel" aria-live="polite">
+        <aside
+          id="details-panel"
+          class="details-panel"
+          aria-live="polite"
+          aria-label="Tiesääaseman tiedot"
+        >
           <div class="empty-state">
             <div class="empty-icon" aria-hidden="true">◎</div>
             <h2>Valitse tiesääasema</h2>
@@ -104,12 +177,14 @@
 
       <footer class="footer">
         <p>
-          Data: Fintraffic / Digitraffic, CC BY 4.0. Kartta: OpenFreeMap ja OpenStreetMap, MapLibre GL JS.
-          Tarkista viralliset liikenne- ja kelivaroitukset ennen ajoa.
+          Data: Fintraffic / Digitraffic, CC BY 4.0. Kartta: OpenFreeMap ja OpenStreetMap,
+          MapLibre GL JS. Tarkista viralliset liikenne- ja kelivaroitukset ennen ajoa.
         </p>
         <p id="mode-indicator"></p>
       </footer>
     </div>
+
+    <p id="sr-status" class="sr-only" aria-live="polite"></p>
 
     <dialog id="methodology-dialog" class="methodology-dialog">
       <div class="dialog-header">
@@ -127,11 +202,15 @@
         <h3>Sade</h3>
         <p>Jäätävä sade +4, lumi/räntä/rakeet +2, vesisade/tihku +1.</p>
         <h3>Näkyvyys ja tuuli</h3>
-        <p>Näkyvyys alle 0,5 km +3, alle 2 km +2, alle 5 km +1. Puuska vähintään 25 m/s +3, 17 m/s +2, 12 m/s +1.</p>
+        <p>
+          Näkyvyys alle 0,5 km +3, alle 2 km +2, alle 5 km +1. Puuska vähintään
+          25 m/s +3, 17 m/s +2, 12 m/s +1.
+        </p>
         <h3>Luokat</h3>
         <p>0–1 normaali, 2–3 huomio, 4–6 vaikea, vähintään 7 erittäin vaikea.</p>
         <p class="muted small">
-          Jos mittaus on yli 15 minuuttia vanha tai keskeiset arvot puuttuvat, asema näytetään harmaana eikä sille lasketa luotettavaa luokkaa.
+          Jos mittaus on yli 15 minuuttia vanha tai keskeiset arvot puuttuvat, asema
+          näytetään harmaana eikä sille lasketa luotettavaa luokkaa.
         </p>
       </div>
     </dialog>
