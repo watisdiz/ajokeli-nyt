@@ -1,5 +1,6 @@
 const APP_VERSION = "1.6.1";
 const map = window.__ajokeliMap ?? null;
+let lastObservationLabel = "";
 
 applyVersionLabels();
 injectRadarExplanation();
@@ -63,10 +64,14 @@ function injectRadarExplanation() {
     </button>
   `;
   details.append(actions);
+  bindShowFinland();
 }
 
-function bindRadarHelp() {
-  document.querySelector("#radar-show-finland")?.addEventListener("click", () => {
+function bindShowFinland() {
+  const button = document.querySelector("#radar-show-finland");
+  if (!button || button.dataset.bound === "true") return;
+  button.dataset.bound = "true";
+  button.addEventListener("click", () => {
     map?.fitBounds(
       [
         [19.1, 59.7],
@@ -75,15 +80,38 @@ function bindRadarHelp() {
       { padding: 34, duration: 700 },
     );
   });
+}
 
-  window.addEventListener("ajokeli:radar-state", () => {
+function updateRadarStatus(detail = {}) {
+  const status = document.querySelector("#radar-status-text");
+  if (!status || !detail.enabled || detail.loading || detail.error) return;
+
+  if (!lastObservationLabel && /\d{1,2}[.:]\d{2}/.test(status.textContent)) {
+    lastObservationLabel = status.textContent.trim();
+  }
+
+  const routeLevel = detail.analysis?.level;
+  if (!routeLevel || !lastObservationLabel) return;
+
+  status.textContent =
+    routeLevel.key === "none"
+      ? `Ei sadetta reitillä · ${lastObservationLabel}`
+      : `${routeLevel.label} reitillä · ${lastObservationLabel}`;
+}
+
+function bindRadarHelp() {
+  bindShowFinland();
+
+  window.addEventListener("ajokeli:radar-state", (event) => {
     applyVersionLabels();
     injectRadarExplanation();
+    updateRadarStatus(event.detail);
   });
 
   const observer = new MutationObserver(() => {
     applyVersionLabels();
     injectRadarExplanation();
+    bindShowFinland();
   });
   observer.observe(document.body, { childList: true, subtree: true });
 }
