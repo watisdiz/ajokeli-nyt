@@ -51,50 +51,33 @@ test("closest forecast option is selected when exact time is unavailable", () =>
   );
 });
 
-test("beta runtime files include cache busting, timeout and unified map controls", async () => {
-  const [
-    app,
-    guard,
-    feature,
-    radarHelp,
-    radarPolish,
-    unifiedMap,
-    privacy,
-    checklist,
-  ] = await Promise.all([
+test("beta runtime keeps stable route features and excludes radar processing", async () => {
+  const [app, guard, feature, privacy, checklist, readme] = await Promise.all([
     readFile(new URL("../app.js", import.meta.url), "utf8"),
     readFile(new URL("../request-guard.js", import.meta.url), "utf8"),
     readFile(new URL("../beta-feature.js", import.meta.url), "utf8"),
-    readFile(new URL("../radar-ux-hotfix.js", import.meta.url), "utf8"),
-    readFile(new URL("../radar-polish.js", import.meta.url), "utf8"),
-    readFile(new URL("../unified-map-mode.js", import.meta.url), "utf8"),
     readFile(new URL("../privacy.html", import.meta.url), "utf8"),
     readFile(new URL("../BETA_TESTING.md", import.meta.url), "utf8"),
+    readFile(new URL("../README.md", import.meta.url), "utf8"),
   ]);
 
-  assert.equal(APP_VERSION, "1.7.0");
-  assert.match(app, /BUILD_VERSION = "1\.7\.0"/);
+  assert.equal(APP_VERSION, "1.7.1");
+  assert.match(app, /BUILD_VERSION = "1\.7\.1"/);
   assert.match(app, /asset\("\.\/request-guard\.js"\)/);
-  assert.match(app, /asset\("\.\/radar-ux-hotfix\.js"\)/);
-  assert.match(app, /asset\("\.\/radar-polish\.js"\)/);
-  assert.match(app, /asset\("\.\/unified-map-mode\.js"\)/);
+  assert.match(app, /asset\("\.\/route-feature\.js"\)/);
+  assert.match(app, /asset\("\.\/traffic-feature\.js"\)/);
+  assert.match(app, /asset\("\.\/forecast-bootstrap\.js"\)/);
+  assert.match(app, /asset\("\.\/beta-feature\.js"\)/);
+  assert.doesNotMatch(app, /radar-feature|radar-polish|unified-map-mode/);
+  assert.doesNotMatch(guard, /opendata\.fmi\.fi|openwms\.fmi\.fi|"radar"/);
   assert.match(guard, /TimeoutError/);
   assert.match(guard, /AjokeliNyt\/MVP \$\{APP_VERSION\}/);
-  assert.match(guard, /opendata\.fmi\.fi/);
-  assert.match(guard, /openwms\.fmi\.fi/);
   assert.match(feature, /beta-route-overview/);
   assert.match(feature, /route-share-button/);
   assert.match(feature, /load-shared-route-button/);
-  assert.match(radarHelp, /ei pilvipeitettä/i);
-  assert.match(radarPolish, /Ei havaittua sadetta Suomessa/);
-  assert.match(radarPolish, /Näytä sadealueet/);
-  assert.match(unifiedMap, /road-info-layer-toggle/);
-  assert.match(unifiedMap, /station-layer-toggle/);
-  assert.match(unifiedMap, /blur\(5px\)/);
-  assert.match(unifiedMap, /radar-map-dim-layer/);
-  assert.match(unifiedMap, /bottom: 12px/);
   assert.match(privacy, /ei käytä evästeitä, kirjautumista tai analytiikkaa/i);
-  assert.match(privacy, /Ilmatieteen laitos/);
-  assert.match(checklist, /Vantaa → Tampere/);
-  assert.match(checklist, /Sadetutkan tarkistukset/);
+  assert.doesNotMatch(privacy, /GeoTIFF|sadetutka/i);
+  assert.match(checklist, /Vantaa → Vaasa/);
+  assert.match(checklist, /Pitkien reittien suorituskyky/);
+  assert.match(readme, /suorituskyky- ja luotettavuusongelmien vuoksi/);
 });
