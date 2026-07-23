@@ -50,6 +50,10 @@ Sivua ei kannata avata suoraan `file://`-osoitteesta, koska selaimet estävät u
 
 Repossa on valmis GitHub Actions -workflow. Avaa repositorion **Settings → Pages** ja valitse lähteeksi **GitHub Actions**. Jokainen push `main`-haaraan julkaisee sivun.
 
+## Versiohistoria
+
+Nykyinen versio on `1.1.0`. Käyttäjälle ja ylläpidolle merkittävät muutokset kirjataan tiedostoon [CHANGELOG.md](./CHANGELOG.md).
+
 ## Keliriski-indikaattori
 
 Pisteytys ei ole virallinen varoitus tai validoitu onnettomuusriskimalli.
@@ -89,6 +93,7 @@ Yli 15 minuuttia vanha mittaus näytetään harmaana.
 - `demo-data.js`: paikallinen demo
 - `tests/`: Node.js-testit
 - `favicon.svg`: sovelluksen kuvake
+- `CHANGELOG.md`: versiohistoria
 
 Kartta käyttää MapLibre GL JS 5.24.0:aa CDN:stä ja OpenFreeMapin Positron-tyyliä. Kartta-aineisto perustuu OpenStreetMapiin.
 
