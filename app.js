@@ -18,3 +18,4 @@ if (OriginalMap) {
 
 await import("./route-feature.js");
 await import("./traffic-feature.js");
+await import("./forecast-bootstrap.js");
