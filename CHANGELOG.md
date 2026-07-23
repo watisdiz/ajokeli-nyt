@@ -7,6 +7,32 @@ Versiot noudattavat semanttista versionumerointia.
 
 Ei vielä julkaisemattomia muutoksia.
 
+## 1.6.0 – 2026-07-23
+
+### Lisätty
+
+- valinnainen **Sade nyt** -tutkakerros kartalle
+- Ilmatieteen laitoksen avoimen datan sadetutkahavaintojen haku WFS-latauspalvelusta
+- GeoTIFF-tutka-aineiston muuntaminen selaimessa läpinäkyväksi MapLibre-karttatasoksi
+- sateen voimakkuuden selite ja tutkakerroksen läpinäkyvyyden säätö
+- automaattinen tutkahavainnon päivitys viiden minuutin välein kerroksen ollessa käytössä
+- reittiyhteenvetoon arvio sateisesta matkasta ja voimakkaimmasta reitin sadetutkahavainnosta
+- sadetutkan tila tiiviiseen beta-yhteenvetoon
+- sadetutkan analyysi- ja integraatiotestit
+
+### Muutettu
+
+- `app.js` käynnistää sadetutkaominaisuuden beta-toimintojen jälkeen
+- verkkopyyntöjen suojaus kattaa myös FMI:n WFS- ja GeoTIFF-lataukset
+- projektin versio päivitettiin versioon `1.6.0`
+
+### Huomioitavaa
+
+- tutkakerros on oletuksena pois päältä eikä aiheuta pyyntöjä ennen käyttäjän valintaa
+- toteutus käyttää FMI:n Download Service -käyttötapaa ja `image/geotiff`-muotoa, ei sovelluskäyttöön rajoitettua WMS-kuvanäkymää
+- tutkakuva on havainto eikä sade-ennuste
+- Cloudflare Web Analyticsia tai muuta analytiikkaa ei ole otettu käyttöön
+
 ## 1.5.0 – 2026-07-23
 
 ### Lisätty
