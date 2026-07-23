@@ -23,3 +23,8 @@ await import("./traffic-feature.js");
 await import("./forecast-bootstrap.js");
 await import("./beta-feature.js");
 await import("./radar-feature.js");
+
+const footerText = document.querySelector(".footer p");
+if (footerText && !footerText.textContent.includes("Ilmatieteen laitos")) {
+  footerText.textContent = `${footerText.textContent.trim()} Sadetutka: Ilmatieteen laitos, CC BY 4.0.`;
+}
