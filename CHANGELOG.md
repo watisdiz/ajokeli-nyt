@@ -7,6 +7,32 @@ Versiot noudattavat semanttista versionumerointia.
 
 Ei vielä julkaisemattomia muutoksia.
 
+## 1.3.0 – 2026-07-23
+
+### Lisätty
+
+- Digitrafficin aktiiviset tietyöt ja liikennetiedotteet kartalle
+- reitin kanssa osuvien liikennetiedotteiden tunnistaminen 2 km:n käytävällä
+- reittiyhteenvetoon tietöiden, häiriöiden ja vakavien kohteiden määrät
+- liikennetiedotteen kuvaus, voimassaoloaika ja etäisyys reitistä
+- karttaponnahdusikkuna ja kohteeseen siirtyminen reittiyhteenvedosta
+- liikennetiedotteiden erillinen uudelleenyritystoiminto
+- liikennetilanteen automaattiset testit
+
+### Muutettu
+
+- `app.js` käynnistää ydinsovelluksen ja reittihaun lisäksi liikennetilanneominaisuuden
+- Digitraffic-haut käyttävät tunnistetta `AjokeliNyt/MVP 1.3`
+- README kuvaa tietyö- ja liikennetiedoterajapinnat sekä vakavuuden tulkinnan
+- projektin versio päivitettiin versioon `1.3.0`
+
+### Huomioitavaa
+
+- tietyön vakavuus luetaan ensisijaisesti Digitrafficin työvaiheen `severity`-arvosta
+- liikennetiedotteen vakavuus on sovelluksen tiedotteen tekstistä johtama tulkinta
+- liikennetiedot eivät muuta OSRM:n valitsemaa reittiä automaattisesti
+- tiesää ja reittiyhteenveto toimivat, vaikka liikennetiedotteiden haku epäonnistuisi
+
 ## 1.2.0 – 2026-07-23
 
 ### Lisätty
