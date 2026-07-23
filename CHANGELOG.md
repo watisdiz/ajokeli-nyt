@@ -7,6 +7,16 @@ Versiot noudattavat semanttista versionumerointia.
 
 Ei vielä julkaisemattomia muutoksia.
 
+## 1.6.1 – 2026-07-23
+
+### Korjattu
+
+- sovellusmoduuleihin lisättiin versiokohtainen välimuistin ohitus, jotta uusi julkaisu ei sekoitu selaimeen jääneisiin vanhoihin JavaScript-tiedostoihin
+- beta-versionumerot päivittyvät varmasti samaan versioon koko käyttöliittymässä
+- sadetutkan yhteyteen lisättiin selkeä tieto siitä, että kerros näyttää sateen intensiteettiä eikä pilvipeitettä
+- aktiiviselle reitille näytetään selkeä `Ei sadetta reitillä` -tila silloin, kun tutkadata latautuu mutta reitillä ei havaita sadetta
+- sadetutkan ohjaimeen lisättiin **Näytä koko Suomi** -toiminto, jolla voi tarkistaa muualla Suomessa näkyvät sadealueet
+
 ## 1.6.0 – 2026-07-23
 
 ### Lisätty
