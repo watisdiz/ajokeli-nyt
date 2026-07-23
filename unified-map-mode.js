@@ -86,10 +86,6 @@ function injectStyles() {
       margin-top: 7px;
     }
 
-    .radar-map-active .maplibregl-canvas {
-      transition: filter 180ms ease;
-    }
-
     .radar-map-active .map-legend {
       background: rgba(6, 17, 26, 0.88);
       backdrop-filter: blur(8px);
@@ -259,6 +255,17 @@ function bindEvents() {
     }
   });
 
+  const routeSummary = document.querySelector("#route-summary");
+  if (routeSummary) {
+    const observer = new MutationObserver(scheduleMapSync);
+    observer.observe(routeSummary, {
+      attributes: true,
+      attributeFilter: ["class"],
+      childList: true,
+      subtree: true,
+    });
+  }
+
   window.addEventListener("resize", syncControlClasses);
 }
 
@@ -269,7 +276,8 @@ function initializeMapMode() {
     ensureDimLayer();
     applyLayerVisibility();
     reorderOperationalLayers();
-    map.on("idle", scheduleMapSync);
+    window.setTimeout(scheduleMapSync, 250);
+    window.setTimeout(scheduleMapSync, 1_000);
   };
 
   if (map.loaded()) ready();
