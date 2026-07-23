@@ -80,7 +80,7 @@ window.fetch = async function guardedFetch(input, init = {}) {
       headers: requestHeaders(input, init, url),
       signal: controller.signal,
     });
-    recordCompletion(url);
+    if (response.ok) recordCompletion(url);
     return response;
   } catch (error) {
     if (timedOut) {
