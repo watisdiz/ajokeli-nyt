@@ -1,4 +1,4 @@
-import { APP_VERSION } from "./beta.js";
+import { APP_VERSION } from "./beta.js?v=1.6.1";
 
 const nativeFetch = window.fetch.bind(window);
 const guardedHosts = new Map([

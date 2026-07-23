@@ -11,6 +11,7 @@ const [
   forecastBootstrap,
   forecastFeature,
   radarFeature,
+  radarHelp,
   css,
   route,
   traffic,
@@ -25,6 +26,7 @@ const [
   readFile(new URL("../forecast-bootstrap.js", import.meta.url), "utf8"),
   readFile(new URL("../forecast-feature.js", import.meta.url), "utf8"),
   readFile(new URL("../radar-feature.js", import.meta.url), "utf8"),
+  readFile(new URL("../radar-ux-hotfix.js", import.meta.url), "utf8"),
   readFile(new URL("../styles.css", import.meta.url), "utf8"),
   readFile(new URL("../route.js", import.meta.url), "utf8"),
   readFile(new URL("../traffic.js", import.meta.url), "utf8"),
@@ -41,13 +43,15 @@ test("mobile controls and accessible station search remain present", () => {
   assert.match(html, /aria-controls="station-results"/);
 });
 
-test("wrapper preserves the core app and loads route, traffic, forecast, beta and radar features", () => {
-  assert.match(wrapper, /await import\("\.\/app-core\.js"\)/);
-  assert.match(wrapper, /await import\("\.\/route-feature\.js"\)/);
-  assert.match(wrapper, /await import\("\.\/traffic-feature\.js"\)/);
-  assert.match(wrapper, /await import\("\.\/forecast-bootstrap\.js"\)/);
-  assert.match(wrapper, /await import\("\.\/beta-feature\.js"\)/);
-  assert.match(wrapper, /await import\("\.\/radar-feature\.js"\)/);
+test("wrapper cache-busts and loads all application features", () => {
+  assert.match(wrapper, /BUILD_VERSION = "1\.6\.1"/);
+  assert.match(wrapper, /asset\("\.\/app-core\.js"\)/);
+  assert.match(wrapper, /asset\("\.\/route-feature\.js"\)/);
+  assert.match(wrapper, /asset\("\.\/traffic-feature\.js"\)/);
+  assert.match(wrapper, /asset\("\.\/forecast-bootstrap\.js"\)/);
+  assert.match(wrapper, /asset\("\.\/beta-feature\.js"\)/);
+  assert.match(wrapper, /asset\("\.\/radar-feature\.js"\)/);
+  assert.match(wrapper, /asset\("\.\/radar-ux-hotfix\.js"\)/);
   assert.match(wrapper, /window\.__ajokeliMap/);
   assert.match(forecastBootstrap, /await import\("\.\/forecast-feature\.js"\)/);
   assert.match(core, /function setSidebarOpen/);
@@ -90,7 +94,7 @@ test("forecast feature uses current simple forecast-section endpoints and depart
   assert.match(forecast, /FORECAST_CORRIDOR_KM/);
 });
 
-test("radar feature uses FMI Download Service GeoTIFF data and remains optional", () => {
+test("radar feature uses FMI Download Service GeoTIFF data and explains empty views", () => {
   assert.match(radarFeature, /id="radar-toggle-button"/);
   assert.match(radarFeature, /aria-pressed="false"/);
   assert.match(radarFeature, /fmi-radar-layer/);
@@ -100,6 +104,8 @@ test("radar feature uses FMI Download Service GeoTIFF data and remains optional"
   assert.match(radar, /fmi::radar::composite::rr/);
   assert.match(radar, /buildRadarGeoTiffUrl/);
   assert.match(radar, /analyzeRouteRain/);
+  assert.match(radarHelp, /ei pilvipeitettä/i);
+  assert.match(radarHelp, /Näytä koko Suomi/);
 });
 
 test("production map style and responsive bottom sheet remain configured", () => {

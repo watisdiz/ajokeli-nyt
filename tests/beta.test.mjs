@@ -51,19 +51,20 @@ test("closest forecast option is selected when exact time is unavailable", () =>
   );
 });
 
-test("beta runtime files include timeout, summary, privacy and feedback controls", async () => {
-  const [app, guard, feature, privacy, checklist] = await Promise.all([
+test("beta runtime files include cache busting, timeout, summary and privacy controls", async () => {
+  const [app, guard, feature, radarHelp, privacy, checklist] = await Promise.all([
     readFile(new URL("../app.js", import.meta.url), "utf8"),
     readFile(new URL("../request-guard.js", import.meta.url), "utf8"),
     readFile(new URL("../beta-feature.js", import.meta.url), "utf8"),
+    readFile(new URL("../radar-ux-hotfix.js", import.meta.url), "utf8"),
     readFile(new URL("../privacy.html", import.meta.url), "utf8"),
     readFile(new URL("../BETA_TESTING.md", import.meta.url), "utf8"),
   ]);
 
-  assert.equal(APP_VERSION, "1.6.0");
-  assert.match(app, /request-guard\.js/);
-  assert.match(app, /beta-feature\.js/);
-  assert.match(app, /radar-feature\.js/);
+  assert.equal(APP_VERSION, "1.6.1");
+  assert.match(app, /BUILD_VERSION = "1\.6\.1"/);
+  assert.match(app, /asset\("\.\/request-guard\.js"\)/);
+  assert.match(app, /asset\("\.\/radar-ux-hotfix\.js"\)/);
   assert.match(guard, /TimeoutError/);
   assert.match(guard, /AjokeliNyt\/MVP \$\{APP_VERSION\}/);
   assert.match(guard, /opendata\.fmi\.fi/);
@@ -71,6 +72,8 @@ test("beta runtime files include timeout, summary, privacy and feedback controls
   assert.match(feature, /beta-route-overview/);
   assert.match(feature, /route-share-button/);
   assert.match(feature, /load-shared-route-button/);
+  assert.match(radarHelp, /ei pilvipeitettä/i);
+  assert.match(radarHelp, /Näytä koko Suomi/);
   assert.match(privacy, /ei käytä evästeitä, kirjautumista tai analytiikkaa/i);
   assert.match(privacy, /Ilmatieteen laitos/);
   assert.match(checklist, /Vantaa → Tampere/);

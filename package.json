@@ -1,6 +1,6 @@
 {
   "name": "ajokeli-nyt-mvp",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "private": true,
   "type": "module",
   "description": "Suomen tiesääasemien ajantasainen keliriski, reittiyhteenveto, liikennetilanne, tiejaksoennuste ja valinnainen sadetutka.",
