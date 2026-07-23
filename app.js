@@ -1,3 +1,5 @@
+await import("./request-guard.js");
+
 const OriginalMap = window.maplibregl?.Map;
 
 if (OriginalMap) {
@@ -19,3 +21,4 @@ if (OriginalMap) {
 await import("./route-feature.js");
 await import("./traffic-feature.js");
 await import("./forecast-bootstrap.js");
+await import("./beta-feature.js");
