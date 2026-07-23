@@ -5,6 +5,8 @@ const guardedHosts = new Map([
   ["tie.digitraffic.fi", 12_000],
   ["nominatim.openstreetmap.org", 12_000],
   ["router.project-osrm.org", 15_000],
+  ["opendata.fmi.fi", 15_000],
+  ["openwms.fmi.fi", 20_000],
 ]);
 const lastCompleted = {};
 
@@ -34,6 +36,9 @@ function requestCategory(url) {
   if (!url) return "other";
   if (url.hostname === "nominatim.openstreetmap.org") return "place";
   if (url.hostname === "router.project-osrm.org") return "route";
+  if (url.hostname === "opendata.fmi.fi" || url.hostname === "openwms.fmi.fi") {
+    return "radar";
+  }
   if (url.hostname !== "tie.digitraffic.fi") return "other";
   if (url.pathname.includes("/traffic-message/")) return "traffic";
   if (url.pathname.includes("/forecast-sections")) return "forecast";
