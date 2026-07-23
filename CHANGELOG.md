@@ -3,11 +3,11 @@
 Tähän tiedostoon kirjataan Ajokeli nyt -palvelun käyttäjälle ja ylläpidolle merkittävät muutokset.
 Versiot noudattavat semanttista versionumerointia.
 
-## [Unreleased]
+## Unreleased
 
 Seuraava suunniteltu kokonaisuus on reittihaku ja reitin kelitilanteen yhteenveto.
 
-## [1.1.0] – 2026-07-23
+## 1.1.0 – 2026-07-23
 
 ### Lisätty
 
@@ -33,7 +33,7 @@ Seuraava suunniteltu kokonaisuus on reittihaku ja reitin kelitilanteen yhteenvet
 - tiesääaseman tietopaneelin voi sulkea pienillä näytöillä
 - kartan ja datan virheet eivät enää jää ilman selkeää palautetta
 
-## [1.0.1] – 2026-07-23
+## 1.0.1 – 2026-07-23
 
 ### Muutettu
 
@@ -41,7 +41,7 @@ Seuraava suunniteltu kokonaisuus on reittihaku ja reitin kelitilanteen yhteenvet
 - kartan lähde- ja lisenssimerkinnät päivitettiin
 - README päivitettiin kuvaamaan OpenFreeMap- ja OpenStreetMap-riippuvuuksia
 
-## [1.0.0] – 2026-07-23
+## 1.0.0 – 2026-07-23
 
 ### Lisätty
 
@@ -56,8 +56,3 @@ Seuraava suunniteltu kokonaisuus on reittihaku ja reitin kelitilanteen yhteenvet
 - demo-tila ilman Digitraffic-yhteyttä
 - riskilaskennan automaattiset testit
 - GitHub Pages -julkaisu GitHub Actionsilla
-
-[Unreleased]: https://github.com/watisdiz/ajokeli-nyt/compare/v1.1.0...HEAD
-[1.1.0]: https://github.com/watisdiz/ajokeli-nyt/compare/v1.0.1...v1.1.0
-[1.0.1]: https://github.com/watisdiz/ajokeli-nyt/compare/v1.0.0...v1.0.1
-[1.0.0]: https://github.com/watisdiz/ajokeli-nyt/releases/tag/v1.0.0
