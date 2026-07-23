@@ -9,11 +9,15 @@ bindRadarHelp();
 function applyVersionLabels() {
   document.documentElement.dataset.appVersion = APP_VERSION;
   document.querySelectorAll(".beta-badge").forEach((badge) => {
-    badge.textContent = `Beta · v${APP_VERSION}`;
+    const label = `Beta · v${APP_VERSION}`;
+    if (badge.textContent !== label) badge.textContent = label;
   });
 
   const overviewVersion = document.querySelector("#beta-route-overview .muted.small");
-  if (overviewVersion) overviewVersion.textContent = `v${APP_VERSION} beta`;
+  const overviewLabel = `v${APP_VERSION} beta`;
+  if (overviewVersion && overviewVersion.textContent !== overviewLabel) {
+    overviewVersion.textContent = overviewLabel;
+  }
 }
 
 function injectRadarExplanation() {
@@ -28,33 +32,35 @@ function injectRadarExplanation() {
   `;
   details.append(note);
 
-  const style = document.createElement("style");
-  style.dataset.feature = "radar-visibility-hotfix";
-  style.textContent = `
-    .radar-explanation {
-      margin: 8px 0 0;
-      padding-top: 8px;
-      border-top: 1px solid rgba(255, 255, 255, 0.12);
-      color: var(--muted);
-      font-size: 0.64rem;
-      line-height: 1.4;
-    }
+  if (!document.querySelector('style[data-feature="radar-visibility-hotfix"]')) {
+    const style = document.createElement("style");
+    style.dataset.feature = "radar-visibility-hotfix";
+    style.textContent = `
+      .radar-explanation {
+        margin: 8px 0 0;
+        padding-top: 8px;
+        border-top: 1px solid rgba(255, 255, 255, 0.12);
+        color: var(--muted);
+        font-size: 0.64rem;
+        line-height: 1.4;
+      }
 
-    .radar-explanation strong {
-      color: var(--text);
-    }
+      .radar-explanation strong {
+        color: var(--text);
+      }
 
-    .radar-map-actions {
-      margin-top: 7px;
-      display: flex;
-      gap: 8px;
-    }
+      .radar-map-actions {
+        margin-top: 7px;
+        display: flex;
+        gap: 8px;
+      }
 
-    .radar-map-actions .text-button {
-      font-size: 0.64rem;
-    }
-  `;
-  document.head.append(style);
+      .radar-map-actions .text-button {
+        font-size: 0.64rem;
+      }
+    `;
+    document.head.append(style);
+  }
 
   const actions = document.createElement("div");
   actions.className = "radar-map-actions";
@@ -93,10 +99,11 @@ function updateRadarStatus(detail = {}) {
   const routeLevel = detail.analysis?.level;
   if (!routeLevel || !lastObservationLabel) return;
 
-  status.textContent =
+  const label =
     routeLevel.key === "none"
       ? `Ei sadetta reitillä · ${lastObservationLabel}`
       : `${routeLevel.label} reitillä · ${lastObservationLabel}`;
+  if (status.textContent !== label) status.textContent = label;
 }
 
 function bindRadarHelp() {
