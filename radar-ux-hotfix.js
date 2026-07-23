@@ -92,8 +92,9 @@ function updateRadarStatus(detail = {}) {
   const status = document.querySelector("#radar-status-text");
   if (!status || !detail.enabled || detail.loading || detail.error) return;
 
-  if (!lastObservationLabel && /\d{1,2}[.:]\d{2}/.test(status.textContent)) {
-    lastObservationLabel = status.textContent.trim();
+  const currentLabel = status.textContent.trim();
+  if (/\d{1,2}[.:]\d{2}/.test(currentLabel) && !currentLabel.includes("reitillä")) {
+    lastObservationLabel = currentLabel;
   }
 
   const routeLevel = detail.analysis?.level;
