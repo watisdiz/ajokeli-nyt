@@ -25,3 +25,11 @@ await import(asset("./route-feature.js"));
 await import(asset("./traffic-feature.js"));
 await import(asset("./forecast-bootstrap.js"));
 await import(asset("./beta-feature.js"));
+
+document.documentElement.dataset.appVersion = BUILD_VERSION;
+document.querySelectorAll(".beta-badge").forEach((badge) => {
+  badge.textContent = `Beta · v${BUILD_VERSION}`;
+});
+
+const overviewVersion = document.querySelector("#beta-route-overview .muted.small");
+if (overviewVersion) overviewVersion.textContent = `v${BUILD_VERSION} beta`;
