@@ -4,6 +4,9 @@ import {
   parseSharedRoute,
   pickClosestDeparture,
 } from "./beta.js";
+import { escapeHtml } from "./dom-utils.js";
+import { formatRouteDistance, formatRouteDuration } from "./route.js";
+import { EVENTS } from "./events.js";
 
 const routePanel = document.querySelector(".route-panel");
 const routeSummary = document.querySelector("#route-summary");
@@ -20,182 +23,19 @@ const state = {
   renderScheduled: false,
   restoring: false,
   sharedRoute: parseSharedRoute(window.location.search),
+  route: null,
+  routeAnalysis: null,
+  trafficStatusText: "Ladataan…",
+  forecastStatusText: "Ladataan…",
+  observationsText: "",
 };
 
-injectStyles();
 injectBetaBadge();
 injectFooterLinks();
 injectShareControls();
 injectSharedRoutePrompt();
 bindBetaEvents();
 scheduleOverviewRender();
-
-function injectStyles() {
-  const style = document.createElement("style");
-  style.dataset.feature = "beta-readiness";
-  style.textContent = `
-    .beta-badge {
-      display: inline-flex;
-      align-items: center;
-      margin-top: 8px;
-      padding: 4px 8px;
-      border: 1px solid rgba(98, 168, 255, 0.38);
-      border-radius: 999px;
-      color: #b9d9ff;
-      background: rgba(98, 168, 255, 0.1);
-      font-size: 0.68rem;
-      font-weight: 800;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-
-    .shared-route-prompt {
-      margin: 0 0 13px;
-      padding: 10px;
-      border: 1px solid rgba(98, 168, 255, 0.34);
-      border-radius: 10px;
-      background: rgba(98, 168, 255, 0.08);
-    }
-
-    .shared-route-prompt strong,
-    .shared-route-prompt span {
-      display: block;
-    }
-
-    .shared-route-prompt span {
-      margin-top: 4px;
-      color: var(--muted);
-      font-size: 0.72rem;
-      line-height: 1.4;
-    }
-
-    .shared-route-prompt .button {
-      width: 100%;
-      margin-top: 9px;
-    }
-
-    .beta-overview {
-      margin-top: 13px;
-      padding: 12px;
-      border: 1px solid rgba(98, 168, 255, 0.24);
-      border-radius: 12px;
-      background:
-        radial-gradient(circle at top right, rgba(98, 168, 255, 0.12), transparent 52%),
-        rgba(0, 0, 0, 0.11);
-    }
-
-    .beta-overview-heading {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .beta-overview-heading h3 {
-      margin: 0;
-      font-size: 0.86rem;
-    }
-
-    .beta-route-meta,
-    .beta-updated {
-      margin: 4px 0 0;
-      color: var(--muted);
-      font-size: 0.68rem;
-      line-height: 1.4;
-    }
-
-    .beta-status-grid {
-      margin-top: 10px;
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 7px;
-    }
-
-    .beta-status-card {
-      min-width: 0;
-      padding: 9px 7px;
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      background: rgba(255, 255, 255, 0.025);
-    }
-
-    .beta-status-card span,
-    .beta-status-card strong {
-      display: block;
-    }
-
-    .beta-status-card span {
-      color: var(--muted);
-      font-size: 0.62rem;
-    }
-
-    .beta-status-card strong {
-      margin-top: 4px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      font-size: 0.76rem;
-      line-height: 1.3;
-    }
-
-    .beta-details-toggle {
-      width: 100%;
-      min-height: 42px;
-      margin-top: 10px;
-    }
-
-    #route-summary.beta-details-collapsed > .route-summary-section,
-    #route-summary.beta-details-collapsed > .route-disclaimer {
-      display: none;
-    }
-
-    .beta-footer-links {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 10px 16px;
-      font-size: 0.72rem;
-    }
-
-    .beta-footer-links a {
-      color: var(--accent);
-    }
-
-    .beta-network-note {
-      position: fixed;
-      right: 14px;
-      bottom: 14px;
-      z-index: 30;
-      max-width: min(360px, calc(100vw - 28px));
-      padding: 10px 12px;
-      border: 1px solid rgba(245, 200, 76, 0.4);
-      border-radius: 10px;
-      color: #ffe39a;
-      background: rgba(11, 18, 32, 0.96);
-      box-shadow: var(--shadow);
-      font-size: 0.72rem;
-      line-height: 1.4;
-    }
-
-    @media (max-width: 540px) {
-      .beta-status-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .beta-status-card {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-      }
-
-      .beta-status-card strong {
-        margin-top: 0;
-        text-align: right;
-      }
-    }
-  `;
-  document.head.append(style);
-}
 
 function injectBetaBadge() {
   const headingContainer = document.querySelector(".topbar > div:first-child");
@@ -285,63 +125,33 @@ function bindBetaEvents() {
     scheduleOverviewRender();
   });
 
-  routeSummary?.addEventListener("change", (event) => {
-    if (event.target.id === "forecast-departure-select") {
-      scheduleOverviewRender();
-    }
+  window.addEventListener(EVENTS.ROUTE_CHANGED, (event) => {
+    state.route = event.detail.route;
+    state.routeAnalysis = event.detail.analysis;
+    scheduleOverviewRender();
   });
 
-  if (routeSummary) {
-    const observer = new MutationObserver((mutations) => {
-      const onlyBetaChanges = mutations.every((mutation) => {
-        const target =
-          mutation.target?.nodeType === Node.ELEMENT_NODE
-            ? mutation.target
-            : mutation.target?.parentElement;
-        if (target?.closest?.("#beta-route-overview")) return true;
+  window.addEventListener(EVENTS.TRAFFIC_CHANGED, (event) => {
+    state.trafficStatusText = trafficStatusText(event.detail);
+    scheduleOverviewRender();
+  });
 
-        const changed = [
-          ...(mutation.addedNodes ?? []),
-          ...(mutation.removedNodes ?? []),
-        ].filter((node) => node.nodeType === Node.ELEMENT_NODE);
+  window.addEventListener(EVENTS.FORECAST_CHANGED, (event) => {
+    state.forecastStatusText = forecastStatusText(event.detail);
+    scheduleOverviewRender();
+  });
 
-        return (
-          changed.length > 0 &&
-          changed.every(
-            (node) =>
-              node.id === "beta-route-overview" ||
-              node.id === "beta-details-toggle" ||
-              node.closest?.("#beta-route-overview"),
-          )
-        );
-      });
+  window.addEventListener(EVENTS.OBSERVATIONS_CHANGED, (event) => {
+    state.observationsText = event.detail.timestampText ?? "";
+    scheduleOverviewRender();
+  });
 
-      if (!onlyBetaChanges) scheduleOverviewRender();
-    });
-
-    observer.observe(routeSummary, {
-      attributes: true,
-      attributeFilter: ["class"],
-      childList: true,
-      subtree: true,
-    });
-  }
-
-  const timestamp = document.querySelector("#data-timestamp");
-  if (timestamp) {
-    new MutationObserver(scheduleOverviewRender).observe(timestamp, {
-      childList: true,
-      characterData: true,
-      subtree: true,
-    });
-  }
-
-  window.addEventListener("ajokeli:request-timeout", (event) => {
+  window.addEventListener(EVENTS.REQUEST_TIMEOUT, (event) => {
     showNetworkNote(
       `Yhteys palveluun ${event.detail?.host || ""} aikakatkaistiin. Toimintoa voi yrittää uudelleen.`,
     );
   });
-  window.addEventListener("ajokeli:request-complete", scheduleOverviewRender);
+  window.addEventListener(EVENTS.REQUEST_COMPLETE, scheduleOverviewRender);
 }
 
 function scheduleOverviewRender() {
@@ -356,9 +166,8 @@ function scheduleOverviewRender() {
 function renderOverview() {
   if (!routeSummary) return;
 
-  const routeHeader = routeSummary.querySelector(".route-summary-header");
   const shareButton = document.querySelector("#route-share-button");
-  const routeActive = Boolean(routeHeader) && !routeSummary.classList.contains("hidden");
+  const routeActive = Boolean(state.route);
 
   shareButton?.classList.toggle("hidden", !routeActive);
 
@@ -369,6 +178,9 @@ function renderOverview() {
     return;
   }
 
+  const routeHeader = routeSummary.querySelector(".route-summary-header");
+  if (!routeHeader) return;
+
   let overview = routeSummary.querySelector("#beta-route-overview");
   if (!overview) {
     overview = document.createElement("section");
@@ -377,10 +189,10 @@ function renderOverview() {
     routeHeader.insertAdjacentElement("afterend", overview);
   }
 
-  const observed = cleanText(routeSummary.querySelector(".route-worst")) || "Ei arviota";
-  const traffic = trafficStatus();
-  const forecast = forecastStatus();
-  const routeMeta = cleanText(routeSummary.querySelector(".route-summary-meta"));
+  const observed = state.routeAnalysis?.worstLevel?.label ?? "Ei asemia";
+  const traffic = state.trafficStatusText;
+  const forecast = state.forecastStatusText;
+  const routeMeta = `${formatRouteDistance(state.route.distance)} · noin ${formatRouteDuration(state.route.duration)}`;
   const updated = updatedStatus();
 
   overview.innerHTML = `
@@ -414,11 +226,10 @@ function renderOverview() {
 }
 
 function updatedStatus() {
-  const observation = cleanText(document.querySelector("#data-timestamp"));
   const completed = window.__ajokeliNetworkGuard?.lastCompleted ?? {};
   const parts = [];
 
-  if (observation) parts.push(observation);
+  if (state.observationsText) parts.push(state.observationsText);
   if (completed.traffic) parts.push(`Liikenne haettu ${formatClock(completed.traffic)}`);
   if (completed.forecast) parts.push(`Ennuste haettu ${formatClock(completed.forecast)}`);
 
@@ -444,22 +255,18 @@ function statusCard(label, value) {
   `;
 }
 
-function trafficStatus() {
-  const section = document.querySelector("#traffic-summary-section");
-  if (!section) return "Ladataan…";
-
-  const cards = [...section.querySelectorAll(".traffic-count-card")]
-    .map((card) => cleanText(card))
-    .filter(Boolean);
-
-  if (cards.length) return cards.slice(0, 2).join(" · ");
-  return cleanText(section.querySelector(".traffic-summary-badge")) || "Ei saatavilla";
+function trafficStatusText(detail) {
+  if (detail.status === "ready") {
+    return `${detail.analysis.counts.roadwork} tietyötä · ${detail.analysis.counts.traffic} häiriötä`;
+  }
+  if (detail.status === "loading") return "Ladataan…";
+  return "Ei saatavilla";
 }
 
-function forecastStatus() {
-  const section = document.querySelector("#forecast-summary-section");
-  if (!section) return "Ladataan…";
-  return cleanText(section.querySelector(".forecast-summary-badge")) || "Ei saatavilla";
+function forecastStatusText(detail) {
+  if (detail.status === "ready") return detail.label;
+  if (detail.status === "loading") return "Ladataan…";
+  return "Ei saatavilla";
 }
 
 async function shareRoute() {
@@ -499,14 +306,9 @@ async function restoreSharedRoute() {
     await searchAndSelect("to", state.sharedRoute.to);
 
     setSharedStatus(status, "Lasketaan reittiä…");
+    const routeReady = waitForRouteChange(22_000);
     submitButton?.click();
-
-    await waitFor(
-      () =>
-        !routeSummary?.classList.contains("hidden") &&
-        routeSummary?.querySelector(".route-summary-header"),
-      22_000,
-    );
+    await routeReady;
 
     if (state.sharedRoute.departure) {
       setSharedStatus(status, "Asetetaan jaettu ennusteaika…");
@@ -565,6 +367,24 @@ async function searchAndSelect(kind, label) {
   );
 }
 
+function waitForRouteChange(timeoutMs) {
+  return new Promise((resolve, reject) => {
+    const timeout = window.setTimeout(() => {
+      window.removeEventListener(EVENTS.ROUTE_CHANGED, handleChange);
+      reject(new Error("toiminto aikakatkaistiin"));
+    }, timeoutMs);
+
+    function handleChange(event) {
+      if (!event.detail.route) return;
+      window.clearTimeout(timeout);
+      window.removeEventListener(EVENTS.ROUTE_CHANGED, handleChange);
+      resolve();
+    }
+
+    window.addEventListener(EVENTS.ROUTE_CHANGED, handleChange);
+  });
+}
+
 function waitFor(predicate, timeoutMs, returnValue = false) {
   return new Promise((resolve, reject) => {
     const startedAt = Date.now();
@@ -611,17 +431,4 @@ function showNetworkNote(message) {
   document.body.append(note);
 
   window.setTimeout(() => note.remove(), 6_000);
-}
-
-function cleanText(element) {
-  return String(element?.textContent ?? "").trim().replace(/\s+/g, " ");
-}
-
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
 }

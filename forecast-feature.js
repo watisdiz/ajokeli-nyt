@@ -7,12 +7,12 @@ import {
   normalizeForecastSections,
   routeBoundingBox,
 } from "./forecast.js";
+import { escapeHtml } from "./dom-utils.js";
+import { digitrafficJson } from "./api-client.js";
+import { EVENTS, emit } from "./events.js";
 
-const DIGITRAFFIC_API = "https://tie.digitraffic.fi";
-const USER_HEADER = "AjokeliNyt/MVP 1.4";
 const METADATA_PATH = "/api/weather/v1/forecast-sections-simple";
 const FORECASTS_PATH = "/api/weather/v1/forecast-sections-simple/forecasts";
-const ROUTE_SOURCE_ID = "route-feature-line";
 const ROUTE_LAYER_ID = "route-feature-route";
 const FORECAST_SOURCE_ID = "route-weather-forecast-sections";
 const FORECAST_CASING_LAYER_ID = "route-weather-forecast-casing";
@@ -24,285 +24,20 @@ const state = {
   map: window.__ajokeliMap ?? null,
   routeSummary: document.querySelector("#route-summary"),
   routePanel: document.querySelector(".route-panel"),
+  route: null,
   matchedSections: [],
   departureOptions: [],
   comparison: null,
   selectedTime: null,
-  lastRouteSignature: null,
   loading: false,
-  syncTimer: null,
   popup: null,
   cache: new Map(),
 };
 
-injectStyles();
 const elements = injectStatusElement();
 enhanceLabels();
 bindEvents();
 initializeMap();
-
-function injectStyles() {
-  const style = document.createElement("style");
-  style.dataset.feature = "route-weather-forecast";
-  style.textContent = `
-    .forecast-data-status {
-      margin: 10px 0 0;
-      padding: 9px 10px;
-      border: 1px solid rgba(98, 168, 255, 0.32);
-      border-radius: 10px;
-      color: #b9d9ff;
-      background: rgba(98, 168, 255, 0.08);
-      line-height: 1.45;
-    }
-
-    .forecast-summary-section {
-      padding-top: 13px;
-      border-top: 1px solid var(--border);
-    }
-
-    .forecast-summary-heading,
-    .forecast-control-row,
-    .forecast-counts,
-    .forecast-item-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .forecast-summary-heading {
-      align-items: flex-start;
-    }
-
-    .forecast-summary-heading h3 {
-      margin-bottom: 3px;
-    }
-
-    .forecast-summary-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 8px;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.035);
-      font-size: 0.7rem;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
-    .forecast-control-row {
-      margin-top: 10px;
-      align-items: flex-end;
-    }
-
-    .forecast-control-row label {
-      flex: 1 1 auto;
-      font-size: 0.76rem;
-      font-weight: 750;
-    }
-
-    .forecast-select {
-      width: 100%;
-      min-height: 42px;
-      margin-top: 5px;
-      padding: 8px 10px;
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      color: var(--text);
-      background: var(--bg);
-      font: inherit;
-    }
-
-    .forecast-comparison {
-      margin-top: 10px;
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 7px;
-    }
-
-    .forecast-option {
-      min-width: 0;
-      padding: 8px;
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      color: var(--text);
-      background: rgba(0, 0, 0, 0.1);
-      text-align: left;
-    }
-
-    .forecast-option:hover,
-    .forecast-option:focus-visible,
-    .forecast-option.is-selected {
-      border-color: rgba(98, 168, 255, 0.65);
-      background: rgba(98, 168, 255, 0.1);
-    }
-
-    .forecast-option strong,
-    .forecast-option span {
-      display: block;
-    }
-
-    .forecast-option strong {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      font-size: 0.72rem;
-    }
-
-    .forecast-option span {
-      margin-top: 3px;
-      color: var(--muted);
-      font-size: 0.65rem;
-    }
-
-    .forecast-recommendation {
-      margin: 10px 0 0;
-      padding: 9px 10px;
-      border-left: 3px solid var(--accent);
-      border-radius: 0 8px 8px 0;
-      color: #d7e9ff;
-      background: rgba(98, 168, 255, 0.07);
-      font-size: 0.72rem;
-      line-height: 1.45;
-    }
-
-    .forecast-counts {
-      margin: 10px 0;
-      align-items: stretch;
-    }
-
-    .forecast-count-card {
-      flex: 1 1 0;
-      min-width: 0;
-      padding: 7px 4px;
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      background: rgba(0, 0, 0, 0.1);
-      text-align: center;
-    }
-
-    .forecast-count-card strong,
-    .forecast-count-card span {
-      display: block;
-    }
-
-    .forecast-count-card strong {
-      font-size: 0.95rem;
-    }
-
-    .forecast-count-card span {
-      margin-top: 2px;
-      color: var(--muted);
-      font-size: 0.6rem;
-    }
-
-    .forecast-highlight-list {
-      overflow: hidden;
-      border: 1px solid var(--border);
-      border-radius: 11px;
-      background: rgba(0, 0, 0, 0.1);
-    }
-
-    .forecast-highlight-button {
-      width: 100%;
-      min-height: 0;
-      padding: 10px;
-      display: block;
-      border: 0;
-      border-bottom: 1px solid var(--border);
-      color: var(--text);
-      background: transparent;
-      text-align: left;
-    }
-
-    .forecast-highlight-button:last-child {
-      border-bottom: 0;
-    }
-
-    .forecast-highlight-button:hover,
-    .forecast-highlight-button:focus-visible {
-      background: var(--surface-2);
-    }
-
-    .forecast-item-header strong {
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      font-size: 0.78rem;
-    }
-
-    .forecast-item-level {
-      flex: 0 0 auto;
-      font-size: 0.65rem;
-      font-weight: 800;
-    }
-
-    .forecast-item-description,
-    .forecast-item-meta,
-    .forecast-summary-note {
-      display: block;
-      color: var(--muted);
-      line-height: 1.4;
-    }
-
-    .forecast-item-description {
-      margin-top: 5px;
-      font-size: 0.7rem;
-    }
-
-    .forecast-item-meta {
-      margin-top: 4px;
-      font-size: 0.65rem;
-    }
-
-    .forecast-summary-note {
-      margin: 9px 0 0;
-      font-size: 0.68rem;
-    }
-
-    .forecast-map-legend {
-      width: 18px;
-      height: 5px;
-      display: inline-block;
-      border-radius: 999px;
-      background: linear-gradient(90deg, #35c789, #ff8a4c, #ff4d6d);
-      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.82);
-    }
-
-    .forecast-popup {
-      min-width: min(270px, 70vw);
-      max-width: 340px;
-    }
-
-    .forecast-popup h3 {
-      margin-bottom: 5px;
-      font-size: 0.95rem;
-    }
-
-    .forecast-popup p {
-      margin: 5px 0 0;
-      font-size: 0.76rem;
-      line-height: 1.4;
-    }
-
-    .forecast-popup-meta {
-      color: var(--muted);
-    }
-
-    @media (max-width: 420px) {
-      .forecast-comparison {
-        grid-template-columns: 1fr;
-      }
-
-      .forecast-counts {
-        gap: 5px;
-      }
-    }
-  `;
-  document.head.append(style);
-}
 
 function injectStatusElement() {
   if (!state.routePanel || !state.routeSummary) {
@@ -400,42 +135,6 @@ function emptyFeatureCollection() {
   return { type: "FeatureCollection", features: [] };
 }
 
-function routeData() {
-  const source = state.map?.getSource(ROUTE_SOURCE_ID);
-  if (!source) return null;
-
-  const serialized = typeof source.serialize === "function" ? source.serialize() : null;
-  const data = serialized?.data ?? source._data ?? null;
-  if (!data || typeof data === "string") return null;
-  return data;
-}
-
-function routeCoordinates() {
-  const data = routeData();
-  const geometry =
-    data?.type === "FeatureCollection"
-      ? data.features?.[0]?.geometry
-      : data?.type === "Feature"
-        ? data.geometry
-        : data;
-
-  return geometry?.type === "LineString" ? geometry.coordinates : null;
-}
-
-function routeSignature(coordinates) {
-  if (!coordinates?.length) return null;
-  const first = coordinates[0];
-  const middle = coordinates[Math.floor(coordinates.length / 2)];
-  const last = coordinates[coordinates.length - 1];
-
-  return [
-    coordinates.length,
-    first.map((value) => Number(value).toFixed(4)).join(","),
-    middle.map((value) => Number(value).toFixed(4)).join(","),
-    last.map((value) => Number(value).toFixed(4)).join(","),
-  ].join(":");
-}
-
 function bboxParameters(bbox) {
   return new URLSearchParams({
     xMin: bbox.xMin.toFixed(4),
@@ -451,29 +150,6 @@ function bboxKey(bbox) {
     .join(":");
 }
 
-async function fetchDigitraffic(path) {
-  const url = `${DIGITRAFFIC_API}${path}`;
-  let response;
-
-  try {
-    response = await fetch(url, {
-      headers: {
-        Accept: "application/json",
-        "Digitraffic-User": USER_HEADER,
-      },
-      cache: "no-store",
-    });
-  } catch (error) {
-    response = await fetch(url, {
-      headers: { Accept: "application/json" },
-      cache: "no-store",
-    });
-  }
-
-  if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
-  return response.json();
-}
-
 async function loadForecastData(coordinates, force = false) {
   const bbox = routeBoundingBox(coordinates);
   if (!bbox) throw new Error("Reitin rajausta ei voitu muodostaa");
@@ -486,8 +162,8 @@ async function loadForecastData(coordinates, force = false) {
 
   const parameters = bboxParameters(bbox);
   const [metadata, forecasts] = await Promise.all([
-    fetchDigitraffic(`${METADATA_PATH}?${parameters}`),
-    fetchDigitraffic(`${FORECASTS_PATH}?${parameters}`),
+    digitrafficJson(`${METADATA_PATH}?${parameters}`),
+    digitrafficJson(`${FORECASTS_PATH}?${parameters}`),
   ]);
 
   const sections = normalizeForecastSections(metadata, forecasts);
@@ -495,34 +171,23 @@ async function loadForecastData(coordinates, force = false) {
   return sections;
 }
 
-function scheduleSynchronization() {
-  window.clearTimeout(state.syncTimer);
-  state.syncTimer = window.setTimeout(() => synchronizeWithRoute(), 100);
-}
+function handleRouteChanged(route) {
+  state.route = route;
 
-async function synchronizeWithRoute(force = false) {
-  const coordinates = routeCoordinates();
-  const signature = routeSignature(coordinates);
-  const existingSection = document.querySelector("#forecast-summary-section");
-
-  if (!coordinates || state.routeSummary.classList.contains("hidden")) {
+  if (!route) {
     resetForecast();
     return;
   }
 
-  if (
-    !force &&
-    signature === state.lastRouteSignature &&
-    state.matchedSections.length &&
-    state.departureOptions.length
-  ) {
-    if (!existingSection) renderForecastSummary();
-    return;
-  }
+  synchronizeWithRoute();
+}
+
+async function synchronizeWithRoute(force = false) {
+  if (!state.route) return;
+  const coordinates = state.route.geometry.coordinates;
 
   if (state.loading) return;
   state.loading = true;
-  state.lastRouteSignature = signature;
   renderLoadingSummary();
 
   if (demoMode) {
@@ -612,6 +277,7 @@ function renderLoadingSummary() {
       <span class="forecast-summary-badge">Ladataan…</span>
     </div>
   `;
+  emit(EVENTS.FORECAST_CHANGED, { status: "loading" });
 }
 
 function renderUnavailableSummary(message) {
@@ -632,6 +298,7 @@ function renderUnavailableSummary(message) {
       <span class="forecast-summary-badge">Ei saatavilla</span>
     </div>
   `;
+  emit(EVENTS.FORECAST_CHANGED, { status: "unavailable" });
 }
 
 function recommendationText(selected, best) {
@@ -750,6 +417,7 @@ function renderForecastSummary() {
       Aineisto päivittyy Digitrafficissa noin viiden minuutin välein.
     </p>
   `;
+  emit(EVENTS.FORECAST_CHANGED, { status: "ready", label: worst?.label ?? "Ei arviota" });
 }
 
 function forecastCountCard(value, label) {
@@ -925,12 +593,12 @@ function resetForecast() {
   state.departureOptions = [];
   state.comparison = null;
   state.selectedTime = null;
-  state.lastRouteSignature = null;
   state.popup?.remove();
   state.popup = null;
   document.querySelector("#forecast-summary-section")?.remove();
   hideStatus();
   renderMapForecast();
+  emit(EVENTS.FORECAST_CHANGED, { status: "unavailable" });
 }
 
 function showStatus(message, html = false) {
@@ -950,21 +618,9 @@ function formatNumber(value) {
   }).format(value);
 }
 
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
 function bindEvents() {
-  const observer = new MutationObserver(scheduleSynchronization);
-  observer.observe(state.routeSummary, {
-    attributes: true,
-    attributeFilter: ["class"],
-    childList: true,
+  window.addEventListener(EVENTS.ROUTE_CHANGED, (event) => {
+    handleRouteChanged(event.detail.route);
   });
 
   state.routeSummary.addEventListener("change", (event) => {

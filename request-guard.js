@@ -1,4 +1,5 @@
 import { APP_VERSION } from "./beta.js?v=1.7.1";
+import { EVENTS, emit } from "./events.js?v=1.7.1";
 
 const nativeFetch = window.fetch.bind(window);
 const guardedHosts = new Map([
@@ -46,11 +47,7 @@ function requestCategory(url) {
 function recordCompletion(url) {
   const category = requestCategory(url);
   lastCompleted[category] = Date.now();
-  window.dispatchEvent(
-    new CustomEvent("ajokeli:request-complete", {
-      detail: { category, completedAt: lastCompleted[category] },
-    }),
-  );
+  emit(EVENTS.REQUEST_COMPLETE, { category, completedAt: lastCompleted[category] });
 }
 
 window.fetch = async function guardedFetch(input, init = {}) {
@@ -88,11 +85,7 @@ window.fetch = async function guardedFetch(input, init = {}) {
         `Pyyntö aikakatkaistiin ${Math.round(timeoutMs / 1000)} sekunnin jälkeen.`,
       );
       timeoutError.name = "TimeoutError";
-      window.dispatchEvent(
-        new CustomEvent("ajokeli:request-timeout", {
-          detail: { host: url?.hostname ?? "", timeoutMs },
-        }),
-      );
+      emit(EVENTS.REQUEST_TIMEOUT, { host: url?.hostname ?? "", timeoutMs });
       throw timeoutError;
     }
     throw error;

@@ -1,3 +1,9 @@
+// These are static source-text checks (regex against file contents), not
+// behavior tests — they don't load a DOM, run any code, or catch runtime
+// regressions. They exist to pin a few structural facts (which endpoints,
+// which element ids, which CSS breakpoints) that are easy to remove by
+// accident during a refactor. For actual behavior coverage, see the
+// dom-harness-based tests (route-flow, station-selection).
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
@@ -65,7 +71,6 @@ test("route search injects explicit place search and routing controls", () => {
 test("traffic feature uses current Digitraffic simple JSON endpoints", () => {
   assert.match(trafficFeature, /\/api\/traffic-message\/v2\/roadworks/);
   assert.match(trafficFeature, /\/api\/traffic-message\/v2\/traffic-announcements/);
-  assert.match(trafficFeature, /includeAreaGeometry=true/);
   assert.match(trafficFeature, /Promise\.allSettled/);
   assert.match(trafficFeature, /traffic-summary-section/);
   assert.match(trafficFeature, /traffic-incidents-line/);

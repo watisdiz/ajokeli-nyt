@@ -6,9 +6,10 @@ import {
   relativeAge,
 } from "./risk.js";
 import { demoCameras, demoMeasurements, demoMetadata } from "./demo-data.js";
+import { escapeHtml, bindImageFallback } from "./dom-utils.js";
+import { digitrafficJson } from "./api-client.js";
+import { EVENTS, emit } from "./events.js";
 
-const API_BASE = "https://tie.digitraffic.fi";
-const USER_HEADER = "AjokeliNyt/MVP 1.1";
 const REFRESH_SECONDS = 60;
 const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
 const MAP_SOURCE_ID = "weather-stations";
@@ -155,33 +156,11 @@ function emptyFeatureCollection() {
   return { type: "FeatureCollection", features: [] };
 }
 
-async function fetchJson(path) {
-  const url = `${API_BASE}${path}`;
-  const options = {
-    headers: {
-      Accept: "application/json",
-      "Digitraffic-User": USER_HEADER,
-    },
-    cache: "no-store",
-  };
-
-  let response;
-  try {
-    response = await fetch(url, options);
-  } catch (error) {
-    // Some browsers or embedded previews may reject the custom header preflight.
-    response = await fetch(url, { headers: { Accept: "application/json" }, cache: "no-store" });
-  }
-
-  if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
-  return response.json();
-}
-
 async function loadLiveData() {
   const [metadata, measurements, cameras] = await Promise.all([
-    fetchJson("/api/weather/v1/stations"),
-    fetchJson("/api/weather/v1/stations/data"),
-    fetchJson("/api/weathercam/v1/stations").catch((error) => {
+    digitrafficJson("/api/weather/v1/stations"),
+    digitrafficJson("/api/weather/v1/stations/data"),
+    digitrafficJson("/api/weathercam/v1/stations").catch((error) => {
       console.warn("Kelikameroiden haku epäonnistui:", error);
       return emptyFeatureCollection();
     }),
@@ -222,6 +201,7 @@ async function refreshData() {
     elements.dataTimestamp.textContent = latest
       ? `Digitrafficin aineisto päivitetty ${formatDateTime(latest)}.`
       : "Aineiston päivitysaikaa ei saatu.";
+    emit(EVENTS.OBSERVATIONS_CHANGED, { timestampText: elements.dataTimestamp.textContent });
 
     setStatus("live", state.demoMode ? "Demoaineisto" : "Ajantasainen data");
     elements.modeIndicator.textContent = state.demoMode
@@ -494,6 +474,7 @@ function renderStationDetails(stationId) {
       </p>
     </section>
   `;
+  bindImageFallback(elements.detailsPanel);
 }
 
 function closeDetails() {
@@ -553,7 +534,6 @@ function renderCamera(camera) {
           src="${imageUrl}"
           alt="Kelikamerakuva: ${escapeHtml(camera.name)}"
           loading="lazy"
-          onerror="this.closest('.camera-card').style.display='none'"
         />
         <div class="camera-card-body">
           <strong>${escapeHtml(camera.name)}</strong>
@@ -590,15 +570,6 @@ function hideError(kind = null) {
   state.errorKind = null;
   elements.mapError.classList.add("hidden");
   elements.mapError.innerHTML = "";
-}
-
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
 }
 
 function setSidebarOpen(open) {

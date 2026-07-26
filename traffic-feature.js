@@ -4,14 +4,13 @@ import {
   formatIncidentTimeWindow,
   normalizeTrafficCollection,
 } from "./traffic.js";
+import { escapeHtml } from "./dom-utils.js";
+import { digitrafficJson } from "./api-client.js";
+import { EVENTS, emit } from "./events.js";
 
-const DIGITRAFFIC_API = "https://tie.digitraffic.fi";
-const USER_HEADER = "AjokeliNyt/MVP 1.3";
-const ROADWORKS_PATH = "/api/traffic-message/v2/roadworks?includeAreaGeometry=true";
-const ANNOUNCEMENTS_PATH =
-  "/api/traffic-message/v2/traffic-announcements?includeAreaGeometry=true";
+const ROADWORKS_PATH = "/api/traffic-message/v2/roadworks";
+const ANNOUNCEMENTS_PATH = "/api/traffic-message/v2/traffic-announcements";
 
-const ROUTE_SOURCE_ID = "route-feature-line";
 const TRAFFIC_SOURCE_ID = "traffic-incidents";
 const TRAFFIC_FILL_LAYER_ID = "traffic-incidents-fill";
 const TRAFFIC_LINE_LAYER_ID = "traffic-incidents-line";
@@ -20,229 +19,19 @@ const CACHE_MS = 2 * 60_000;
 
 const state = {
   map: window.__ajokeliMap ?? null,
+  route: null,
   incidents: [],
   routeAnalysis: null,
   dataLoadedAt: 0,
   loadPromise: null,
   unavailableSources: [],
   popup: null,
-  lastRouteSignature: null,
-  syncTimer: null,
 };
 
-injectStyles();
 const elements = injectStatusElement();
 enhanceLabels();
 bindEvents();
 initializeMap();
-
-function injectStyles() {
-  const style = document.createElement("style");
-  style.dataset.feature = "traffic-incidents";
-  style.textContent = `
-    .traffic-data-status {
-      margin: 10px 0 0;
-      padding: 9px 10px;
-      border: 1px solid rgba(245, 200, 76, 0.32);
-      border-radius: 10px;
-      color: #ffe39a;
-      background: rgba(245, 200, 76, 0.08);
-      line-height: 1.45;
-    }
-
-    .traffic-summary-section {
-      padding-top: 13px;
-      border-top: 1px solid var(--border);
-    }
-
-    .traffic-summary-heading,
-    .traffic-summary-counts,
-    .traffic-item-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .traffic-summary-heading h3 {
-      margin-bottom: 0;
-    }
-
-    .traffic-summary-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 8px;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.035);
-      font-size: 0.7rem;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
-    .traffic-summary-counts {
-      margin: 9px 0;
-      align-items: stretch;
-    }
-
-    .traffic-count-card {
-      flex: 1 1 0;
-      min-width: 0;
-      padding: 8px;
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      background: rgba(0, 0, 0, 0.1);
-      text-align: center;
-    }
-
-    .traffic-count-card strong,
-    .traffic-count-card span {
-      display: block;
-    }
-
-    .traffic-count-card strong {
-      font-size: 1rem;
-    }
-
-    .traffic-count-card span {
-      margin-top: 2px;
-      color: var(--muted);
-      font-size: 0.65rem;
-    }
-
-    .traffic-incident-list {
-      overflow: hidden;
-      border: 1px solid var(--border);
-      border-radius: 11px;
-      background: rgba(0, 0, 0, 0.1);
-    }
-
-    .traffic-incident-button {
-      width: 100%;
-      min-height: 0;
-      padding: 10px;
-      display: block;
-      border: 0;
-      border-bottom: 1px solid var(--border);
-      color: var(--text);
-      background: transparent;
-      text-align: left;
-    }
-
-    .traffic-incident-button:last-child {
-      border-bottom: 0;
-    }
-
-    .traffic-incident-button:hover,
-    .traffic-incident-button:focus-visible {
-      background: var(--surface-2);
-    }
-
-    .traffic-item-header strong {
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      font-size: 0.79rem;
-    }
-
-    .traffic-kind {
-      flex: 0 0 auto;
-      padding: 3px 6px;
-      border-radius: 999px;
-      font-size: 0.62rem;
-      font-weight: 800;
-    }
-
-    .traffic-kind-roadwork {
-      color: #ffd9a8;
-      background: rgba(255, 138, 76, 0.16);
-    }
-
-    .traffic-kind-traffic {
-      color: #ffb7c6;
-      background: rgba(255, 77, 109, 0.16);
-    }
-
-    .traffic-item-description,
-    .traffic-item-meta,
-    .traffic-summary-note {
-      display: block;
-      color: var(--muted);
-      line-height: 1.4;
-    }
-
-    .traffic-item-description {
-      margin-top: 5px;
-      font-size: 0.7rem;
-    }
-
-    .traffic-item-meta {
-      margin-top: 4px;
-      font-size: 0.65rem;
-    }
-
-    .traffic-summary-note {
-      margin: 9px 0 0;
-      font-size: 0.68rem;
-    }
-
-    .traffic-map-roadwork,
-    .traffic-map-announcement {
-      width: 17px;
-      height: 5px;
-      display: inline-block;
-      border-radius: 999px;
-    }
-
-    .traffic-map-roadwork {
-      background: #ff8a4c;
-    }
-
-    .traffic-map-announcement {
-      background: #ff4d6d;
-    }
-
-    .traffic-popup {
-      min-width: min(280px, 70vw);
-      max-width: 340px;
-    }
-
-    .traffic-popup h3 {
-      margin-bottom: 5px;
-      font-size: 0.95rem;
-    }
-
-    .traffic-popup p {
-      margin: 5px 0 0;
-      font-size: 0.76rem;
-      line-height: 1.4;
-    }
-
-    .traffic-popup-meta {
-      color: var(--muted);
-    }
-
-    .traffic-popup-severity {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-weight: 800;
-    }
-
-    @media (max-width: 420px) {
-      .traffic-summary-counts {
-        gap: 6px;
-      }
-
-      .traffic-count-card {
-        padding-inline: 5px;
-      }
-    }
-  `;
-  document.head.append(style);
-}
 
 function injectStatusElement() {
   const routePanel = document.querySelector(".route-panel");
@@ -371,29 +160,6 @@ function emptyFeatureCollection() {
   return { type: "FeatureCollection", features: [] };
 }
 
-async function fetchDigitraffic(path) {
-  const url = `${DIGITRAFFIC_API}${path}`;
-  let response;
-
-  try {
-    response = await fetch(url, {
-      headers: {
-        Accept: "application/json",
-        "Digitraffic-User": USER_HEADER,
-      },
-      cache: "no-store",
-    });
-  } catch (error) {
-    response = await fetch(url, {
-      headers: { Accept: "application/json" },
-      cache: "no-store",
-    });
-  }
-
-  if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
-  return response.json();
-}
-
 async function loadTrafficData(force = false) {
   if (state.loadPromise) return state.loadPromise;
   if (!force && state.incidents.length && Date.now() - state.dataLoadedAt < CACHE_MS) {
@@ -402,8 +168,8 @@ async function loadTrafficData(force = false) {
 
   state.loadPromise = (async () => {
     const [roadworks, announcements] = await Promise.allSettled([
-      fetchDigitraffic(ROADWORKS_PATH),
-      fetchDigitraffic(ANNOUNCEMENTS_PATH),
+      digitrafficJson(ROADWORKS_PATH),
+      digitrafficJson(ANNOUNCEMENTS_PATH),
     ]);
 
     const unavailable = [];
@@ -436,7 +202,7 @@ async function loadTrafficData(force = false) {
     if (unavailable.length) showDataWarning(unavailable);
     else hideDataWarning();
 
-    synchronizeWithRoute(true);
+    if (state.route) synchronizeWithRoute();
     return incidents;
   })().finally(() => {
     state.loadPromise = null;
@@ -458,76 +224,36 @@ function hideDataWarning() {
   elements.status.classList.add("hidden");
 }
 
-function routeData() {
-  const source = state.map?.getSource(ROUTE_SOURCE_ID);
-  if (!source) return null;
+function handleRouteChanged(route) {
+  state.route = route;
 
-  const serialized = typeof source.serialize === "function" ? source.serialize() : null;
-  const data = serialized?.data ?? source._data ?? null;
-
-  if (!data || typeof data === "string") return null;
-  return data;
-}
-
-function routeCoordinates() {
-  const data = routeData();
-  const geometry =
-    data?.type === "FeatureCollection"
-      ? data.features?.[0]?.geometry
-      : data?.type === "Feature"
-        ? data.geometry
-        : data;
-
-  return geometry?.type === "LineString" ? geometry.coordinates : null;
-}
-
-function routeSignature(coordinates) {
-  if (!coordinates?.length) return null;
-  const first = coordinates[0];
-  const last = coordinates[coordinates.length - 1];
-  return [
-    coordinates.length,
-    Number(first[0]).toFixed(5),
-    Number(first[1]).toFixed(5),
-    Number(last[0]).toFixed(5),
-    Number(last[1]).toFixed(5),
-  ].join(":");
-}
-
-function scheduleSynchronization() {
-  window.clearTimeout(state.syncTimer);
-  state.syncTimer = window.setTimeout(() => synchronizeWithRoute(), 80);
-}
-
-function synchronizeWithRoute(force = false) {
-  const coordinates = routeCoordinates();
-  const signature = routeSignature(coordinates);
-  const existingSection = document.querySelector("#traffic-summary-section");
-
-  if (!coordinates || elements.routeSummary.classList.contains("hidden")) {
+  if (!route) {
     state.routeAnalysis = null;
-    state.lastRouteSignature = null;
-    existingSection?.remove();
+    document.querySelector("#traffic-summary-section")?.remove();
     renderMapIncidents();
+    emit(EVENTS.TRAFFIC_CHANGED, { status: "unavailable" });
     return;
   }
 
+  synchronizeWithRoute();
+}
+
+function synchronizeWithRoute() {
   if (!state.incidents.length) {
     if (!state.loadPromise) loadTrafficData().catch(() => undefined);
     renderLoadingSummary();
+    emit(EVENTS.TRAFFIC_CHANGED, { status: "loading" });
     return;
   }
 
-  if (!force && signature === state.lastRouteSignature && existingSection) return;
-
-  state.lastRouteSignature = signature;
   state.routeAnalysis = analyzeRouteTraffic(
     state.incidents,
-    coordinates,
+    state.route.geometry.coordinates,
     TRAFFIC_CORRIDOR_KM,
   );
   renderTrafficSummary();
   renderMapIncidents();
+  emit(EVENTS.TRAFFIC_CHANGED, { status: "ready", analysis: state.routeAnalysis });
 }
 
 function renderLoadingSummary() {
@@ -768,11 +494,8 @@ function formatDistance(distanceKm) {
 }
 
 function bindEvents() {
-  const observer = new MutationObserver(scheduleSynchronization);
-  observer.observe(elements.routeSummary, {
-    attributes: true,
-    attributeFilter: ["class"],
-    childList: true,
+  window.addEventListener(EVENTS.ROUTE_CHANGED, (event) => {
+    handleRouteChanged(event.detail.route);
   });
 
   elements.routeSummary.addEventListener("click", (event) => {
@@ -790,13 +513,4 @@ function bindEvents() {
   });
 
   window.addEventListener("resize", () => state.map?.resize());
-}
-
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
 }

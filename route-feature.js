@@ -11,17 +11,18 @@ import {
   formatRouteDistance,
   formatRouteDuration,
 } from "./route.js";
+import { escapeHtml, bindImageFallback } from "./dom-utils.js";
+import { digitrafficJson } from "./api-client.js";
+import { EVENTS, emit } from "./events.js";
 
 const NOMINATIM_API = "https://nominatim.openstreetmap.org/search";
 const OSRM_API = "https://router.project-osrm.org/route/v1/driving";
-const DIGITRAFFIC_API = "https://tie.digitraffic.fi";
 const ROUTE_SOURCE_ID = "route-feature-line";
 const ROUTE_CASING_LAYER_ID = "route-feature-casing";
 const ROUTE_LAYER_ID = "route-feature-route";
 const ROUTE_STATIONS_SOURCE_ID = "route-feature-stations";
 const ROUTE_STATIONS_LAYER_ID = "route-feature-station-points";
 const CORE_STATIONS_LAYER_ID = "weather-station-points";
-const USER_HEADER = "AjokeliNyt/MVP 1.2";
 const demoMode = new URLSearchParams(window.location.search).get("demo") === "1";
 
 const state = {
@@ -40,274 +41,10 @@ const geocodeCache = new Map();
 let geocodeQueue = Promise.resolve();
 let lastGeocodeAt = 0;
 
-injectRouteStyles();
 const elements = injectRoutePanel();
 enhanceExistingLabels();
 bindRouteEvents();
 initializeMapFeature();
-
-function injectRouteStyles() {
-  const style = document.createElement("style");
-  style.dataset.feature = "route-search";
-  style.textContent = `
-    .route-panel {
-      background:
-        radial-gradient(circle at top right, rgba(37, 99, 235, 0.16), transparent 43%),
-        rgba(255, 255, 255, 0.025);
-    }
-
-    .route-heading-row,
-    .route-summary-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .route-heading-row h2 {
-      margin-bottom: 0;
-    }
-
-    .route-beta {
-      padding: 3px 7px;
-      border: 1px solid rgba(98, 168, 255, 0.35);
-      border-radius: 999px;
-      color: var(--accent);
-      background: rgba(98, 168, 255, 0.09);
-      font-size: 0.68rem;
-      font-weight: 800;
-      text-transform: uppercase;
-    }
-
-    .route-field {
-      position: relative;
-      margin-top: 13px;
-    }
-
-    .route-input-row {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 7px;
-    }
-
-    .route-input-row .button {
-      min-width: 58px;
-      padding-inline: 10px;
-    }
-
-    .route-selected {
-      border-color: rgba(53, 199, 137, 0.72) !important;
-      box-shadow: 0 0 0 3px rgba(53, 199, 137, 0.1) !important;
-    }
-
-    .route-swap {
-      display: block;
-      margin: 10px auto -3px;
-    }
-
-    .route-actions {
-      margin-top: 14px;
-      display: grid;
-      gap: 8px;
-    }
-
-    .route-primary {
-      background: #2563eb;
-      border: 1px solid rgba(255, 255, 255, 0.16);
-    }
-
-    .route-status {
-      margin: 10px 0 0;
-      line-height: 1.45;
-    }
-
-    .route-status.route-error {
-      color: #ff9aaf;
-    }
-
-    .route-status.route-success {
-      color: #7ce2b6;
-    }
-
-    .route-place-results {
-      margin-top: 8px;
-      max-height: 250px;
-      overflow-y: auto;
-      border: 1px solid var(--border);
-      border-radius: 11px;
-      background: var(--bg);
-      box-shadow: var(--shadow);
-    }
-
-    .route-place-result,
-    .route-station-button,
-    .route-highlight-button {
-      width: 100%;
-      min-height: 48px;
-      padding: 9px 10px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      border: 0;
-      border-bottom: 1px solid var(--border);
-      color: var(--text);
-      background: transparent;
-      text-align: left;
-    }
-
-    .route-place-result:last-child,
-    .route-station-button:last-child,
-    .route-highlight-button:last-child {
-      border-bottom: 0;
-    }
-
-    .route-place-result:hover,
-    .route-place-result:focus-visible,
-    .route-station-button:hover,
-    .route-station-button:focus-visible,
-    .route-highlight-button:hover,
-    .route-highlight-button:focus-visible {
-      background: var(--surface-2);
-    }
-
-    .route-place-result strong,
-    .route-place-result span {
-      display: block;
-    }
-
-    .route-place-result span {
-      margin-top: 3px;
-      color: var(--muted);
-      font-size: 0.7rem;
-      line-height: 1.35;
-    }
-
-    .route-no-results {
-      margin: 0;
-      padding: 12px;
-      color: var(--muted);
-      font-size: 0.8rem;
-      line-height: 1.45;
-    }
-
-    .route-summary {
-      margin-top: 14px;
-      padding-top: 14px;
-      border-top: 1px solid var(--border);
-    }
-
-    .route-summary-header h3 {
-      margin-bottom: 4px;
-      font-size: 1.05rem;
-    }
-
-    .route-summary-meta {
-      margin-bottom: 0;
-      color: var(--muted);
-      font-size: 0.78rem;
-    }
-
-    .route-worst {
-      padding: 7px 9px;
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.035);
-      font-size: 0.72rem;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
-    .route-summary-section {
-      margin-top: 14px;
-    }
-
-    .route-summary-section h3 {
-      margin-bottom: 8px;
-    }
-
-    .route-highlight-list,
-    .route-station-list {
-      overflow: hidden;
-      border: 1px solid var(--border);
-      border-radius: 11px;
-      background: rgba(0, 0, 0, 0.1);
-    }
-
-    .route-highlight-button {
-      display: block;
-      min-height: 0;
-    }
-
-    .route-highlight-button strong,
-    .route-highlight-button span {
-      display: block;
-    }
-
-    .route-highlight-button span {
-      margin-top: 3px;
-      color: var(--muted);
-      font-size: 0.72rem;
-      line-height: 1.35;
-    }
-
-    .route-station-main {
-      min-width: 0;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .route-station-main span {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .route-station-meta {
-      color: var(--muted);
-      font-size: 0.7rem;
-      white-space: nowrap;
-    }
-
-    .route-disclaimer {
-      margin: 12px 0 0;
-      color: var(--muted);
-      font-size: 0.72rem;
-      line-height: 1.45;
-    }
-
-    .route-map-legend {
-      width: 18px;
-      height: 4px;
-      display: inline-block;
-      border-radius: 999px;
-      background: #2563eb;
-      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.82);
-    }
-
-    @media (min-width: 1181px) {
-      .main-layout {
-        grid-template-columns: 310px minmax(0, 1fr) 340px;
-      }
-    }
-
-    @media (max-width: 420px) {
-      .route-input-row {
-        grid-template-columns: minmax(0, 1fr) 54px;
-      }
-
-      .route-input-row .button {
-        min-width: 54px;
-        padding-inline: 7px;
-      }
-    }
-  `;
-  document.head.append(style);
-}
 
 function injectRoutePanel() {
   const sidebar = document.querySelector("#filter-sidebar");
@@ -789,29 +526,6 @@ async function fetchRoute(from, to) {
   };
 }
 
-async function digitrafficJson(path) {
-  const url = `${DIGITRAFFIC_API}${path}`;
-  let response;
-
-  try {
-    response = await fetch(url, {
-      headers: {
-        Accept: "application/json",
-        "Digitraffic-User": USER_HEADER,
-      },
-      cache: "no-store",
-    });
-  } catch (error) {
-    response = await fetch(url, {
-      headers: { Accept: "application/json" },
-      cache: "no-store",
-    });
-  }
-
-  if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
-  return response.json();
-}
-
 async function loadObservations() {
   const age = Date.now() - state.observationsLoadedAt;
   if (state.observations && age < 60_000) return state.observations;
@@ -883,6 +597,7 @@ async function buildRoute(event) {
 
     renderMapRoute(true);
     renderSummary();
+    emit(EVENTS.ROUTE_CHANGED, { route: state.route, analysis: state.analysis });
     elements.clearButton.classList.remove("hidden");
     setStatus(
       `Reitti valmis. ${state.analysis.nearbyStations.length} tiesääasemaa enintään ${ROUTE_CORRIDOR_KM} km reitiltä.`,
@@ -1102,6 +817,7 @@ function clearRoute() {
   setStatus("Reitti poistettu. Valitut paikat säilyvät uutta hakua varten.");
 
   renderMapRoute(false);
+  emit(EVENTS.ROUTE_CHANGED, { route: null, analysis: null });
   state.map?.easeTo({ center: [25.2, 64.4], zoom: 4.35, duration: 650 });
 }
 
@@ -1179,6 +895,7 @@ function showStation(stationId, flyTo = false) {
       </p>
     </section>
   `;
+  bindImageFallback(elements.detailsPanel);
 }
 
 function nearestCamera(coordinates) {
@@ -1217,7 +934,6 @@ function renderCamera(camera) {
           src="${imageUrl}"
           alt="Kelikamerakuva: ${escapeHtml(camera.name)}"
           loading="lazy"
-          onerror="this.closest('.camera-card').style.display='none'"
         />
         <div class="camera-card-body">
           <strong>${escapeHtml(camera.name)}</strong>
@@ -1234,15 +950,6 @@ function metricRow(label, value) {
 
 function formatMetric(value, unit) {
   return Number.isFinite(Number(value)) ? `${formatNumber(value)} ${unit}` : "–";
-}
-
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
 }
 
 function bindRouteEvents() {
