@@ -1348,19 +1348,6 @@ h3 {
   font-size: 0.78rem;
 }
 
-.route-worst {
-  padding: 7px 9px;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--surface-raised);
-  font-size: 0.72rem;
-  font-weight: 800;
-  white-space: nowrap;
-}
-
 .route-summary-section {
   margin-top: 14px;
   animation: fade-in-up 220ms ease;

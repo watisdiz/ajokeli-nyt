@@ -334,6 +334,8 @@ function renderForecastSummary() {
   const worst = analysis.worstLevel;
   const highlights = analysis.highlights;
   const best = state.comparison?.best;
+  const topHighlight = highlights[0];
+  const bannerKey = worst?.key ?? "stale";
 
   section.innerHTML = `
     <div class="forecast-summary-heading">
@@ -343,10 +345,21 @@ function renderForecastSummary() {
           Tiejaksokohtainen ennuste valitulle lähtöajalle
         </span>
       </div>
-      <span class="forecast-summary-badge">
-        <i class="risk-dot risk-${worst?.key ?? "stale"}" aria-hidden="true"></i>
-        ${escapeHtml(worst?.label ?? "Ei arviota")}
-      </span>
+    </div>
+
+    <div class="risk-banner risk-banner-${bannerKey}">
+      <div class="risk-banner-level">
+        <i class="risk-dot risk-${bannerKey}" aria-hidden="true"></i>
+        <strong>${escapeHtml(worst?.label ?? "Ei arviota")}</strong>
+      </div>
+      ${
+        topHighlight
+          ? `<p class="risk-banner-reason">
+               ${escapeHtml(topHighlight.section.description)}:
+               ${escapeHtml(topHighlight.reasons.join(", ") || topHighlight.level.label)}
+             </p>`
+          : ""
+      }
     </div>
 
     <div class="forecast-control-row">

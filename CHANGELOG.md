@@ -20,6 +20,7 @@ Versiot noudattavat semanttista versionumerointia.
 - kaikki JS:ään injektoitu `<style>`-sisältö siirretty `styles.css`:ään; token-järjestelmä laajennettu spacing- ja typografia-skaalalla
 - MutationObserver-pohjainen ominaisuuksien välinen synkronointi (route-, traffic-, forecast- ja beta-feature) korvattu selkeällä tapahtumaväylällä; poistettu MapLibre-lähteen sisäinen kaivelu ja `forecast-bootstrap.js`:n MutationObserver-monkeypatch
 - tiesääaseman tietopaneeli uudistettu: keliriski on nyt värillinen banneri jossa tärkein syy näkyy heti, mittaukset jaettu pisteytykseen vaikuttaviin ja pelkästään informatiivisiin
+- sama riskibanneri-hierarkia (väritetty banneri + tärkein syy heti näkyvissä) vietiin myös reittiyhteenvetoon, liikennetilanteeseen ja keliennusteeseen; pienet pillimäiset tilamerkinnät korvattiin täysleveillä bannereilla
 - `tests/ui-smoke.test.mjs` nimetty uudelleen `tests/source-shape.test.mjs`:ksi rehellisemmin kuvaamaan mitä se testaa (lähdekoodin merkkijonoja, ei käytöstä)
 
 ### Korjattu

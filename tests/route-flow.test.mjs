@@ -111,7 +111,7 @@ test("building a route propagates through the event bus into the beta overview c
 
     await waitFor(() => !document.querySelector("#route-summary").classList.contains("hidden"));
 
-    const routeWorst = document.querySelector(".route-worst");
+    const routeWorst = document.querySelector("#route-summary .risk-banner-level strong");
     assert.equal(routeWorst.textContent.trim(), "Normaali");
 
     await waitFor(() => document.querySelector("#traffic-summary-section"));

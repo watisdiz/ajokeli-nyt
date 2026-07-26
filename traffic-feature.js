@@ -16,6 +16,9 @@ const TRAFFIC_FILL_LAYER_ID = "traffic-incidents-fill";
 const TRAFFIC_LINE_LAYER_ID = "traffic-incidents-line";
 const TRAFFIC_POINT_LAYER_ID = "traffic-incidents-points";
 const CACHE_MS = 2 * 60_000;
+// traffic.js severities (low/medium/high) use the same colors as these risk
+// levels, so the shared risk-banner/risk-dot styling can be reused as-is.
+const SEVERITY_RISK_KEY = { low: "attention", medium: "difficult", high: "extreme" };
 
 const state = {
   map: window.__ajokeliMap ?? null,
@@ -287,6 +290,10 @@ function renderTrafficSummary() {
   const visibleItems = analysis.matched.slice(0, 8);
   const remaining = Math.max(0, analysis.matched.length - visibleItems.length);
   const worst = analysis.worstSeverity;
+  const bannerKey = worst ? SEVERITY_RISK_KEY[worst.key] : "stale";
+  const topIncident = worst
+    ? analysis.matched.find((item) => item.incident.severity.key === worst.key)?.incident
+    : null;
   const severeText = analysis.counts.high
     ? `${analysis.counts.high} vakavaa`
     : "Ei vakavia";
@@ -294,10 +301,14 @@ function renderTrafficSummary() {
   section.innerHTML = `
     <div class="traffic-summary-heading">
       <h3>Liikennetilanne</h3>
-      <span class="traffic-summary-badge">
-        <span aria-hidden="true">●</span>
-        ${escapeHtml(worst?.label ?? "Ei kohteita")}
-      </span>
+    </div>
+
+    <div class="risk-banner risk-banner-${bannerKey}">
+      <div class="risk-banner-level">
+        <i class="risk-dot risk-${bannerKey}" aria-hidden="true"></i>
+        <strong>${escapeHtml(worst?.label ?? "Ei kohteita")}</strong>
+      </div>
+      ${topIncident ? `<p class="risk-banner-reason">${escapeHtml(topIncident.title)}</p>` : ""}
     </div>
 
     <div class="traffic-summary-counts">

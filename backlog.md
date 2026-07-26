@@ -6,11 +6,6 @@ tästä kun on aika jatkaa.
 
 ## Design-järjestelmän viimeistely
 
-- **Vie riskitaso-bannerin hierarkiamalli muihinkin paneeleihin.**
-  Design-vaihe B validoi mallin (banneri + tärkein syy heti näkyvissä,
-  mittaukset jaettu vaikuttaviin/muihin) vain tiesääaseman tietopaneelissa,
-  suunnitellusti. Reittiyhteenveto, liikennetilanne- ja
-  ennustepaneelit voisivat hyötyä samasta kohtelusta.
 - **Yhtenäistä "recessed"-korttityyli tokeniksi.** `--surface-raised`
   kattaa vain valkoisella sävytetyt "kohotetut" pinnat. Musta-sävytetyt
   "upotetut" kortit (`.traffic-count-card`, `.forecast-count-card`,

@@ -709,6 +709,8 @@ function renderSummary() {
   }
 
   const worst = state.analysis.worstLevel;
+  const topHighlight = state.analysis.highlights[0];
+  const bannerKey = worst?.key ?? "stale";
   const stationRows = state.analysis.nearbyStations.slice(0, 10);
   const remaining = Math.max(0, state.analysis.nearbyStations.length - stationRows.length);
 
@@ -721,13 +723,19 @@ function renderSummary() {
           ${formatRouteDistance(state.route.distance)} · noin ${formatRouteDuration(state.route.duration)}
         </p>
       </div>
+    </div>
+
+    <div class="risk-banner risk-banner-${bannerKey}">
+      <div class="risk-banner-level">
+        <i class="risk-dot risk-${bannerKey}" aria-hidden="true"></i>
+        <strong>${escapeHtml(worst?.label ?? "Ei asemia")}</strong>
+      </div>
       ${
-        worst
-          ? `<span class="route-worst">
-               <i class="risk-dot risk-${worst.key}" aria-hidden="true"></i>
-               ${escapeHtml(worst.label)}
-             </span>`
-          : `<span class="route-worst">Ei asemia</span>`
+        topHighlight
+          ? `<p class="risk-banner-reason">
+               ${escapeHtml(topHighlight.stationName)}: ${escapeHtml(topHighlight.reason)}
+             </p>`
+          : ""
       }
     </div>
 
