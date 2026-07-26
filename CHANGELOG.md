@@ -21,6 +21,8 @@ Versiot noudattavat semanttista versionumerointia.
 - MutationObserver-pohjainen ominaisuuksien välinen synkronointi (route-, traffic-, forecast- ja beta-feature) korvattu selkeällä tapahtumaväylällä; poistettu MapLibre-lähteen sisäinen kaivelu ja `forecast-bootstrap.js`:n MutationObserver-monkeypatch
 - tiesääaseman tietopaneeli uudistettu: keliriski on nyt värillinen banneri jossa tärkein syy näkyy heti, mittaukset jaettu pisteytykseen vaikuttaviin ja pelkästään informatiivisiin
 - sama riskibanneri-hierarkia (väritetty banneri + tärkein syy heti näkyvissä) vietiin myös reittiyhteenvetoon, liikennetilanteeseen ja keliennusteeseen; pienet pillimäiset tilamerkinnät korvattiin täysleveillä bannereilla
+- uusi `--surface-recessed`-token yhtenäistää "upotettujen" korttien (tietyö-/häiriölaskurit, asema- ja tiejaksolistat) taustan, joka oli aiemmin kiinteä `rgba(0, 0, 0, 0.1)` useassa paikassa
+- kiinteät `rgba(98, 168, 255, X)` -aksenttivärit (fokusrengas, reittipaneelin korostukset, beta-yhteenveto) korvattu `color-mix(in srgb, var(--accent) X%, transparent)`:lla, joten ne seuraavat nyt vaaleaa/tummaa teemaa oikein
 - `tests/ui-smoke.test.mjs` nimetty uudelleen `tests/source-shape.test.mjs`:ksi rehellisemmin kuvaamaan mitä se testaa (lähdekoodin merkkijonoja, ei käytöstä)
 
 ### Korjattu
