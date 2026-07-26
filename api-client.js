@@ -14,7 +14,7 @@ export async function digitrafficJson(path) {
       },
       cache: "no-store",
     });
-  } catch (error) {
+  } catch {
     // Some browsers or embedded previews may reject the custom header preflight.
     response = await fetch(url, { headers: { Accept: "application/json" }, cache: "no-store" });
   }

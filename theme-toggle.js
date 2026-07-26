@@ -13,7 +13,7 @@ function applyTheme(theme) {
   root.dataset.theme = theme;
   try {
     window.localStorage.setItem(STORAGE_KEY, theme);
-  } catch (error) {
+  } catch {
     // Storage disabled — theme still applies for this page load, just
     // won't persist across reloads.
   }

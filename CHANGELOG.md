@@ -14,6 +14,7 @@ Versiot noudattavat semanttista versionumerointia.
 - SRI-tarkisteet ja Content-Security-Policy sivun `<head>`:iin
 - jsdom-pohjainen testiharnessi (`tests/dom-harness.mjs`) ja kaksi käyttäytymistestiä: reitin rakentaminen päästä päähän ja tiesääaseman haku/valinta
 - sisällön ilmestymisanimaatio, pehmeät hover/focus-siirtymät ja latautumispulssi tilamerkinnöille
+- ESLint (`eslint.config.js`) ja Prettier (`.prettierrc.json`) sekä `npm run lint` / `format` / `format:check` -skriptit
 
 ### Muutettu
 
@@ -31,6 +32,8 @@ Versiot noudattavat semanttista versionumerointia.
 - route-feature.js:n asematiedoista puuttunut "Tuulen keskinopeus" -rivi (jäänyt jälkeen app-core.js:n vastaavasta, korjautui deduplikoinnin sivutuotteena)
 - GitHub Actions -workflow ei koskaan asentanut riippuvuuksia ennen testien ajoa
 - useita väriyhdistelmiä jotka olisivat rikkoutuneet vaaleassa teemassa (yläpalkin ja alatunnisteen kiinteä tumma tausta, sinisen painikkeen teksti, useiden pastellivärimerkintöjen kontrasti)
+- reittipaneelin lähtö-/määränpääkentiltä puuttunut `role="combobox"` — `aria-expanded` ei ole sallittu pelkällä oletusroolilla varustetulla hakukentällä (axe-core-tarkistuksen löytämä virhe)
+- kartan selitelaatikolta (`.map-legend`) puuttunut `role="group"` — `aria-label` ei välity ruudunlukijalle roolittomalla `<div>`:llä (axe-core-tarkistuksen löytämä virhe)
 
 ### Poistettu
 

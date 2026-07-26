@@ -69,6 +69,8 @@ function injectRoutePanel() {
             type="search"
             autocomplete="off"
             placeholder="Esim. Vantaa"
+            role="combobox"
+            aria-autocomplete="list"
             aria-controls="route-from-results"
             aria-expanded="false"
           />
@@ -102,6 +104,8 @@ function injectRoutePanel() {
             type="search"
             autocomplete="off"
             placeholder="Esim. Tampere"
+            role="combobox"
+            aria-autocomplete="list"
             aria-controls="route-to-results"
             aria-expanded="false"
           />
