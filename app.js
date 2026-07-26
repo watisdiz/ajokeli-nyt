@@ -25,6 +25,7 @@ await import(asset("./route-feature.js"));
 await import(asset("./traffic-feature.js"));
 await import(asset("./forecast-bootstrap.js"));
 await import(asset("./beta-feature.js"));
+await import(asset("./theme-toggle.js"));
 
 document.documentElement.dataset.appVersion = BUILD_VERSION;
 document.querySelectorAll(".beta-badge").forEach((badge) => {

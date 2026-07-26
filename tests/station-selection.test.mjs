@@ -36,8 +36,9 @@ test("searching for a station and selecting it renders its details", async () =>
     const heading = document.querySelector("#details-panel h2");
     assert.equal(heading.textContent, "Tie 1 Espoo, Sepänkylä");
 
-    const badge = document.querySelector("#details-panel .risk-badge");
-    assert.match(badge.textContent, /Normaali/);
+    const banner = document.querySelector("#details-panel .risk-banner");
+    assert.ok(banner.classList.contains("risk-banner-normal"));
+    assert.match(banner.querySelector(".risk-banner-level strong").textContent, /Normaali/);
 
     const metricRows = [...document.querySelectorAll("#details-panel .metric-row")].map(
       (row) => row.textContent.replace(/\s+/g, " ").trim(),

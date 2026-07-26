@@ -274,7 +274,7 @@ function renderLoadingSummary() {
         <h3>Keliennuste ja lähtöaika</h3>
         <span class="forecast-summary-note">Ladataan tiejaksoennusteita…</span>
       </div>
-      <span class="forecast-summary-badge">Ladataan…</span>
+      <span class="forecast-summary-badge is-loading">Ladataan…</span>
     </div>
   `;
   emit(EVENTS.FORECAST_CHANGED, { status: "loading" });

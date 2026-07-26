@@ -18,6 +18,10 @@
         frame-ancestors 'self';
       "
     />
+    <!-- Applies a stored theme choice before first paint, to avoid a flash
+         of the wrong theme. Must be a plain blocking script (not inline)
+         to satisfy the CSP above without unsafe-inline. -->
+    <script src="./theme-init.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"

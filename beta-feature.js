@@ -247,10 +247,11 @@ function formatClock(timestamp) {
 }
 
 function statusCard(label, value) {
+  const loadingClass = value === "Ladataan…" ? "is-loading" : "";
   return `
     <div class="beta-status-card">
       <span>${escapeHtml(label)}</span>
-      <strong>${escapeHtml(value)}</strong>
+      <strong class="${loadingClass}">${escapeHtml(value)}</strong>
     </div>
   `;
 }

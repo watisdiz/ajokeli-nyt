@@ -267,7 +267,7 @@ function renderLoadingSummary() {
   section.innerHTML = `
     <div class="traffic-summary-heading">
       <h3>Liikennetilanne</h3>
-      <span class="traffic-summary-badge">Ladataan…</span>
+      <span class="traffic-summary-badge is-loading">Ladataan…</span>
     </div>
   `;
 }

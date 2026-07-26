@@ -1,9 +1,4 @@
-import {
-  buildStationView,
-  formatNumber,
-  haversineKm,
-  relativeAge,
-} from "./risk.js";
+import { buildStationView, formatNumber } from "./risk.js";
 import { demoCameras, demoMeasurements, demoMetadata } from "./demo-data.js";
 import {
   ROUTE_CORRIDOR_KM,
@@ -14,6 +9,7 @@ import {
 import { escapeHtml, bindImageFallback } from "./dom-utils.js";
 import { digitrafficJson } from "./api-client.js";
 import { EVENTS, emit } from "./events.js";
+import { nearestCamera, renderStationDetailHtml } from "./station-detail.js";
 
 const NOMINATIM_API = "https://nominatim.openstreetmap.org/search";
 const OSRM_API = "https://router.project-osrm.org/route/v1/driving";
@@ -837,119 +833,14 @@ function showStation(stationId, flyTo = false) {
     });
   }
 
-  const camera = nearestCamera(station.coordinates);
-  const metrics = station.metrics;
-  const score = station.score === null ? "Ei laskettu" : `${station.score} pistettä`;
+  const camera = nearestCamera(station.coordinates, state.observations?.cameras ?? []);
 
   elements.detailsPanel.classList.add("has-content");
-  elements.detailsPanel.innerHTML = `
-    <div class="detail-header">
-      <div>
-        <p class="eyebrow">Reitin tiesääasema</p>
-        <h2>${escapeHtml(station.name)}</h2>
-        <p class="muted small">Havainto ${relativeAge(station.latestTime)}</p>
-      </div>
-      <div class="detail-header-actions">
-        <span class="risk-badge">
-          <i class="risk-dot risk-${station.level.key}" aria-hidden="true"></i>
-          ${escapeHtml(station.level.label)}
-        </span>
-        <button
-          id="close-details-button"
-          class="icon-button detail-close-button"
-          type="button"
-          aria-label="Sulje aseman tiedot"
-        >
-          ×
-        </button>
-      </div>
-    </div>
-
-    <section class="detail-section">
-      <div class="panel-heading-row">
-        <h3>Luokitus</h3>
-        <strong>${score}</strong>
-      </div>
-      <ul class="reason-list">
-        ${station.reasons.map((reason) => `<li>${escapeHtml(reason)}</li>`).join("")}
-      </ul>
-    </section>
-
-    <section class="detail-section">
-      <h3>Mittaukset</h3>
-      <div class="metrics">
-        ${metricRow("Tienpinta", metrics.surface || "–")}
-        ${metricRow("Tienpinnan lämpötila", formatMetric(metrics.roadTemperature, "°C"))}
-        ${metricRow("Ilman lämpötila", formatMetric(metrics.airTemperature, "°C"))}
-        ${metricRow("Sade", metrics.precipitation || "–")}
-        ${metricRow("Näkyvyys", formatMetric(metrics.visibility, "km"))}
-        ${metricRow("Tuulen maksimi", formatMetric(metrics.maxWind, "m/s"))}
-      </div>
-    </section>
-
-    ${camera ? renderCamera(camera) : ""}
-
-    <section class="detail-section">
-      <p class="muted small">
-        Luokitus kuvaa yksittäisen aseman lähiympäristöä eikä koko reitin olosuhteita.
-      </p>
-    </section>
-  `;
+  elements.detailsPanel.innerHTML = renderStationDetailHtml(station, camera, {
+    eyebrow: "Reitin tiesääasema",
+    disclaimer: "Luokitus kuvaa yksittäisen aseman lähiympäristöä eikä koko reitin olosuhteita.",
+  });
   bindImageFallback(elements.detailsPanel);
-}
-
-function nearestCamera(coordinates) {
-  let nearest = null;
-
-  for (const feature of state.observations?.cameras ?? []) {
-    const distanceKm = haversineKm(coordinates, feature.geometry.coordinates);
-    if (distanceKm > 25) continue;
-
-    const preset = feature.properties.presets.find((item) => item.inCollection);
-    if (!preset) continue;
-
-    if (!nearest || distanceKm < nearest.distanceKm) {
-      nearest = {
-        name: feature.properties.name || feature.properties.id,
-        presetId: preset.id,
-        distanceKm,
-      };
-    }
-  }
-
-  return nearest;
-}
-
-function renderCamera(camera) {
-  const imageUrl = `https://weathercam.digitraffic.fi/${encodeURIComponent(camera.presetId)}.jpg?thumbnail=true`;
-
-  return `
-    <section class="detail-section">
-      <div class="camera-heading">
-        <h3>Lähin kelikamera</h3>
-        <span class="muted small">${formatNumber(camera.distanceKm)} km</span>
-      </div>
-      <div class="camera-card">
-        <img
-          src="${imageUrl}"
-          alt="Kelikamerakuva: ${escapeHtml(camera.name)}"
-          loading="lazy"
-        />
-        <div class="camera-card-body">
-          <strong>${escapeHtml(camera.name)}</strong>
-          <p class="muted small">Kuva päivittyy Digitrafficin kamerarytmin mukaisesti.</p>
-        </div>
-      </div>
-    </section>
-  `;
-}
-
-function metricRow(label, value) {
-  return `<div class="metric-row"><span>${label}</span><strong>${value}</strong></div>`;
-}
-
-function formatMetric(value, unit) {
-  return Number.isFinite(Number(value)) ? `${formatNumber(value)} ${unit}` : "–";
 }
 
 function bindRouteEvents() {

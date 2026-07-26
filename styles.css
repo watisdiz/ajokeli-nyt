@@ -7,11 +7,28 @@
   --text: #f4f7fb;
   --muted: #9fb0c6;
   --accent: #62a8ff;
+  /* Risk colors stay identical across themes: risk.js carries its own copy
+     of these same hex values for the map's station-dot paint layer, and
+     the filter/legend dots use these tokens too, so the dots on the map
+     always match the dots in the sidebar regardless of theme. */
   --normal: #35c789;
   --attention: #f5c84c;
   --difficult: #ff8a4c;
   --extreme: #ff4d6d;
   --stale: #7d8999;
+  /* ...but a bright saturated color that reads fine as *text* on a dark
+     background fails contrast badly on a light one, so status-pill text
+     uses these instead. Dark theme just aliases the base color; light
+     theme below overrides with darker variants. */
+  --normal-fg: var(--normal);
+  --attention-fg: var(--attention);
+  --difficult-fg: var(--difficult);
+  --extreme-fg: var(--extreme);
+  --stale-fg: var(--stale);
+  /* Subtle "this panel sits slightly above its surroundings" tint. A white
+     tint at low alpha only shows up against a dark surface — light theme
+     overrides it with a dark tint instead. */
+  --surface-raised: rgba(255, 255, 255, 0.035);
   --shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 
@@ -31,6 +48,65 @@
   --font-size-md: 0.95rem;
   --font-size-lg: 1.2rem;
   --font-size-xl: 1.7rem;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --bg: #f4f6f9;
+    --surface: #ffffff;
+    --surface-2: #eef1f6;
+    --border: rgba(15, 23, 42, 0.12);
+    --text: #101826;
+    --muted: #55647a;
+    --accent: #2563eb;
+    --normal-fg: #15803d;
+    --attention-fg: #8a6407;
+    --difficult-fg: #b1470f;
+    --extreme-fg: #c11f3f;
+    --stale-fg: #56637a;
+    --surface-raised: rgba(15, 23, 42, 0.04);
+    --shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+  }
+}
+
+/* Manual toggle (theme-toggle.js) always wins over the system preference
+   above, since an attribute selector on :root is more specific than a
+   plain :root selector regardless of source order. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #07101d;
+  --surface: #0d1828;
+  --surface-2: #122137;
+  --border: rgba(255, 255, 255, 0.1);
+  --text: #f4f7fb;
+  --muted: #9fb0c6;
+  --accent: #62a8ff;
+  --normal-fg: var(--normal);
+  --attention-fg: var(--attention);
+  --difficult-fg: var(--difficult);
+  --extreme-fg: var(--extreme);
+  --stale-fg: var(--stale);
+  --surface-raised: rgba(255, 255, 255, 0.035);
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f4f6f9;
+  --surface: #ffffff;
+  --surface-2: #eef1f6;
+  --border: rgba(15, 23, 42, 0.12);
+  --text: #101826;
+  --muted: #55647a;
+  --accent: #2563eb;
+  --normal-fg: #15803d;
+  --attention-fg: #8a6407;
+  --difficult-fg: #b1470f;
+  --extreme-fg: #c11f3f;
+  --stale-fg: #56637a;
+  --surface-raised: rgba(15, 23, 42, 0.04);
+  --shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
 }
 
 * {
@@ -89,7 +165,7 @@ a {
   justify-content: space-between;
   gap: 24px;
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(135deg, rgba(18, 33, 55, 0.98), rgba(7, 16, 29, 0.98));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 7%, var(--surface)), var(--surface));
   position: relative;
   z-index: 50;
 }
@@ -175,7 +251,7 @@ h3 {
   border-radius: 999px;
   font-size: 0.82rem;
   font-weight: 700;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface-raised);
 }
 
 .status-pill::before {
@@ -188,19 +264,23 @@ h3 {
 }
 
 .status-live {
-  color: var(--normal);
+  color: var(--normal-fg);
 }
 
 .status-loading {
-  color: var(--attention);
+  color: var(--attention-fg);
 }
 
 .status-loading::before {
   animation: pulse 1.2s ease-in-out infinite;
 }
 
+.is-loading {
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
 .status-error {
-  color: var(--extreme);
+  color: var(--extreme-fg);
 }
 
 .button,
@@ -209,6 +289,7 @@ h3 {
 .map-action-button {
   border: 0;
   color: var(--text);
+  transition: filter 150ms ease, opacity 150ms ease, background-color 150ms ease;
 }
 
 .button {
@@ -256,6 +337,11 @@ h3 {
   font-size: 1.5rem;
 }
 
+.theme-toggle-button {
+  font-size: 1.1rem;
+  border: 1px solid var(--border);
+}
+
 .main-layout {
   min-height: 0;
   display: grid;
@@ -281,7 +367,7 @@ h3 {
 }
 
 .panel {
-  background: rgba(255, 255, 255, 0.025);
+  background: var(--surface-raised);
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 14px;
@@ -308,6 +394,7 @@ h3 {
   color: var(--text);
   padding: 9px 11px;
   outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
 .search-input:focus {
@@ -338,6 +425,7 @@ h3 {
   color: var(--text);
   background: transparent;
   text-align: left;
+  transition: background-color 150ms ease;
 }
 
 .search-result:last-child {
@@ -411,7 +499,7 @@ h3 {
   min-height: 42px;
   padding: 8px 9px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.025);
+  background: var(--surface-raised);
 }
 
 .risk-filter label {
@@ -449,7 +537,7 @@ h3 {
   padding: 10px;
   border: 1px solid var(--border);
   border-radius: 11px;
-  background: rgba(255, 255, 255, 0.025);
+  background: var(--surface-raised);
 }
 
 .summary-card strong {
@@ -604,10 +692,33 @@ h3 {
   background: var(--stale);
 }
 
+/* Text-color counterparts of the above — use the theme-aware -fg tokens,
+   never the base risk colors directly (see :root's comment on why). */
+.risk-text-normal {
+  color: var(--normal-fg);
+}
+
+.risk-text-attention {
+  color: var(--attention-fg);
+}
+
+.risk-text-difficult {
+  color: var(--difficult-fg);
+}
+
+.risk-text-extreme {
+  color: var(--extreme-fg);
+}
+
+.risk-text-stale {
+  color: var(--stale-fg);
+}
+
 .empty-state {
   min-height: 100%;
   display: grid;
   place-content: center;
+  animation: fade-in-up 220ms ease;
   text-align: center;
   color: var(--muted);
 }
@@ -627,6 +738,7 @@ h3 {
   align-items: flex-start;
   padding-bottom: 16px;
   border-bottom: 1px solid var(--border);
+  animation: fade-in-up 220ms ease;
 }
 
 .detail-header h2 {
@@ -634,27 +746,70 @@ h3 {
   font-size: 1.22rem;
 }
 
-.detail-header-actions {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-}
-
 .detail-close-button {
   display: none;
 }
 
-.risk-badge {
-  display: inline-flex;
+/* Risk level is the thing a user opens this panel to find out — it gets a
+   full-width, color-tinted banner instead of a small pill, with the top
+   contributing reason shown right there as a teaser. --level-color is set
+   per risk-banner-* modifier and consumed generically below. */
+.risk-banner {
+  margin-top: var(--space-4);
+  padding: var(--space-4);
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--level-color) 45%, var(--border));
+  background: color-mix(in srgb, var(--level-color) 13%, transparent);
+  animation: fade-in-up 260ms ease;
+}
+
+.risk-banner-normal {
+  --level-color: var(--normal);
+}
+
+.risk-banner-attention {
+  --level-color: var(--attention);
+}
+
+.risk-banner-difficult {
+  --level-color: var(--difficult);
+}
+
+.risk-banner-extreme {
+  --level-color: var(--extreme);
+}
+
+.risk-banner-stale {
+  --level-color: var(--stale);
+}
+
+.risk-banner-level {
+  display: flex;
   align-items: center;
-  gap: 7px;
-  padding: 7px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.035);
-  font-size: 0.78rem;
-  font-weight: 800;
-  white-space: nowrap;
+  gap: var(--space-2);
+}
+
+.risk-banner-level .risk-dot {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
+}
+
+.risk-banner-level strong {
+  font-size: var(--font-size-md);
+}
+
+.risk-banner-score {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+}
+
+.risk-banner-reason {
+  margin: var(--space-2) 0 0;
+  font-size: var(--font-size-base);
+  line-height: 1.4;
 }
 
 .detail-section {
@@ -666,6 +821,13 @@ h3 {
   border-bottom: 0;
 }
 
+.detail-section-secondary h3 {
+  color: var(--muted);
+  font-size: var(--font-size-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
 .metrics {
   display: grid;
   gap: 8px;
@@ -674,12 +836,18 @@ h3 {
 .metric-row {
   padding: 9px 10px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.025);
+  background: var(--surface-raised);
   font-size: 0.84rem;
 }
 
 .metric-row span:first-child {
   color: var(--muted);
+}
+
+.metrics-secondary .metric-row {
+  padding: 6px 10px;
+  background: transparent;
+  font-size: var(--font-size-sm);
 }
 
 .reason-list {
@@ -747,7 +915,7 @@ h3 {
   align-items: center;
   gap: 16px;
   border-top: 1px solid var(--border);
-  background: #060d17;
+  background: var(--surface);
   color: var(--muted);
   font-size: 0.72rem;
 }
@@ -785,6 +953,21 @@ h3 {
 @keyframes pulse {
   50% {
     opacity: 0.45;
+  }
+}
+
+/* Plays automatically whenever a matching element is freshly inserted —
+   every renderX() function in this app replaces content via innerHTML,
+   which creates new nodes each time, so this replays on every update
+   without needing any JS to trigger it. */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -948,16 +1131,6 @@ h3 {
     gap: 8px;
   }
 
-  .detail-header-actions {
-    flex-direction: column-reverse;
-    align-items: flex-end;
-  }
-
-  .risk-badge {
-    font-size: 0.72rem;
-    padding: 6px 8px;
-  }
-
   .footer {
     display: none;
   }
@@ -1014,7 +1187,7 @@ h3 {
 .route-panel {
   background:
     radial-gradient(circle at top right, rgba(37, 99, 235, 0.16), transparent 43%),
-    rgba(255, 255, 255, 0.025);
+    var(--surface-raised);
 }
 
 .route-heading-row,
@@ -1023,6 +1196,7 @@ h3 {
   align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
+  animation: fade-in-up 220ms ease;
 }
 
 .route-heading-row h2 {
@@ -1073,8 +1247,12 @@ h3 {
 }
 
 .route-primary {
+  /* Fixed accent background regardless of theme, so it needs a fixed
+     light label too — var(--text) flips polarity between themes and
+     would go dark-on-blue in light mode otherwise. */
   background: #2563eb;
   border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #ffffff;
 }
 
 .route-status {
@@ -1083,11 +1261,11 @@ h3 {
 }
 
 .route-status.route-error {
-  color: #ff9aaf;
+  color: var(--extreme-fg);
 }
 
 .route-status.route-success {
-  color: #7ce2b6;
+  color: var(--normal-fg);
 }
 
 .route-place-results {
@@ -1115,6 +1293,7 @@ h3 {
   color: var(--text);
   background: transparent;
   text-align: left;
+  transition: background-color 150ms ease;
 }
 
 .route-place-result:last-child,
@@ -1176,7 +1355,7 @@ h3 {
   gap: 7px;
   border: 1px solid var(--border);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.035);
+  background: var(--surface-raised);
   font-size: 0.72rem;
   font-weight: 800;
   white-space: nowrap;
@@ -1184,6 +1363,7 @@ h3 {
 
 .route-summary-section {
   margin-top: 14px;
+  animation: fade-in-up 220ms ease;
 }
 
 .route-summary-section h3 {
@@ -1276,7 +1456,7 @@ h3 {
   padding: 9px 10px;
   border: 1px solid rgba(245, 200, 76, 0.32);
   border-radius: 10px;
-  color: #ffe39a;
+  color: var(--attention-fg);
   background: rgba(245, 200, 76, 0.08);
   line-height: 1.45;
 }
@@ -1306,7 +1486,7 @@ h3 {
   padding: 6px 8px;
   border: 1px solid var(--border);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.035);
+  background: var(--surface-raised);
   font-size: 0.7rem;
   font-weight: 800;
   white-space: nowrap;
@@ -1359,6 +1539,7 @@ h3 {
   color: var(--text);
   background: transparent;
   text-align: left;
+  transition: background-color 150ms ease;
 }
 
 .traffic-incident-button:last-child {
@@ -1387,12 +1568,12 @@ h3 {
 }
 
 .traffic-kind-roadwork {
-  color: #ffd9a8;
+  color: var(--difficult-fg);
   background: rgba(255, 138, 76, 0.16);
 }
 
 .traffic-kind-traffic {
-  color: #ffb7c6;
+  color: var(--extreme-fg);
   background: rgba(255, 77, 109, 0.16);
 }
 
@@ -1481,7 +1662,7 @@ h3 {
   padding: 9px 10px;
   border: 1px solid rgba(98, 168, 255, 0.32);
   border-radius: 10px;
-  color: #b9d9ff;
+  color: var(--accent);
   background: rgba(98, 168, 255, 0.08);
   line-height: 1.45;
 }
@@ -1516,7 +1697,7 @@ h3 {
   padding: 6px 8px;
   border: 1px solid var(--border);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.035);
+  background: var(--surface-raised);
   font-size: 0.7rem;
   font-weight: 800;
   white-space: nowrap;
@@ -1560,6 +1741,7 @@ h3 {
   color: var(--text);
   background: rgba(0, 0, 0, 0.1);
   text-align: left;
+  transition: background-color 150ms ease, border-color 150ms ease;
 }
 
 .forecast-option:hover,
@@ -1592,7 +1774,7 @@ h3 {
   padding: 9px 10px;
   border-left: 3px solid var(--accent);
   border-radius: 0 8px 8px 0;
-  color: #d7e9ff;
+  color: var(--accent);
   background: rgba(98, 168, 255, 0.07);
   font-size: 0.72rem;
   line-height: 1.45;
@@ -1645,6 +1827,7 @@ h3 {
   color: var(--text);
   background: transparent;
   text-align: left;
+  transition: background-color 150ms ease;
 }
 
 .forecast-highlight-button:last-child {
@@ -1743,7 +1926,7 @@ h3 {
   padding: 4px 8px;
   border: 1px solid rgba(98, 168, 255, 0.38);
   border-radius: 999px;
-  color: #b9d9ff;
+  color: var(--accent);
   background: rgba(98, 168, 255, 0.1);
   font-size: 0.68rem;
   font-weight: 800;
@@ -1784,6 +1967,7 @@ h3 {
   background:
     radial-gradient(circle at top right, rgba(98, 168, 255, 0.12), transparent 52%),
     rgba(0, 0, 0, 0.11);
+  animation: fade-in-up 220ms ease;
 }
 
 .beta-overview-heading {
@@ -1818,7 +2002,7 @@ h3 {
   padding: 9px 7px;
   border: 1px solid var(--border);
   border-radius: 9px;
-  background: rgba(255, 255, 255, 0.025);
+  background: var(--surface-raised);
 }
 
 .beta-status-card span,
