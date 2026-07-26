@@ -5,7 +5,34 @@ Versiot noudattavat semanttista versionumerointia.
 
 ## Unreleased
 
-Ei vielä julkaisemattomia muutoksia.
+### Lisätty
+
+- jaetut `dom-utils.js` (escapeHtml, kuvan varavaraus) ja `api-client.js` (Digitraffic-haku) -moduulit
+- `events.js`: sovelluksen sisäinen tapahtumaväylä (`ajokeli:route-changed`, `traffic-changed`, `forecast-changed`, `observations-changed`) ominaisuuksien väliseen tiedonkulkuun
+- jaettu `station-detail.js`-moduuli tiesääaseman tietopaneelille
+- vaalea teema (`prefers-color-scheme`) ja manuaalinen teemakytkin (`theme-init.js`, `theme-toggle.js`), tallentuu selaimeen
+- SRI-tarkisteet ja Content-Security-Policy sivun `<head>`:iin
+- jsdom-pohjainen testiharnessi (`tests/dom-harness.mjs`) ja kaksi käyttäytymistestiä: reitin rakentaminen päästä päähän ja tiesääaseman haku/valinta
+- sisällön ilmestymisanimaatio, pehmeät hover/focus-siirtymät ja latautumispulssi tilamerkinnöille
+
+### Muutettu
+
+- kaikki JS:ään injektoitu `<style>`-sisältö siirretty `styles.css`:ään; token-järjestelmä laajennettu spacing- ja typografia-skaalalla
+- MutationObserver-pohjainen ominaisuuksien välinen synkronointi (route-, traffic-, forecast- ja beta-feature) korvattu selkeällä tapahtumaväylällä; poistettu MapLibre-lähteen sisäinen kaivelu ja `forecast-bootstrap.js`:n MutationObserver-monkeypatch
+- tiesääaseman tietopaneeli uudistettu: keliriski on nyt värillinen banneri jossa tärkein syy näkyy heti, mittaukset jaettu pisteytykseen vaikuttaviin ja pelkästään informatiivisiin
+- `tests/ui-smoke.test.mjs` nimetty uudelleen `tests/source-shape.test.mjs`:ksi rehellisemmin kuvaamaan mitä se testaa (lähdekoodin merkkijonoja, ei käytöstä)
+
+### Korjattu
+
+- liikennetilanne (tietyöt ja liikennetiedotteet) korjattu — Digitraffic ei enää hyväksy `includeAreaGeometry`-parametria, joten liikennetiedot eivät hiljalleen kaatuneet virheeseen
+- route-feature.js:n asematiedoista puuttunut "Tuulen keskinopeus" -rivi (jäänyt jälkeen app-core.js:n vastaavasta, korjautui deduplikoinnin sivutuotteena)
+- GitHub Actions -workflow ei koskaan asentanut riippuvuuksia ennen testien ajoa
+- useita väriyhdistelmiä jotka olisivat rikkoutuneet vaaleassa teemassa (yläpalkin ja alatunnisteen kiinteä tumma tausta, sinisen painikkeen teksti, useiden pastellivärimerkintöjen kontrasti)
+
+### Poistettu
+
+- vanhentuneet, jo eriytyneet per-tiedosto `USER_HEADER`-versiomerkinnät (versio tulee nyt yhdestä paikasta)
+- kaksi inline `onerror`-tapahtumakäsittelijää (korvattu `addEventListener`:llä, jotta CSP:n `script-src` voi olla tiukka)
 
 ## 1.7.1 – 2026-07-23
 
