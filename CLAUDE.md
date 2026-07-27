@@ -77,7 +77,7 @@ Commit-viestit ja koodikommentit **englanniksi**.
 Ennen committia:
 
 ```
-npm test              # 34 testiä, node:test + jsdom
+npm test              # 36 testiä, node:test + jsdom
 npm run lint          # ESLint
 npm run format:check  # Prettier
 ```
@@ -93,7 +93,7 @@ Päivitä `CHANGELOG.md`:n Unreleased-osio ja `backlog.md` tehdyn työn
 mukaisiksi ennen kuin lopetat. Ne ovat se paikka, josta seuraava
 istunto löytää jatkokohdan.
 
-## Version nosto koskee kahdeksaa paikkaa
+## Version nosto koskee yhdeksää paikkaa
 
 Versionumero on kovakoodattu useaan tiedostoon, ja `app.js`:n
 `BUILD_VERSION` toimii välimuistin ohituksena (`?v=`) moduulien
@@ -107,10 +107,18 @@ latauksessa. Kaikki on nostettava yhdessä:
 6. `CHANGELOG.md` → uusi päivätty osio Unreleasedin tilalle
 7. `README.md` → "Nykyinen versio" ja Digitraffic-tunniste
 8. `BETA_TESTING.md` → tarkistuslistan johdanto
+9. `index.html` → **kolme** `?v=` -parametria (`theme-init.js`,
+   `styles.css`, `app.js`)
 
 `tests/beta.test.mjs` lukee odotetun version `package.json`:sta ja
-tarkistaa kohdat 2–5 sekä 7–8. Jos jokin jää nostamatta, `npm test` kaatuu — älä
+tarkistaa kohdat 2–5 sekä 7–9. Jos jokin jää nostamatta, `npm test` kaatuu — älä
 kovakoodaa versionumeroa testiin takaisin.
+
+Kohta 9 ei ole valinnainen: `BUILD_VERSION` ohittaa välimuistin vain
+`app.js`:n _importtaamille_ moduuleille, eikä se voi auttaa `app.js`:ää,
+`styles.css`:ää tai `theme-init.js`:ää itseään. GitHub Pages tarjoilee ne
+`max-age=14400`:llä. Kun 1.8.1 julkaistiin ilman näitä parametreja,
+käyttäjät saivat uuden JavaScriptin vanhan tyylitiedoston kanssa.
 
 ## Tunnetut sudenkuopat
 

@@ -14,11 +14,36 @@ tästä kun on aika jatkaa.
   iOS Safarin ja Android Chromen renderöintierot, `env(safe-area-inset-*)`
   sekä puhelinraudan suorituskyky pitkillä reiteillä.
 
-- [BETA_TESTING.md](BETA_TESTING.md):n tarkistuslista on ajettu vain
-  osittain (1/5 testireittiä). Ajamatta: neljä muuta reittiä ml.
-  Vantaa–Vaasa-suorituskykytesti, lähtöajan vaihto, Jaa reitti ja jaetun
-  reitin lataus, offline- ja aikakatkaisutilat sekä näppäimistö- ja
-  ruudunlukijatarkistukset. Betan hyväksymisehto ei siis vielä täyty.
+- [BETA_TESTING.md](BETA_TESTING.md):n tarkistuslistasta on ajettu
+  selainautomaatiolla: kaikki viisi testireittiä, lähtöajan vaihto, Jaa
+  reitti ja jaetun reitin lataus. Ajamatta: offline- ja
+  aikakatkaisutilat sekä näppäimistö- ja ruudunlukijatarkistukset.
+  Hyväksymisehto ei täyty, koska Vantaa–Vaasa jäädyttää
+  käyttöliittymän (ks. alla).
+
+## Suorituskyky
+
+- **Reitin laskenta jäädyttää pääsäikeen sekunneiksi.** Mitattu
+  tuotannossa `PerformanceObserver`in `longtask`-merkinnöillä, 1.8.1:
+  Tikkurila–Helsinki 1,0 s · Helsinki–Turku 3,4 s · Oulu–Rovaniemi 4,4 s ·
+  **Vantaa–Vaasa 6,4–8,1 s**. Jumi on yksi yhtenäinen long task, ei monta
+  pientä. Reitit valmistuvat oikein eikä JS-virheitä tule.
+
+  Tämä rikkoo [BETA_TESTING.md](BETA_TESTING.md):n hyväksymisehdon
+  "Vantaa–Vaasa-reitti ei jäädytä käyttöliittymää".
+
+  Juurisyy on selvittämättä, mutta rajattu: tapahtumaväylän
+  `route-changed`/`traffic-changed`/`forecast-changed` laukeavat vasta
+  long taskin **lopussa**, joten kyse on synkronisesta laskennasta
+  verkkovastausten saavuttua — ei verkon odottamisesta. Kesto skaalautuu
+  reitin pituuden mukaan, ei asemamäärän (Oulu–Rovaniemi jumittaa 4,4 s
+  vain 25 asemalla). Ennustejaksot on suljettu pois epäillyistä: koko
+  Suomen `forecast-sections-simple` on vain 277 jaksoa / 3 668
+  koordinaattiparia ja latautuu 154 ms:ssä. Seuraava askel on profiloida
+  `route.js`:n ja `traffic.js`:n reittiosumalaskenta.
+
+  Huom: mitattu automaatioselaimessa, joka voi olla oikeaa konetta
+  hitaampi — suuruusluokka on silti todellinen.
 
 ## Tietosuoja
 
@@ -40,22 +65,6 @@ tästä kun on aika jatkaa.
   päälle ja sivu alkaa rikkoa omaa tietosuojakuvaustaan. **Oikea korjaus
   on kytkeä Web Analytics pois Cloudflaren hallintapaneelista** — se on
   tilin asetus, ei repon muutos.
-
-## Julkaisu
-
-- **Versiointi ei kata `styles.css`:ää, `app.js`:ää eikä
-  `theme-init.js`:ää.** `index.html` viittaa niihin ilman `?v=`-parametria,
-  ja GitHub Pages tarjoilee ne `Cache-Control: max-age=14400` (4 h).
-  `app.js`:n `BUILD_VERSION`-pohjainen ohitus ei auta, koska juuri `app.js`
-  on se tiedosto joka on välimuistissa vanhentunut — se ohittaa
-  välimuistin siihen versioon jonka _vanha_ kopio tuntee.
-
-  Käytännön seuraus: 1.8.0:n ladannut käyttäjä näki rikkinäisen vaalean
-  teeman jopa 4 tuntia 1.8.1:n julkaisun jälkeen. Havaittu tässä
-  istunnossa — selain jäi 1.8.0:aan vaikka palvelin tarjoili 1.8.1:tä.
-  Korjautuu itsestään TTL:n umpeutuessa, mutta tekee korjausjulkaisuista
-  hitaita. Vaihtoehdot: `?v=`-parametri myös näihin kolmeen viittaukseen,
-  tai lyhyempi TTL.
 
 ## Muuta
 

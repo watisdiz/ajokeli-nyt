@@ -49,13 +49,14 @@ test("closest forecast option is selected when exact time is unavailable", () =>
 });
 
 test("beta runtime keeps stable route features and excludes radar processing", async () => {
-  const [app, guard, feature, privacy, checklist, readme] = await Promise.all([
+  const [app, guard, feature, privacy, checklist, readme, index] = await Promise.all([
     readFile(new URL("../app.js", import.meta.url), "utf8"),
     readFile(new URL("../request-guard.js", import.meta.url), "utf8"),
     readFile(new URL("../beta-feature.js", import.meta.url), "utf8"),
     readFile(new URL("../privacy.html", import.meta.url), "utf8"),
     readFile(new URL("../BETA_TESTING.md", import.meta.url), "utf8"),
     readFile(new URL("../README.md", import.meta.url), "utf8"),
+    readFile(new URL("../index.html", import.meta.url), "utf8"),
   ]);
 
   // package.json is the single source of truth for the version. Asserting
@@ -84,6 +85,16 @@ test("beta runtime keeps stable route features and excludes radar processing", a
     checklist.includes(`-version ${version} manuaalista`),
     `BETA_TESTING.md still documents a different version than ${version}`,
   );
+  // index.html loads these three outside the BUILD_VERSION scheme, so they
+  // need their own ?v=. Without it the browser keeps a 4h-cached copy and
+  // users end up running new JS against an old stylesheet -- which is
+  // exactly what happened when 1.8.1 shipped.
+  for (const asset of ["./theme-init.js", "./styles.css", "./app.js"]) {
+    assert.ok(
+      index.includes(`${asset}?v=${version}`),
+      `index.html does not cache-bust ${asset} at ${version}`,
+    );
+  }
   assert.match(app, /asset\("\.\/request-guard\.js"\)/);
   assert.match(app, /asset\("\.\/route-feature\.js"\)/);
   assert.match(app, /asset\("\.\/traffic-feature\.js"\)/);

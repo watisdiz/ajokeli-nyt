@@ -5,6 +5,20 @@ Versiot noudattavat semanttista versionumerointia.
 
 ## Unreleased
 
+## 1.8.2 – 2026-07-27
+
+### Korjattu
+
+- `index.html` viittasi `theme-init.js`:ään, `styles.css`:ään ja `app.js`:ään ilman `?v=`-parametria, ja GitHub Pages tarjoilee ne `Cache-Control: max-age=14400` (4 h). `app.js`:n `BUILD_VERSION` ei voi ohittaa välimuistia näiden kohdalla, koska se sijaitsee itse yhdessä välimuistiin jääneistä tiedostoista. Seuraus mitattiin 1.8.1:n julkaisussa: selain ajoi 1.8.1:n JavaScriptiä 1.8.0:n tyylitiedoston kanssa, joten vaalean teeman kontrastikorjaus ei tavoittanut käyttäjiä. Kaikilla kolmella on nyt oma `?v=`-parametri
+
+### Lisätty
+
+- `tests/beta.test.mjs` tarkistaa myös `index.html`:n kolme `?v=`-parametria, joten versionoston unohtuminen niistä kaataa testit
+
+### Muutettu
+
+- versionnosto koskee nyt yhdeksää paikkaa kahdeksan sijaan (`CLAUDE.md` päivitetty)
+
 ## 1.8.1 – 2026-07-27
 
 ### Korjattu
