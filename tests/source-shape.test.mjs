@@ -44,7 +44,10 @@ test("mobile controls and accessible station search remain present", () => {
 });
 
 test("wrapper cache-busts and loads the stable application features", () => {
-  assert.match(wrapper, /BUILD_VERSION = "1\.7\.1"/);
+  // Only pins that a semver BUILD_VERSION exists at all — the actual value
+  // and its consistency across app.js, beta.js, privacy.html and
+  // request-guard.js is asserted against package.json in beta.test.mjs.
+  assert.match(wrapper, /BUILD_VERSION = "\d+\.\d+\.\d+"/);
   assert.match(wrapper, /asset\("\.\/app-core\.js"\)/);
   assert.match(wrapper, /asset\("\.\/route-feature\.js"\)/);
   assert.match(wrapper, /asset\("\.\/traffic-feature\.js"\)/);

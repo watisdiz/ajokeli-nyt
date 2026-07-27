@@ -58,8 +58,23 @@ test("beta runtime keeps stable route features and excludes radar processing", a
     readFile(new URL("../README.md", import.meta.url), "utf8"),
   ]);
 
-  assert.equal(APP_VERSION, "1.7.1");
-  assert.match(app, /BUILD_VERSION = "1\.7\.1"/);
+  // package.json is the single source of truth for the version. Asserting
+  // against it (instead of a hardcoded literal) means this test fails when a
+  // version bump misses one of the places the number is duplicated, rather
+  // than becoming yet another place that has to be bumped by hand.
+  const pkg = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
+  const version = pkg.version;
+
+  assert.equal(APP_VERSION, version);
+  assert.ok(app.includes(`BUILD_VERSION = "${version}"`), `app.js BUILD_VERSION is not ${version}`);
+  assert.ok(
+    privacy.includes(`Beta · versio ${version}`),
+    `privacy.html visible version is not ${version}`,
+  );
+  assert.ok(
+    guard.includes(`./beta.js?v=${version}`) && guard.includes(`./events.js?v=${version}`),
+    `request-guard.js cache-busting params are not ${version}`,
+  );
   assert.match(app, /asset\("\.\/request-guard\.js"\)/);
   assert.match(app, /asset\("\.\/route-feature\.js"\)/);
   assert.match(app, /asset\("\.\/traffic-feature\.js"\)/);
