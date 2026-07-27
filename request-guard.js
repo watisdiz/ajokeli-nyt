@@ -1,5 +1,5 @@
-import { APP_VERSION } from "./beta.js?v=1.8.0";
-import { EVENTS, emit } from "./events.js?v=1.8.0";
+import { APP_VERSION } from "./beta.js?v=1.8.1";
+import { EVENTS, emit } from "./events.js?v=1.8.1";
 
 const nativeFetch = window.fetch.bind(window);
 const guardedHosts = new Map([

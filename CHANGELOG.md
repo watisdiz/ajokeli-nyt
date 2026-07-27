@@ -5,6 +5,18 @@ Versiot noudattavat semanttista versionumerointia.
 
 ## Unreleased
 
+## 1.8.1 – 2026-07-27
+
+### Korjattu
+
+- kartan selite, kartan **Reitti ja suodattimet** -painike ja kartan virheilmoitus jäivät vaaleassa teemassa lukukelvottomiksi: niillä oli kovakoodattu tumma tausta, mutta tekstiväri tuli teematokenista, joten lopputulos oli lähes musta teksti tummalla pohjalla (kontrastit 1.18:1, 1.06:1 ja 1.24:1 — WCAG AA vaatii 4.5:1). Taustat tulevat nyt `color-mix`-tokeneista muun paletin tapaan
+- virheilmoituksen punainen sävy ja reunus johdetaan nyt `--extreme`-tokenista kiinteiden `rgba()`-arvojen sijaan
+
+### Lisätty
+
+- `tests/theme.test.mjs`: teemakytkin vaihtaa teeman, pitää painikkeen saavutettavan nimen ajan tasalla ja tallentaa valinnan; lisäksi vahti, joka kaataa testit jos karttakerroksen taustat palaavat kovakoodatuiksi väreiksi
+- `tests/dom-harness.mjs` tarjoaa `window.matchMedia`-tynkän, jota jsdom ei toteuta
+
 ## 1.8.0 – 2026-07-27
 
 ### Lisätty

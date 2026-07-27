@@ -6,13 +6,19 @@ tästä kun on aika jatkaa.
 
 ## Testaus ja laatu
 
-- Mobiilitestaus (vaalea teema, teemakytkin, mikro-interaktiot) tehtiin
-  selaimen automaatiolla ~700 px leveydellä sekä 420 px:n hienosäätö-
-  sääntöjen kohdennetulla CSS-injektiolla — kehitysympäristön ikkuna ei
-  mennyt fyysisesti kapeammaksi kuin ~650 px. Ei löytynyt layout-ongelmia,
-  mutta ei ole vahvistettu oikealla puhelimella. **Tämä on 1.8.0:n suurin
-  todentamaton riski** — vaalea teema ja teemakytkin menivät tuotantoon
-  ilman testiä fyysisellä laitteella.
+- Mobiilitestaus on tehty selainautomaatiolla 360 × 800 -näkymässä
+  tuotanto-URLia vasten (1.8.1). Ei vaakavieritystä eikä ylivuotavia
+  elementtejä, ja reitti Vantaa → Tampere meni läpi päästä päähän.
+  Vaalean teeman kontrastiviat löytyivät ja korjattiin 1.8.1:ssä.
+  **Yhä vahvistamatta oikealla puhelimella**: kosketuskohteiden koko,
+  iOS Safarin ja Android Chromen renderöintierot, `env(safe-area-inset-*)`
+  sekä puhelinraudan suorituskyky pitkillä reiteillä.
+
+- [BETA_TESTING.md](BETA_TESTING.md):n tarkistuslista on ajettu vain
+  osittain (1/5 testireittiä). Ajamatta: neljä muuta reittiä ml.
+  Vantaa–Vaasa-suorituskykytesti, lähtöajan vaihto, Jaa reitti ja jaetun
+  reitin lataus, offline- ja aikakatkaisutilat sekä näppäimistö- ja
+  ruudunlukijatarkistukset. Betan hyväksymisehto ei siis vielä täyty.
 
 ## Muuta
 

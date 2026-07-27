@@ -175,6 +175,20 @@ export async function createHarness({ search = "", fetchHandlers = [] } = {}) {
   // jsdom doesn't implement layout, so it has no scrollIntoView.
   window.Element.prototype.scrollIntoView = () => {};
 
+  // jsdom has no matchMedia either, and theme-toggle.js asks it for the
+  // system color-scheme preference. Report "no light preference", so the
+  // default starting theme in tests is the dark one.
+  window.matchMedia = (query) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addEventListener() {},
+    removeEventListener() {},
+    addListener() {},
+    removeListener() {},
+    dispatchEvent: () => false,
+  });
+
   globalThis.window = window;
   globalThis.document = window.document;
   Object.defineProperty(globalThis, "navigator", {
