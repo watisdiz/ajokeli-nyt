@@ -93,7 +93,7 @@ Päivitä `CHANGELOG.md`:n Unreleased-osio ja `backlog.md` tehdyn työn
 mukaisiksi ennen kuin lopetat. Ne ovat se paikka, josta seuraava
 istunto löytää jatkokohdan.
 
-## Version nosto koskee kuutta paikkaa
+## Version nosto koskee kahdeksaa paikkaa
 
 Versionumero on kovakoodattu useaan tiedostoon, ja `app.js`:n
 `BUILD_VERSION` toimii välimuistin ohituksena (`?v=`) moduulien
@@ -105,9 +105,11 @@ latauksessa. Kaikki on nostettava yhdessä:
 4. `privacy.html` → näkyvä "Beta · versio X" -teksti
 5. `request-guard.js` → **kaksi** `?v=` -parametria import-poluissa
 6. `CHANGELOG.md` → uusi päivätty osio Unreleasedin tilalle
+7. `README.md` → "Nykyinen versio" ja Digitraffic-tunniste
+8. `BETA_TESTING.md` → tarkistuslistan johdanto
 
 `tests/beta.test.mjs` lukee odotetun version `package.json`:sta ja
-tarkistaa kohdat 2–5. Jos jokin jää nostamatta, `npm test` kaatuu — älä
+tarkistaa kohdat 2–5 sekä 7–8. Jos jokin jää nostamatta, `npm test` kaatuu — älä
 kovakoodaa versionumeroa testiin takaisin.
 
 ## Tunnetut sudenkuopat

@@ -75,6 +75,15 @@ test("beta runtime keeps stable route features and excludes radar processing", a
     guard.includes(`./beta.js?v=${version}`) && guard.includes(`./events.js?v=${version}`),
     `request-guard.js cache-busting params are not ${version}`,
   );
+  assert.ok(
+    readme.includes(`Nykyinen versio on **${version} beta**`) &&
+      readme.includes(`AjokeliNyt/MVP ${version}`),
+    `README.md still documents a different version than ${version}`,
+  );
+  assert.ok(
+    checklist.includes(`-version ${version} manuaalista`),
+    `BETA_TESTING.md still documents a different version than ${version}`,
+  );
   assert.match(app, /asset\("\.\/request-guard\.js"\)/);
   assert.match(app, /asset\("\.\/route-feature\.js"\)/);
   assert.match(app, /asset\("\.\/traffic-feature\.js"\)/);
