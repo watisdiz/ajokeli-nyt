@@ -2,6 +2,16 @@
 
 Tämä lista tukee Ajokeli nyt -version 1.8.2 manuaalista päästä päähän -testausta ennen laajempaa jakamista.
 
+## Tilanne 27.7.2026
+
+Lista on ajettu suurelta osin selainautomaatiolla 360 × 800 -näkymässä
+tuotantoa vasten. **Hyväksymisehto ei täyty**: Vantaa–Vaasa jäädyttää
+käyttöliittymän 6,4–8,1 sekunniksi.
+
+Ajamatta ovat offline- ja aikakatkaisutilat, ruudunlukija sekä testaus
+fyysisellä puhelimella. Yksityiskohtainen tilanne ja mittaustulokset:
+[backlog.md](backlog.md).
+
 ## Testireitit
 
 - Vantaa → Tampere
