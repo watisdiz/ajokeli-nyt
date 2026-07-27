@@ -20,6 +20,43 @@ tästä kun on aika jatkaa.
   reitin lataus, offline- ja aikakatkaisutilat sekä näppäimistö- ja
   ruudunlukijatarkistukset. Betan hyväksymisehto ei siis vielä täyty.
 
+## Tietosuoja
+
+- **Cloudflare injektoi Web Analytics -beaconin jokaiseen HTML-vastaukseen.**
+  Tuotannosta selaimen User-Agentilla haettu sivu sisältää tagin
+  `<script src="https://static.cloudflareinsights.com/beacon.min.js/…">`,
+  jota **ei ole** repon `index.html`:ssä — se lisätään Cloudflaren
+  reunalla, eli asetus on päällä `watisdis.com`-vyöhykkeellä.
+
+  Mitattu tilanne 1.8.1:ssä: `index.html`:n tiukka CSP
+  (`script-src 'self' https://unpkg.com`) **estää sen**. Beaconin
+  resurssimerkinnällä on `responseStatus: 0` (vertailun vuoksi sallitulla
+  unpkg-skriptillä `200`), Cloudflaren globaaleja ei synny eikä evästeitä
+  aseteta. `privacy.html`:n lupaus ("ei evästeitä, kirjautumista tai
+  analytiikkaa") ja `README.md`:n vastaava väite siis pitävät yhä.
+
+  Riski on, että lupaus on voimassa vain CSP:n ansiosta, ei asetuksen.
+  Jos `script-src`:ää joskus löysätään, analytiikka kytkeytyy hiljaisesti
+  päälle ja sivu alkaa rikkoa omaa tietosuojakuvaustaan. **Oikea korjaus
+  on kytkeä Web Analytics pois Cloudflaren hallintapaneelista** — se on
+  tilin asetus, ei repon muutos.
+
+## Julkaisu
+
+- **Versiointi ei kata `styles.css`:ää, `app.js`:ää eikä
+  `theme-init.js`:ää.** `index.html` viittaa niihin ilman `?v=`-parametria,
+  ja GitHub Pages tarjoilee ne `Cache-Control: max-age=14400` (4 h).
+  `app.js`:n `BUILD_VERSION`-pohjainen ohitus ei auta, koska juuri `app.js`
+  on se tiedosto joka on välimuistissa vanhentunut — se ohittaa
+  välimuistin siihen versioon jonka _vanha_ kopio tuntee.
+
+  Käytännön seuraus: 1.8.0:n ladannut käyttäjä näki rikkinäisen vaalean
+  teeman jopa 4 tuntia 1.8.1:n julkaisun jälkeen. Havaittu tässä
+  istunnossa — selain jäi 1.8.0:aan vaikka palvelin tarjoili 1.8.1:tä.
+  Korjautuu itsestään TTL:n umpeutuessa, mutta tekee korjausjulkaisuista
+  hitaita. Vaihtoehdot: `?v=`-parametri myös näihin kolmeen viittaukseen,
+  tai lyhyempi TTL.
+
 ## Muuta
 
 - Kelikamerakuva epäonnistui kerran manuaalisessa selaintestissä (ei
