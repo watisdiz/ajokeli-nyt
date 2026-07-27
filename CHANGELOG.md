@@ -25,6 +25,7 @@ Versiot noudattavat semanttista versionumerointia.
 - uusi `--surface-recessed`-token yhtenäistää "upotettujen" korttien (tietyö-/häiriölaskurit, asema- ja tiejaksolistat) taustan, joka oli aiemmin kiinteä `rgba(0, 0, 0, 0.1)` useassa paikassa
 - kiinteät `rgba(98, 168, 255, X)` -aksenttivärit (fokusrengas, reittipaneelin korostukset, beta-yhteenveto) korvattu `color-mix(in srgb, var(--accent) X%, transparent)`:lla, joten ne seuraavat nyt vaaleaa/tummaa teemaa oikein
 - `tests/ui-smoke.test.mjs` nimetty uudelleen `tests/source-shape.test.mjs`:ksi rehellisemmin kuvaamaan mitä se testaa (lähdekoodin merkkijonoja, ei käytöstä)
+- Prettier ajettu koko koodikannalle (`npm run format`), joten `npm run format:check` menee nyt läpi — pelkkää muotoilua, ei toiminnallisia muutoksia
 
 ### Korjattu
 
