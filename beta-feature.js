@@ -1,9 +1,4 @@
-import {
-  APP_VERSION,
-  buildShareUrl,
-  parseSharedRoute,
-  pickClosestDeparture,
-} from "./beta.js";
+import { APP_VERSION, buildShareUrl, parseSharedRoute, pickClosestDeparture } from "./beta.js";
 import { escapeHtml } from "./dom-utils.js";
 import { formatRouteDistance, formatRouteDuration } from "./route.js";
 import { EVENTS } from "./events.js";
@@ -233,9 +228,7 @@ function updatedStatus() {
   if (completed.traffic) parts.push(`Liikenne haettu ${formatClock(completed.traffic)}`);
   if (completed.forecast) parts.push(`Ennuste haettu ${formatClock(completed.forecast)}`);
 
-  return parts.length
-    ? parts.join(" · ")
-    : "Päivitysaika ei ole vielä saatavilla.";
+  return parts.length ? parts.join(" · ") : "Päivitysaika ei ole vielä saatavilla.";
 }
 
 function formatClock(timestamp) {
@@ -347,8 +340,7 @@ async function restoreSharedRoute() {
 async function searchAndSelect(kind, label) {
   const input = kind === "from" ? fromInput : toInput;
   const searchButton = kind === "from" ? fromSearch : toSearch;
-  const resultsSelector =
-    kind === "from" ? "#route-from-results" : "#route-to-results";
+  const resultsSelector = kind === "from" ? "#route-from-results" : "#route-to-results";
 
   input.value = label;
   input.dispatchEvent(new Event("input", { bubbles: true }));
@@ -362,10 +354,7 @@ async function searchAndSelect(kind, label) {
 
   resultButton.click();
 
-  await waitFor(
-    () => input.classList.contains("route-selected"),
-    3_000,
-  );
+  await waitFor(() => input.classList.contains("route-selected"), 3_000);
 }
 
 function waitForRouteChange(timeoutMs) {

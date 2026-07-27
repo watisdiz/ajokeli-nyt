@@ -103,9 +103,7 @@ export function geometryLines(geometry) {
   if (geometry.type === "MultiLineString") {
     return (geometry.coordinates ?? [])
       .map((line) =>
-        (line ?? [])
-          .filter(validCoordinate)
-          .map(([lon, lat]) => [Number(lon), Number(lat)]),
+        (line ?? []).filter(validCoordinate).map(([lon, lat]) => [Number(lon), Number(lat)]),
       )
       .filter((line) => line.length >= 2);
   }
@@ -311,7 +309,11 @@ export function forecastReasonTexts(forecast) {
   return [...new Set(texts)];
 }
 
-export function selectForecastForTime(forecasts = [], targetTime, maxDifferenceMs = 4 * 60 * 60_000) {
+export function selectForecastForTime(
+  forecasts = [],
+  targetTime,
+  maxDifferenceMs = 4 * 60 * 60_000,
+) {
   const targetMs = new Date(targetTime).getTime();
   if (!Number.isFinite(targetMs)) return null;
 
@@ -454,8 +456,7 @@ export function analyzeForecastAtTime(matchedSections = [], targetTime) {
 
   const reliable = records.filter((record) => record.level.key !== "stale");
   const worstLevel = reliable.reduce(
-    (worst, record) =>
-      !worst || record.level.order > worst.order ? record.level : worst,
+    (worst, record) => (!worst || record.level.order > worst.order ? record.level : worst),
     null,
   );
 
@@ -485,9 +486,7 @@ function comparisonScore(analysis) {
   if (!analysis?.records?.length) return Number.POSITIVE_INFINITY;
 
   const worstOrder =
-    analysis.worstLevel?.key === "stale"
-      ? 8
-      : Math.max(0, Number(analysis.worstLevel?.order ?? 8));
+    analysis.worstLevel?.key === "stale" ? 8 : Math.max(0, Number(analysis.worstLevel?.order ?? 8));
 
   const missingPenalty = Math.round((1 - analysis.coverage.ratio) * 100);
   return (

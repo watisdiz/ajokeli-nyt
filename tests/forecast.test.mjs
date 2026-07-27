@@ -139,16 +139,10 @@ test("geometry distance and bounding box cover the selected route", () => {
 
 test("selects nearest forecast and translates material condition reasons", () => {
   const sections = normalizeForecastSections(metadata, forecasts);
-  const selected = selectForecastForTime(
-    sections[0].forecasts,
-    "2026-01-15T10:30:00Z",
-  );
+  const selected = selectForecastForTime(sections[0].forecasts, "2026-01-15T10:30:00Z");
 
   assert.equal(selected.overallRoadCondition, "POOR_CONDITION");
-  assert.deepEqual(forecastReasonTexts(selected), [
-    "Lumisadetta",
-    "Liukkauden riski",
-  ]);
+  assert.deepEqual(forecastReasonTexts(selected), ["Lumisadetta", "Liukkauden riski"]);
 });
 
 test("builds departure options from actual forecast times", () => {

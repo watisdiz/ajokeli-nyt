@@ -45,10 +45,7 @@ test("closest forecast option is selected when exact time is unavailable", () =>
     { value: "2026-07-23T18:00:00Z" },
   ];
 
-  assert.equal(
-    pickClosestDeparture(options, "2026-07-23T16:00:00Z"),
-    "2026-07-23T15:00:00Z",
-  );
+  assert.equal(pickClosestDeparture(options, "2026-07-23T16:00:00Z"), "2026-07-23T15:00:00Z");
 });
 
 test("beta runtime keeps stable route features and excludes radar processing", async () => {

@@ -208,9 +208,7 @@ async function refreshData() {
     announce(`${state.stations.length} tiesääasemaa päivitetty.`);
   } catch (error) {
     console.error(error);
-    const retainedText = state.stations.length
-      ? " Aiemmin ladatut havainnot jäävät näkyviin."
-      : "";
+    const retainedText = state.stations.length ? " Aiemmin ladatut havainnot jäävät näkyviin." : "";
 
     setStatus("error", "Datan haku epäonnistui");
     showError(

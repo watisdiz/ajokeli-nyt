@@ -60,8 +60,7 @@ function enhanceLabels() {
   if (elements.legend && !elements.legend.querySelector("[data-forecast-legend]")) {
     const forecast = document.createElement("span");
     forecast.dataset.forecastLegend = "route";
-    forecast.innerHTML =
-      '<i class="forecast-map-legend" aria-hidden="true"></i> Tiejaksoennuste';
+    forecast.innerHTML = '<i class="forecast-map-legend" aria-hidden="true"></i> Tiejaksoennuste';
     elements.legend.append(forecast);
   }
 
@@ -145,9 +144,7 @@ function bboxParameters(bbox) {
 }
 
 function bboxKey(bbox) {
-  return [bbox.xMin, bbox.yMin, bbox.xMax, bbox.yMax]
-    .map((value) => value.toFixed(2))
-    .join(":");
+  return [bbox.xMin, bbox.yMin, bbox.xMax, bbox.yMax].map((value) => value.toFixed(2)).join(":");
 }
 
 async function loadForecastData(coordinates, force = false) {
@@ -224,10 +221,7 @@ async function synchronizeWithRoute(force = false) {
       state.selectedTime = state.departureOptions[0].time;
     }
 
-    state.comparison = compareDepartureOptions(
-      state.matchedSections,
-      state.departureOptions,
-    );
+    state.comparison = compareDepartureOptions(state.matchedSections, state.departureOptions);
 
     renderForecastSummary();
     renderMapForecast();
@@ -253,9 +247,9 @@ async function synchronizeWithRoute(force = false) {
 
 function selectedComparison() {
   return (
-    state.comparison?.comparisons.find(
-      (item) => item.option.time === state.selectedTime,
-    ) ?? state.comparison?.comparisons[0] ?? null
+    state.comparison?.comparisons.find((item) => item.option.time === state.selectedTime) ??
+    state.comparison?.comparisons[0] ??
+    null
   );
 }
 
@@ -443,9 +437,7 @@ function forecastCountCard(value, label) {
 }
 
 function renderForecastHighlight(record) {
-  const description =
-    record.reasons.join(", ") ||
-    `${record.level.label} ajokeli tiejaksolla`;
+  const description = record.reasons.join(", ") || `${record.level.label} ajokeli tiejaksolla`;
 
   return `
     <button
@@ -551,8 +543,7 @@ function showForecastPopup(record, coordinate) {
   condition.textContent = `${record.level.label} · ${formatForecastTime(record.forecast.time)}`;
 
   const reason = document.createElement("p");
-  reason.textContent =
-    record.reasons.join(", ") || "Tarkempaa vaikutuksen syytä ei ilmoitettu.";
+  reason.textContent = record.reasons.join(", ") || "Tarkempaa vaikutuksen syytä ei ilmoitettu.";
 
   const details = document.createElement("p");
   details.className = "forecast-popup-meta";

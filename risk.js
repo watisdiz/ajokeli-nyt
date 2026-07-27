@@ -16,7 +16,8 @@ const normalize = (value = "") =>
     .trim()
     .toUpperCase();
 
-const isUsable = (sensor) => sensor && sensor.reliability !== "FAULTY" && Number.isFinite(Number(sensor.value));
+const isUsable = (sensor) =>
+  sensor && sensor.reliability !== "FAULTY" && Number.isFinite(Number(sensor.value));
 
 export function latestMeasurementTime(sensorValues = [], fallback) {
   const timestamps = sensorValues
@@ -38,7 +39,9 @@ function sensorEntries(sensorValues = []) {
 function sensorsByPrefix(entries, prefixes) {
   const normalizedPrefixes = prefixes.map(normalize);
   return entries.filter((entry) =>
-    normalizedPrefixes.some((prefix) => entry.normalizedName === prefix || entry.normalizedName.startsWith(`${prefix}_`)),
+    normalizedPrefixes.some(
+      (prefix) => entry.normalizedName === prefix || entry.normalizedName.startsWith(`${prefix}_`),
+    ),
   );
 }
 
@@ -60,7 +63,9 @@ function maximumValue(entries, prefixes) {
 
 function description(sensor, fallbackMap = {}) {
   if (!sensor) return null;
-  return sensor.sensorValueDescriptionFi || fallbackMap[Number(sensor.value)] || String(sensor.value);
+  return (
+    sensor.sensorValueDescriptionFi || fallbackMap[Number(sensor.value)] || String(sensor.value)
+  );
 }
 
 const SURFACE_DESCRIPTIONS = {
@@ -114,7 +119,10 @@ function scoreSurface(surfaceSensors, reasons) {
     if (!worst || sensorPoints > worst.points) worst = { sensor, points: sensorPoints };
     points = Math.max(points, sensorPoints);
   }
-  if (worst?.points) reasons.push(`Tienpinta: ${description(worst.sensor, SURFACE_DESCRIPTIONS)} (+${worst.points})`);
+  if (worst?.points)
+    reasons.push(
+      `Tienpinta: ${description(worst.sensor, SURFACE_DESCRIPTIONS)} (+${worst.points})`,
+    );
   return { points, label: worst ? description(worst.sensor, SURFACE_DESCRIPTIONS) : null };
 }
 
@@ -149,13 +157,15 @@ function scorePrecipitation(typeSensor, rainSensor, reasons) {
     if ([18, 19].includes(value)) points = 4;
     else if ([11, 12, 13, 14, 15, 16, 17].includes(value)) points = 2;
     else if ([8, 9, 10].includes(value)) points = 1;
-    if (points) reasons.push(`Sade: ${description(typeSensor, PRECIPITATION_DESCRIPTIONS)} (+${points})`);
+    if (points)
+      reasons.push(`Sade: ${description(typeSensor, PRECIPITATION_DESCRIPTIONS)} (+${points})`);
     return { points, label: description(typeSensor, PRECIPITATION_DESCRIPTIONS) };
   }
   if (rainSensor) {
     const value = Number(rainSensor.value);
     const points = value >= 4 ? 2 : value >= 1 ? 1 : 0;
-    if (points) reasons.push(`Sade: ${description(rainSensor, SIMPLE_RAIN_DESCRIPTIONS)} (+${points})`);
+    if (points)
+      reasons.push(`Sade: ${description(rainSensor, SIMPLE_RAIN_DESCRIPTIONS)} (+${points})`);
     return { points, label: description(rainSensor, SIMPLE_RAIN_DESCRIPTIONS) };
   }
   return { points: 0, label: null };
@@ -221,7 +231,10 @@ export function evaluateStation(stationData, now = new Date()) {
     return {
       score: null,
       level: RISK_LEVELS.stale,
-      reasons: ageMs > STALE_AFTER_MS && latestTime ? ["Mittaus on yli 15 minuuttia vanha."] : ["Keskeisiä kelihavaintoja ei ole saatavilla."],
+      reasons:
+        ageMs > STALE_AFTER_MS && latestTime
+          ? ["Mittaus on yli 15 minuuttia vanha."]
+          : ["Keskeisiä kelihavaintoja ei ole saatavilla."],
       latestTime,
       ageMs,
       metrics: {

@@ -175,7 +175,9 @@ function workDetails(phases) {
 }
 
 function incidentFeatures(announcement) {
-  return [...new Set((announcement?.features ?? []).map((item) => cleanText(item?.name)).filter(Boolean))];
+  return [
+    ...new Set((announcement?.features ?? []).map((item) => cleanText(item?.name)).filter(Boolean)),
+  ];
 }
 
 export function normalizeTrafficFeature(feature, kind, now = new Date()) {
@@ -189,10 +191,7 @@ export function normalizeTrafficFeature(feature, kind, now = new Date()) {
   const activePhases = activeRoadWorkPhases(announcement, now);
 
   if (kind === "roadwork" && timedPhases.length && !activePhases.length) return null;
-  if (
-    kind !== "roadwork" &&
-    !isTimeWindowActive(announcement.timeAndDuration ?? {}, now)
-  ) {
+  if (kind !== "roadwork" && !isTimeWindowActive(announcement.timeAndDuration ?? {}, now)) {
     return null;
   }
 
@@ -218,14 +217,12 @@ export function normalizeTrafficFeature(feature, kind, now = new Date()) {
   const location = cleanText(announcement.location?.description);
   const comment = cleanText(announcement.comment);
   const description =
-    comment ||
-    features.join(", ") ||
-    details.worktypes.join(", ") ||
-    location ||
-    title;
+    comment || features.join(", ") || details.worktypes.join(", ") || location || title;
 
   return {
-    id: String(feature.properties?.situationId ?? `${kind}-${feature.properties?.version ?? "unknown"}`),
+    id: String(
+      feature.properties?.situationId ?? `${kind}-${feature.properties?.version ?? "unknown"}`,
+    ),
     kind,
     typeLabel: kind === "roadwork" ? "Tietyö" : "Liikennetiedote",
     title,

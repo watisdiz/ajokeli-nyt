@@ -40,8 +40,8 @@ test("searching for a station and selecting it renders its details", async () =>
     assert.ok(banner.classList.contains("risk-banner-normal"));
     assert.match(banner.querySelector(".risk-banner-level strong").textContent, /Normaali/);
 
-    const metricRows = [...document.querySelectorAll("#details-panel .metric-row")].map(
-      (row) => row.textContent.replace(/\s+/g, " ").trim(),
+    const metricRows = [...document.querySelectorAll("#details-panel .metric-row")].map((row) =>
+      row.textContent.replace(/\s+/g, " ").trim(),
     );
     assert.ok(
       metricRows.some((row) => row.includes("Tienpinta") && row.includes("Kuiva")),

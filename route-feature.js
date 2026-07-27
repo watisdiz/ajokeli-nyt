@@ -280,7 +280,9 @@ function emptyFeatureCollection() {
 }
 
 function normalizeQuery(value) {
-  return String(value ?? "").trim().replace(/\s+/g, " ");
+  return String(value ?? "")
+    .trim()
+    .replace(/\s+/g, " ");
 }
 
 function compactLabel(result) {
@@ -474,8 +476,7 @@ async function searchPlace(kind) {
 }
 
 function updateSubmit() {
-  elements.submitButton.disabled =
-    state.routeLoading || !state.places.from || !state.places.to;
+  elements.submitButton.disabled = state.routeLoading || !state.places.from || !state.places.to;
 }
 
 function swapPlaces() {
@@ -673,11 +674,7 @@ function renderMapRoute(fit = false) {
 
 function setCoreStationsVisible(visible) {
   if (!state.map?.getLayer(CORE_STATIONS_LAYER_ID)) return;
-  state.map.setLayoutProperty(
-    CORE_STATIONS_LAYER_ID,
-    "visibility",
-    visible ? "visible" : "none",
-  );
+  state.map.setLayoutProperty(CORE_STATIONS_LAYER_ID, "visibility", visible ? "visible" : "none");
 }
 
 function fitRoute() {

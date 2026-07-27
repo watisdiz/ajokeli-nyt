@@ -1,7 +1,9 @@
 export const APP_VERSION = "1.7.1";
 
 export function normalizeShareLabel(value) {
-  return String(value ?? "").trim().replace(/\s+/g, " ");
+  return String(value ?? "")
+    .trim()
+    .replace(/\s+/g, " ");
 }
 
 export function buildShareUrl(currentUrl, route = {}) {

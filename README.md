@@ -148,22 +148,22 @@ Käyttäjälle ja ylläpidolle merkittävät muutokset kirjataan tiedostoon [CHA
 
 Pisteytys ei ole virallinen varoitus tai validoitu onnettomuusriskimalli.
 
-| Tekijä | Pisteet |
-|---|---:|
-| Tienpinta jäinen | +4 |
-| Kuura, lumi tai sohjo | +3 |
-| Märkä tai kostea | +1 |
-| Tienpinta alle −1 °C | +2 |
-| Tienpinta −1…+1 °C | +1 |
-| Jäätävä sade | +4 |
-| Lumi, räntä tai rakeet | +2 |
-| Vesisade tai tihku | +1 |
-| Näkyvyys alle 0,5 km | +3 |
-| Näkyvyys alle 2 km | +2 |
-| Näkyvyys alle 5 km | +1 |
-| Tuulen maksimi vähintään 25 m/s | +3 |
-| Tuulen maksimi vähintään 17 m/s | +2 |
-| Tuulen maksimi vähintään 12 m/s | +1 |
+| Tekijä                          | Pisteet |
+| ------------------------------- | ------: |
+| Tienpinta jäinen                |      +4 |
+| Kuura, lumi tai sohjo           |      +3 |
+| Märkä tai kostea                |      +1 |
+| Tienpinta alle −1 °C            |      +2 |
+| Tienpinta −1…+1 °C              |      +1 |
+| Jäätävä sade                    |      +4 |
+| Lumi, räntä tai rakeet          |      +2 |
+| Vesisade tai tihku              |      +1 |
+| Näkyvyys alle 0,5 km            |      +3 |
+| Näkyvyys alle 2 km              |      +2 |
+| Näkyvyys alle 5 km              |      +1 |
+| Tuulen maksimi vähintään 25 m/s |      +3 |
+| Tuulen maksimi vähintään 17 m/s |      +2 |
+| Tuulen maksimi vähintään 12 m/s |      +1 |
 
 Luokat:
 

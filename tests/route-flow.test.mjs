@@ -55,7 +55,10 @@ function buildFetchHandlers() {
     ["/api/traffic-message/v2/roadworks", () => roadworkFixture],
     ["/api/traffic-message/v2/traffic-announcements", () => emptyFeatureCollection],
     ["/api/weather/v1/forecast-sections-simple/forecasts", () => ({ forecastSections: [] })],
-    ["/api/weather/v1/forecast-sections-simple", () => ({ type: "FeatureCollection", features: [] })],
+    [
+      "/api/weather/v1/forecast-sections-simple",
+      () => ({ type: "FeatureCollection", features: [] }),
+    ],
     [
       "nominatim.openstreetmap.org",
       (url) => {
@@ -115,19 +118,26 @@ test("building a route propagates through the event bus into the beta overview c
     assert.equal(routeWorst.textContent.trim(), "Normaali");
 
     await waitFor(() => document.querySelector("#traffic-summary-section"));
-    const trafficCards = document.querySelectorAll("#traffic-summary-section .traffic-count-card strong");
+    const trafficCards = document.querySelectorAll(
+      "#traffic-summary-section .traffic-count-card strong",
+    );
     assert.equal(trafficCards[0].textContent.trim(), "1");
     assert.equal(trafficCards[1].textContent.trim(), "0");
 
     await waitFor(
       () =>
-        document.querySelector("#forecast-summary-section .forecast-summary-badge")?.textContent.trim() ===
-        "Ei saatavilla",
+        document
+          .querySelector("#forecast-summary-section .forecast-summary-badge")
+          ?.textContent.trim() === "Ei saatavilla",
     );
 
     await waitFor(() => document.querySelector("#beta-route-overview"));
     const betaCards = document.querySelectorAll("#beta-route-overview .beta-status-card strong");
-    assert.equal(betaCards[0].textContent.trim(), "Normaali", "beta card should mirror route-feature's worst level");
+    assert.equal(
+      betaCards[0].textContent.trim(),
+      "Normaali",
+      "beta card should mirror route-feature's worst level",
+    );
     assert.equal(
       betaCards[1].textContent.trim(),
       "1 tietyötä · 0 häiriötä",

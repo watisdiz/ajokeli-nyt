@@ -19,9 +19,8 @@ function requestUrl(input) {
 
 function requestHeaders(input, init, url) {
   const initial =
-    init.headers ?? (typeof Request !== "undefined" && input instanceof Request
-      ? input.headers
-      : undefined);
+    init.headers ??
+    (typeof Request !== "undefined" && input instanceof Request ? input.headers : undefined);
   const headers = new Headers(initial ?? {});
 
   if (url?.hostname === "tie.digitraffic.fi" && headers.has("Digitraffic-User")) {

@@ -80,10 +80,7 @@ test("traffic feature uses current Digitraffic simple JSON endpoints", () => {
 
 test("forecast feature uses current simple forecast-section endpoints and departure comparison", () => {
   assert.match(forecastFeature, /\/api\/weather\/v1\/forecast-sections-simple/);
-  assert.match(
-    forecastFeature,
-    /\/api\/weather\/v1\/forecast-sections-simple\/forecasts/,
-  );
+  assert.match(forecastFeature, /\/api\/weather\/v1\/forecast-sections-simple\/forecasts/);
   assert.match(forecastFeature, /id="forecast-departure-select"/);
   assert.match(forecastFeature, /forecast-summary-section/);
   assert.match(forecastFeature, /route-weather-forecast-lines/);

@@ -66,8 +66,7 @@ function enhanceLabels() {
   if (elements.legend && !elements.legend.querySelector("[data-traffic-legend]")) {
     const roadwork = document.createElement("span");
     roadwork.dataset.trafficLegend = "roadwork";
-    roadwork.innerHTML =
-      '<i class="traffic-map-roadwork" aria-hidden="true"></i> Tietyö';
+    roadwork.innerHTML = '<i class="traffic-map-roadwork" aria-hidden="true"></i> Tietyö';
 
     const announcement = document.createElement("span");
     announcement.dataset.trafficLegend = "announcement";
@@ -142,11 +141,7 @@ function addLayers() {
     },
   });
 
-  for (const layerId of [
-    TRAFFIC_FILL_LAYER_ID,
-    TRAFFIC_LINE_LAYER_ID,
-    TRAFFIC_POINT_LAYER_ID,
-  ]) {
+  for (const layerId of [TRAFFIC_FILL_LAYER_ID, TRAFFIC_LINE_LAYER_ID, TRAFFIC_POINT_LAYER_ID]) {
     state.map.on("mouseenter", layerId, () => {
       state.map.getCanvas().style.cursor = "pointer";
     });
@@ -294,9 +289,7 @@ function renderTrafficSummary() {
   const topIncident = worst
     ? analysis.matched.find((item) => item.incident.severity.key === worst.key)?.incident
     : null;
-  const severeText = analysis.counts.high
-    ? `${analysis.counts.high} vakavaa`
-    : "Ei vakavia";
+  const severeText = analysis.counts.high ? `${analysis.counts.high} vakavaa` : "Ei vakavia";
 
   section.innerHTML = `
     <div class="traffic-summary-heading">
@@ -500,7 +493,7 @@ function focusIncident(incident) {
 
 function formatDistance(distanceKm) {
   if (!Number.isFinite(Number(distanceKm))) return "–";
-  if (distanceKm < 1) return `${Math.max(10, Math.round(distanceKm * 1000 / 10) * 10)} m`;
+  if (distanceKm < 1) return `${Math.max(10, Math.round((distanceKm * 1000) / 10) * 10)} m`;
   return `${new Intl.NumberFormat("fi-FI", { maximumFractionDigits: 1 }).format(distanceKm)} km`;
 }
 

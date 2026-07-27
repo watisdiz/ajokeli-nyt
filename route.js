@@ -24,10 +24,7 @@ export function formatRouteDuration(seconds) {
 
 function toLocalKm([lon, lat], referenceLat) {
   const latitudeRadians = (referenceLat * Math.PI) / 180;
-  return [
-    lon * EARTH_KM_PER_DEGREE * Math.cos(latitudeRadians),
-    lat * EARTH_KM_PER_DEGREE,
-  ];
+  return [lon * EARTH_KM_PER_DEGREE * Math.cos(latitudeRadians), lat * EARTH_KM_PER_DEGREE];
 }
 
 export function pointToSegmentDistanceKm(point, start, end) {
@@ -102,10 +99,12 @@ function chooseWorstLevel(nearbyStations) {
 
   if (!candidates.length) return null;
 
-  return candidates.reduce((worst, item) => {
-    if (!worst || levelOrder(item.station) > levelOrder(worst.station)) return item;
-    return worst;
-  }, null)?.station?.level ?? null;
+  return (
+    candidates.reduce((worst, item) => {
+      if (!worst || levelOrder(item.station) > levelOrder(worst.station)) return item;
+      return worst;
+    }, null)?.station?.level ?? null
+  );
 }
 
 function buildHighlights(nearbyStations, limit = 5) {
