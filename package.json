@@ -1,13 +1,13 @@
 {
   "name": "ajokeli-nyt-mvp",
-  "version": "1.7.1",
+  "version": "1.8.0",
   "private": true,
   "type": "module",
   "description": "Suomen tiesääasemien ajantasainen keliriski, reittiyhteenveto, liikennetilanne ja tiejaksoennuste.",
   "scripts": {
     "test": "node --test --test-force-exit",
     "serve": "python3 -m http.server 8000",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings=0",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

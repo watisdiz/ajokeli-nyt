@@ -82,7 +82,9 @@ npm run lint          # ESLint
 npm run format:check  # Prettier
 ```
 
-CI (`.github/workflows/pages.yml`) ajaa tällä hetkellä vain `npm test`.
+CI (`.github/workflows/pages.yml`) ajaa kaikki kolme. `npm run lint` on
+`--max-warnings=0`, joten varoituskin kaataa buildin: merkitse
+tarkoituksella käyttämätön parametri `_`-etuliitteellä.
 
 **Push `main`:iin deployaa tuotantoon** GitHub Pagesiin. Committaaminen
 on turvallista, pushaaminen julkaisee.
@@ -103,6 +105,10 @@ latauksessa. Kaikki on nostettava yhdessä:
 4. `privacy.html` → näkyvä "Beta · versio X" -teksti
 5. `request-guard.js` → **kaksi** `?v=` -parametria import-poluissa
 6. `CHANGELOG.md` → uusi päivätty osio Unreleasedin tilalle
+
+`tests/beta.test.mjs` lukee odotetun version `package.json`:sta ja
+tarkistaa kohdat 2–5. Jos jokin jää nostamatta, `npm test` kaatuu — älä
+kovakoodaa versionumeroa testiin takaisin.
 
 ## Tunnetut sudenkuopat
 

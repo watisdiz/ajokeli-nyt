@@ -5,6 +5,8 @@ Versiot noudattavat semanttista versionumerointia.
 
 ## Unreleased
 
+## 1.8.0 – 2026-07-27
+
 ### Lisätty
 
 - jaetut `dom-utils.js` (escapeHtml, kuvan varavaraus) ja `api-client.js` (Digitraffic-haku) -moduulit
@@ -15,6 +17,8 @@ Versiot noudattavat semanttista versionumerointia.
 - jsdom-pohjainen testiharnessi (`tests/dom-harness.mjs`) ja kaksi käyttäytymistestiä: reitin rakentaminen päästä päähän ja tiesääaseman haku/valinta
 - sisällön ilmestymisanimaatio, pehmeät hover/focus-siirtymät ja latautumispulssi tilamerkinnöille
 - ESLint (`eslint.config.js`) ja Prettier (`.prettierrc.json`) sekä `npm run lint` / `format` / `format:check` -skriptit
+- `.gitattributes` normalisoi kaikki tekstitiedostot LF-rivinvaihtoihin, jotta Windowsilla editointi ei enää tuota koko tiedoston kokoisia näennäismuutoksia diffeihin
+- CI ajaa nyt `npm run lint` ja `npm run format:check` testien lisäksi, joten tyyli- ja laatuvirheet estävät julkaisun
 
 ### Muutettu
 
@@ -26,6 +30,8 @@ Versiot noudattavat semanttista versionumerointia.
 - kiinteät `rgba(98, 168, 255, X)` -aksenttivärit (fokusrengas, reittipaneelin korostukset, beta-yhteenveto) korvattu `color-mix(in srgb, var(--accent) X%, transparent)`:lla, joten ne seuraavat nyt vaaleaa/tummaa teemaa oikein
 - `tests/ui-smoke.test.mjs` nimetty uudelleen `tests/source-shape.test.mjs`:ksi rehellisemmin kuvaamaan mitä se testaa (lähdekoodin merkkijonoja, ei käytöstä)
 - Prettier ajettu koko koodikannalle (`npm run format`), joten `npm run format:check` menee nyt läpi — pelkkää muotoilua, ei toiminnallisia muutoksia
+- `npm run lint` ajetaan `--max-warnings=0`:lla: varoitukset eivät enää mene hiljaisesti läpi. Tarkoituksella käyttämättömät funktion parametrit merkitään `_`-etuliitteellä (`argsIgnorePattern`)
+- `tests/beta.test.mjs` lukee odotetun versionumeron `package.json`:sta kovakoodatun literaalin sijaan ja tarkistaa että `app.js`, `beta.js`, `privacy.html` ja `request-guard.js` ovat samassa versiossa — versionoston unohtuminen yhdestä paikasta kaataa nyt testit
 
 ### Korjattu
 
