@@ -16,7 +16,9 @@ export default [
       },
     },
     rules: {
-      "no-unused-vars": "warn",
+      // Arguments prefixed with _ are intentionally unused: they exist to
+      // document a signature we have to match (e.g. a stubbed library API).
+      "no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
       "no-undef": "error",
       eqeqeq: "error",
       "no-var": "error",
@@ -35,7 +37,7 @@ export default [
       },
     },
     rules: {
-      "no-unused-vars": "warn",
+      "no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
       "no-undef": "error",
       eqeqeq: "error",
     },
@@ -50,7 +52,7 @@ export default [
       },
     },
     rules: {
-      "no-unused-vars": "warn",
+      "no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
       "no-undef": "error",
       eqeqeq: "error",
       "no-var": "error",

@@ -1,0 +1,11 @@
+# Normalize all text files to LF in the repository.
+# Without this, editing on Windows rewrites whole files as CRLF and every
+# diff becomes unreadable line-ending noise.
+* text=auto eol=lf
+
+# Explicitly binary, never touched by line-ending normalization.
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff binary
+*.woff2 binary

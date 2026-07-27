@@ -15,7 +15,10 @@ class FakeMap {
     globalThis.window.__ajokeliMap = this;
   }
 
-  on(event, layerIdOrHandler, maybeHandler) {
+  // Mirrors MapLibre's overloaded on(event, handler) / on(event, layerId,
+  // handler). The third argument is unused here but kept to document the
+  // signature we are standing in for.
+  on(event, layerIdOrHandler, _maybeHandler) {
     if (event === "load") {
       queueMicrotask(() => layerIdOrHandler());
       return this;
