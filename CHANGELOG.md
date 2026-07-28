@@ -5,6 +5,20 @@ Versiot noudattavat semanttista versionumerointia.
 
 ## Unreleased
 
+## 1.9.4 – 2026-07-28
+
+### Korjattu
+
+- **"Näytä kartalla" -suodattimet vaikuttavat nyt myös reitin asemiin.** Ne ohjasivat vain kansallista asemakerrosta, joka piilotetaan reitin ajaksi — eli reitin ollessa kartalla kaikkien viiden rastin poistaminen ei muuttanut mitään. Mitattuna: 62 palloa ennen, 62 jälkeen. Kontrollit olivat siis näkyviä mutta täysin toimimattomia
+- reitin asemat kantavat nyt `levelKey`-ominaisuuden, jota ilman luokan mukaan suodattaminen ei ole mahdollista
+
+### Muutettu
+
+- suodatinvalinnat kulkevat `events.js`:n väylän kautta (`ajokeli:filters-changed`), joten `route-feature.js`:n ei tarvitse lukea `app-core.js`:n tilaa
+- kaikkien rastien poistaminen piilottaa kaikki pallot. Aiemmin tyhjä valinta olisi voinut tarkoittaa "ei suodatusta", mikä olisi näyttänyt kaiken — nyt tyhjä tarkoittaa tyhjää
+
+Käytännössä: Vantaa–Oulu näyttää 62 asemaa, joista 26 on Normaali-luokkaa. Poistamalla Normaali ja Huomio jäljelle jää 16, ja reittiviiva erottuu jälleen kartalta.
+
 ## 1.9.3 – 2026-07-28
 
 ### Lisätty

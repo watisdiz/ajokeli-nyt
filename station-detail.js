@@ -1,5 +1,5 @@
-import { escapeHtml } from "./dom-utils.js?v=1.9.3";
-import { formatNumber, haversineKm, relativeAge } from "./risk.js?v=1.9.3";
+import { escapeHtml } from "./dom-utils.js?v=1.9.4";
+import { formatNumber, haversineKm, relativeAge } from "./risk.js?v=1.9.4";
 
 export function nearestCamera(coordinates, cameras = []) {
   let nearest = null;

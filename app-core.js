@@ -1,9 +1,9 @@
-import { RISK_LEVELS, buildStationView } from "./risk.js?v=1.9.3";
-import { demoCameras, demoMeasurements, demoMetadata } from "./demo-data.js?v=1.9.3";
-import { escapeHtml, bindImageFallback, resolveTheme } from "./dom-utils.js?v=1.9.3";
-import { digitrafficJson } from "./api-client.js?v=1.9.3";
-import { EVENTS, emit } from "./events.js?v=1.9.3";
-import { nearestCamera, renderStationDetailHtml } from "./station-detail.js?v=1.9.3";
+import { RISK_LEVELS, buildStationView } from "./risk.js?v=1.9.4";
+import { demoCameras, demoMeasurements, demoMetadata } from "./demo-data.js?v=1.9.4";
+import { escapeHtml, bindImageFallback, resolveTheme } from "./dom-utils.js?v=1.9.4";
+import { digitrafficJson } from "./api-client.js?v=1.9.4";
+import { EVENTS, emit } from "./events.js?v=1.9.4";
+import { nearestCamera, renderStationDetailHtml } from "./station-detail.js?v=1.9.4";
 
 const REFRESH_SECONDS = 60;
 // OpenFreeMap's only dark style is fiord. Its background (#45516E) is
@@ -419,6 +419,14 @@ function renderSummary() {
     .join("");
 }
 
+// The risk filters live here but the route's own station layer is drawn by
+// route-feature.js, which has no business reading this module's state. Every
+// change goes out on the bus so both layers stay in step -- before this, the
+// checkboxes did nothing at all while a route was on screen.
+function publishRiskFilters() {
+  emit(EVENTS.FILTERS_CHANGED, { risks: [...state.activeRisks] });
+}
+
 function selectStation(stationId, flyTo = false, ensureVisible = false) {
   const station = state.stations.find((item) => item.id === stationId);
   if (!station) return;
@@ -426,6 +434,7 @@ function selectStation(stationId, flyTo = false, ensureVisible = false) {
   if (ensureVisible && !state.activeRisks.has(station.level.key)) {
     state.activeRisks.add(station.level.key);
     renderRiskFilters();
+    publishRiskFilters();
   }
 
   state.selectedStationId = stationId;
@@ -607,6 +616,7 @@ function bindEvents() {
 
     renderRiskFilters();
     renderMapData();
+    publishRiskFilters();
   });
 
   elements.selectAllButton.addEventListener("click", () => {
@@ -614,6 +624,7 @@ function bindEvents() {
     state.activeRisks = allSelected ? new Set() : new Set(Object.keys(RISK_LEVELS));
     renderRiskFilters();
     renderMapData();
+    publishRiskFilters();
   });
 
   elements.locateButton.addEventListener("click", () => {

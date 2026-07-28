@@ -1,4 +1,4 @@
-import { APP_VERSION } from "./beta.js?v=1.9.3";
+import { APP_VERSION } from "./beta.js?v=1.9.4";
 
 const DIGITRAFFIC_API = "https://tie.digitraffic.fi";
 

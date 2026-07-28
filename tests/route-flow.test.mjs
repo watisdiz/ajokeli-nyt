@@ -159,3 +159,56 @@ test("building a route propagates through the event bus into the beta overview c
     harness.cleanup();
   }
 });
+
+// The risk checkboxes live in app-core.js but the route draws its own
+// station layer, so before this the boxes were dead controls whenever a
+// route was on screen: unticking all five changed nothing on the map.
+test("risk filters reach the route's own station layer", async () => {
+  const harness = await createHarness({ fetchHandlers: buildFetchHandlers() });
+  const { document, window } = harness;
+
+  try {
+    await bootstrapApp(harness);
+
+    await selectPlace(document, "from", "FROMPLACE");
+    await selectPlace(document, "to", "TOPLACE", { timeout: 3000 });
+    document.querySelector("#route-submit-button").click();
+
+    const map = window.__ajokeliMap;
+    const source = await waitFor(() => {
+      const data = map.getSource("route-feature-stations")?.serialize().data;
+      return data?.features?.length ? data : null;
+    });
+
+    // Filtering by level needs the key on the feature; colour is not enough.
+    assert.ok(
+      source.features.every((feature) => typeof feature.properties.levelKey === "string"),
+      "route station features must carry levelKey",
+    );
+
+    const box = document.querySelector('#risk-filters input[data-risk="normal"]');
+    assert.ok(box, "expected a Normaali filter checkbox");
+    box.click();
+
+    await waitFor(() => map.getFilter("route-feature-station-points"));
+    const filter = map.getFilter("route-feature-station-points");
+
+    assert.equal(filter[0], "in");
+    assert.deepEqual(filter[1], ["get", "levelKey"]);
+    const allowed = filter[2][1];
+    assert.ok(!allowed.includes("normal"), `normal should be filtered out, got ${allowed}`);
+    assert.ok(allowed.includes("difficult"), `other levels should remain, got ${allowed}`);
+
+    // The select-all button toggles: from a partial selection it first
+    // selects everything, and only the next press clears it.
+    const selectAll = document.querySelector("#select-all-button");
+    selectAll.click();
+    await waitFor(() => map.getFilter("route-feature-station-points")[2][1].length === 5);
+
+    // Unticking everything must hide every dot, not fall back to showing all.
+    selectAll.click();
+    await waitFor(() => map.getFilter("route-feature-station-points")[2][1].length === 0);
+  } finally {
+    harness.cleanup();
+  }
+});

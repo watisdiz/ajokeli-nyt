@@ -12,6 +12,7 @@ class FakeMap {
   constructor(options = {}) {
     this._sources = new Map();
     this._layers = new Map();
+    this._filters = new Map();
     // The initial basemap arrives through the constructor, not setStyle, so
     // record it here too — otherwise a test cannot see which style the app
     // chose on load.
@@ -89,6 +90,17 @@ class FakeMap {
     }
 
     return this;
+  }
+
+  setFilter(layerId, filter) {
+    this._filters.set(layerId, filter);
+    const layer = this._layers.get(layerId);
+    if (layer) layer.filter = filter;
+    return this;
+  }
+
+  getFilter(layerId) {
+    return this._filters.get(layerId) ?? null;
   }
 
   setLayoutProperty() {}

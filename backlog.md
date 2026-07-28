@@ -199,6 +199,23 @@ kärkiominaisuudeksi ja arvioitiin sitten uudelleen:
 Jos tehdään, niin kavennettuna: **yksi kuva reitin pahimmalta asemalta,
 `measuredTime` näkyvissä** jotta käyttäjä tietää kuvan iän. Ei muuta.
 
+### Kartan luettavuus reitin aikana
+
+Reitin asemat piirtyvät suoraan reittiviivan päälle samankokoisina, joten
+pitkällä reitillä viiva hukkuu oman asemaketjunsa alle (Vantaa–Oulu: 62
+palloa, joista 26 Normaali-luokkaa). Suodattimet korjattiin 1.9.4:ssä,
+joten käyttäjä voi nyt karsia itse.
+
+**Jäljellä oleva idea, ei tehty:** painota palloja vakavuuden mukaan —
+Normaali pienempänä ja läpikuultavana, Vaikea ja Erittäin vaikea
+täydessä koossa. Silloin reittiviiva näkyisi ja pahat kohdat erottuisivat
+ilman että käyttäjän tarvitsee koskea suodattimiin. Makuasia, joka
+kannattaa katsoa silmällä ennen kuin se julkaistaan.
+
+Huom: kansallisen asemakerroksen piilotus reitin ajaksi oli jo olemassa
+(`setCoreStationsVisible`) ja toimii — mitattu, 0 pistettä piirtyy. Älä
+toteuta sitä uudelleen.
+
 ### Nice to have
 
 - **Linkki Ilmatieteen laitoksen virallisiin varoituksiin.** Palvelu

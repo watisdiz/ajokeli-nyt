@@ -3,10 +3,10 @@ import {
   analyzeRouteTraffic,
   formatIncidentTimeWindow,
   normalizeTrafficCollection,
-} from "./traffic.js?v=1.9.3";
-import { escapeHtml } from "./dom-utils.js?v=1.9.3";
-import { digitrafficJson } from "./api-client.js?v=1.9.3";
-import { EVENTS, emit } from "./events.js?v=1.9.3";
+} from "./traffic.js?v=1.9.4";
+import { escapeHtml } from "./dom-utils.js?v=1.9.4";
+import { digitrafficJson } from "./api-client.js?v=1.9.4";
+import { EVENTS, emit } from "./events.js?v=1.9.4";
 
 const ROADWORKS_PATH = "/api/traffic-message/v2/roadworks";
 const ANNOUNCEMENTS_PATH = "/api/traffic-message/v2/traffic-announcements";

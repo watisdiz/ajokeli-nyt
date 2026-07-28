@@ -1,15 +1,15 @@
-import { buildStationView, formatNumber } from "./risk.js?v=1.9.3";
-import { demoCameras, demoMeasurements, demoMetadata } from "./demo-data.js?v=1.9.3";
+import { buildStationView, formatNumber } from "./risk.js?v=1.9.4";
+import { demoCameras, demoMeasurements, demoMetadata } from "./demo-data.js?v=1.9.4";
 import {
   ROUTE_CORRIDOR_KM,
   analyzeRouteStations,
   formatRouteDistance,
   formatRouteDuration,
-} from "./route.js?v=1.9.3";
-import { escapeHtml, bindImageFallback } from "./dom-utils.js?v=1.9.3";
-import { digitrafficJson } from "./api-client.js?v=1.9.3";
-import { EVENTS, emit } from "./events.js?v=1.9.3";
-import { nearestCamera, renderStationDetailHtml } from "./station-detail.js?v=1.9.3";
+} from "./route.js?v=1.9.4";
+import { escapeHtml, bindImageFallback } from "./dom-utils.js?v=1.9.4";
+import { digitrafficJson } from "./api-client.js?v=1.9.4";
+import { EVENTS, emit } from "./events.js?v=1.9.4";
+import { nearestCamera, renderStationDetailHtml } from "./station-detail.js?v=1.9.4";
 
 const NOMINATIM_API = "https://nominatim.openstreetmap.org/search";
 const OSRM_API = "https://router.project-osrm.org/route/v1/driving";
@@ -27,6 +27,7 @@ const state = {
   results: { from: [], to: [] },
   route: null,
   analysis: null,
+  activeRisks: null,
   markers: [],
   routeLoading: false,
   observations: null,
@@ -644,12 +645,19 @@ function renderMapRoute(fit = false) {
           },
           properties: {
             stationId: station.id,
+            // The risk filters key off this; colour alone cannot be
+            // filtered on reliably.
+            levelKey: station.level.key,
             color: station.level.color,
             label: station.level.label,
           },
         }))
       : [],
   });
+
+  // A route drawn after the user already changed the filters has to respect
+  // them straight away, not only from the next filter change onwards.
+  applyRiskFilter();
 
   state.markers.forEach((marker) => marker.remove());
   state.markers = [];
@@ -675,6 +683,23 @@ function renderMapRoute(fit = false) {
 function setCoreStationsVisible(visible) {
   if (!state.map?.getLayer(CORE_STATIONS_LAYER_ID)) return;
   state.map.setLayoutProperty(CORE_STATIONS_LAYER_ID, "visibility", visible ? "visible" : "none");
+}
+
+// null means "no filtering has been asked for yet", which is not the same as
+// an empty list -- unticking every box should hide every dot, not show them.
+function applyRiskFilter() {
+  if (!state.map?.getLayer(ROUTE_STATIONS_LAYER_ID)) return;
+
+  if (state.activeRisks === null) {
+    state.map.setFilter(ROUTE_STATIONS_LAYER_ID, null);
+    return;
+  }
+
+  state.map.setFilter(ROUTE_STATIONS_LAYER_ID, [
+    "in",
+    ["get", "levelKey"],
+    ["literal", state.activeRisks],
+  ]);
 }
 
 function fitRoute() {
@@ -896,5 +921,11 @@ function bindRouteEvents() {
       const { input, results } = kindElements(kind);
       if (!results.contains(event.target) && event.target !== input) hideResults(kind);
     }
+  });
+
+  window.addEventListener(EVENTS.FILTERS_CHANGED, (event) => {
+    const risks = event.detail?.risks;
+    state.activeRisks = Array.isArray(risks) ? risks : null;
+    applyRiskFilter();
   });
 }
