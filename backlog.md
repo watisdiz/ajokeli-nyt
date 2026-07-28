@@ -131,6 +131,87 @@ selainautomaatiolla.
   skriptin vaihtamista Node-pohjaiseksi, jolloin kehitysympäristö ei
   riipu Pythonista lainkaan.
 
+## Kehitysehdotukset
+
+Assistentin ehdotus 28.7.2026, ei päätöksiä. Järjestys on hyöty/työ-suhde.
+
+**Tämä menee kaikkien ominaisuuksien edelle:** palvelu on talvityökalu,
+jota ei ole koskaan nähty tekemässä työtään. Kaikki tähänastinen testaus
+on tehty heinäkuussa, jolloin joka tiejakso on `NORMAL_CONDITION`.
+`risk.js`:n jää-, lumi- ja jäätävä sade -polut ovat vain yksikkötestien
+varassa. Katso miltä palvelu näyttää ensimmäisenä pakkasaamuna ennen kuin
+rakennat lisää — se todennäköisesti muuttaa tämän listan järjestystä.
+
+### Ehdotetut, tärkeimmästä alkaen
+
+1. **Tallennetut / viimeisimmät reitit.** Käyttötapa on toistuva
+   työmatka, mutta sama reitti syötetään joka kerta alusta: kaksi
+   paikkahakua ja neljä napautusta. Teema tallentuu jo localStorageen,
+   joten kuvio ja `privacy.html`:n lupaus kestävät tämän sellaisenaan.
+   Pieni työ, varma hyöty.
+
+2. **Tumma karttatausta tummaan teemaan.** `MAP_STYLE_URL` on
+   kovakoodattu vaaleaan `positron`iin, joten kartta hohtaa valkoisena
+   tummassa teemassa. Juuri pimeä aamu ennen lähtöä on se hetki jolloin
+   tummaa teemaa käytetään. OpenFreeMapilla on valmis tumma tyyli.
+
+3. **Service worker + offline-kuori.** Palvelua katsotaan ennen lähtöä ja
+   tien päällä, missä yhteys pätkii; nyt katkos on tyhjä sivu.
+   Sivutuotteena ratkaisisi kunnolla välimuistiversioinnin, joka tuotti
+   kolme vikaa kolmessa peräkkäisessä julkaisussa. CSP sallii jo
+   `worker-src 'self'`. **Tee vasta kun beta-hyväksymisehto on
+   täytetty** — SW lisää välimuistikerroksen, ja välimuisti on tämän
+   repon vikaherkin kohta.
+
+4. **Ratkaisu OSRM/Nominatim-riippuvuuteen.** README myöntää sen itse:
+   julkisia demo-palveluita ilman palvelutasolupausta, ja ne ovat
+   reittitoiminnon ainoa polku. Virheenkäsittely on kunnossa, mutta se
+   kertoo käyttäjälle vain että palvelu on poissa. Tämä on kustannus- ja
+   ylläpitopäätös (itse ylläpidetty vs. maksullinen vs. tietoinen riskin
+   hyväksyminen betassa), ei tekninen valinta.
+
+### Kelikamerat reitin varrelta — arvioitu ja kavennettu
+
+**Saatavuus tarkistettu 28.7.2026: vapaasti käytettävissä.** Ei
+autentikointia, lisenssi CC BY 4.0 (attribuutio jo alatunnisteessa), CSP
+sallii jo `weathercam.digitraffic.fi`:n, ja `station-detail.js`:n
+`nearestCamera` on olemassa. 812 asemaa / 2 263 aktiivista presetiä.
+Pikkukuva 20 kt, täysikokoinen 293 kt. Kuvausaika saatavilla erikseen:
+`/api/weathercam/v1/stations/{id}/data` → `measuredTime`.
+
+**Mutta älä tee tästä kuvanauhaa reitin varrelle.** Ehdotettiin ensin
+kärkiominaisuudeksi ja arvioitiin sitten uudelleen:
+
+- **Pimeys.** Huippukäyttöhetki on talviaamu. Helsingissä aurinko nousee
+  joulukuussa vasta yhdeksän jälkeen, Rovaniemellä ei lainkaan. Iso osa
+  tiekameroista on valaisemattomia, eli juuri silloin kun työkalua
+  tarvitaan, kuva on musta.
+- **Väärä varmuus.** Märkä asfaltti ja musta jää näyttävät pikkukuvassa
+  samalta. Kuva tuntuu auktoritatiivisemmalta kuin pistemäärä vaikka on
+  tässä epäluotettavampi — huono yhdistelmä palvelussa joka sanoo
+  itsekin, ettei ole virallinen ajokelivaroitus.
+- **Mikä kuva?** Reitillä on kymmeniä kameroita. Monta on kohinaa, harva
+  on mielivaltainen.
+
+Jos tehdään, niin kavennettuna: **yksi kuva reitin pahimmalta asemalta,
+`measuredTime` näkyvissä** jotta käyttäjä tietää kuvan iän. Ei muuta.
+
+### Nice to have
+
+- **Linkki Ilmatieteen laitoksen virallisiin varoituksiin.** Palvelu
+  sanoo olevansa epävirallinen; linkki viralliseen täydentäisi kuvan
+  rehellisesti. Pelkkä linkki, **ei integraatio** — 1.7.0 osoitti mihin
+  FMI-datan selainkäsittely johtaa.
+- **Kelin aikajana reitille.** Nyt näkyy lähtöajan huonoin luokka.
+  Hyödyllisempi tieto on missä kohtaa reittiä ja monelta paha kohta
+  osuu. Data on jo haettu, kyse on esitystavasta.
+- **Aseman trendi.** "−0,5 °C" on eri asia laskevana kuin nousevana.
+  Vaatii historiaa, jota ei nyt haeta.
+- **Ruotsi ja englanti.** Kaksikielinen maa ja paljon ulkomaisia
+  kuljettajia. Kohtalainen työ, koska UI-tekstit ovat hajallaan
+  moduuleissa.
+- **Manifest / kotivalikkoon lisääminen.** Luonteva jatko kohdalle 3.
+
 ## Muuta
 
 - Kelikamerakuva epäonnistui kerran manuaalisessa selaintestissä (ei
