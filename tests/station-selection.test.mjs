@@ -54,3 +54,38 @@ test("searching for a station and selecting it renders its details", async () =>
     harness.cleanup();
   }
 });
+
+// Opening the mobile filter panel used to focus the station search input,
+// which pops the on-screen keyboard straight over the filters the user just
+// opened. Focus should land on the panel -- so keyboard and screen-reader
+// users still get taken there -- without putting the caret in a text field.
+test("opening the mobile filter panel does not focus a text field", async () => {
+  const harness = await createHarness({ fetchHandlers: buildFetchHandlers() });
+  const { document, window } = harness;
+
+  try {
+    Object.defineProperty(window, "innerWidth", { value: 420, configurable: true });
+    await freshImport("../app-core.js");
+    await waitFor(() => document.querySelector("#data-timestamp").textContent.length > 0);
+
+    document.querySelector("#mobile-filter-button").click();
+    const sidebar = document.querySelector("#filter-sidebar");
+    await waitFor(() => sidebar.classList.contains("mobile-open"));
+    await waitFor(() => document.activeElement !== document.body);
+
+    assert.equal(
+      document.activeElement.id,
+      "filter-sidebar",
+      `expected focus on the panel, got ${document.activeElement.tagName}#${document.activeElement.id}`,
+    );
+    assert.notEqual(
+      document.activeElement.tagName,
+      "INPUT",
+      "focusing an input here is what opens the mobile keyboard",
+    );
+    // Focusable programmatically, but never a Tab stop.
+    assert.equal(sidebar.getAttribute("tabindex"), "-1");
+  } finally {
+    harness.cleanup();
+  }
+});

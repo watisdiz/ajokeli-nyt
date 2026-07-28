@@ -5,6 +5,17 @@ Versiot noudattavat semanttista versionumerointia.
 
 ## Unreleased
 
+## 1.9.2 – 2026-07-28
+
+### Korjattu
+
+- **mobiilin suodatinpaneeli ei enää avaa näppäimistöä itsestään.** "Reitti ja suodattimet" siirsi fokuksen tiesääasemahaun tekstikenttään, jolloin puhelimen näppäimistö nousi juuri niiden vaihtoehtojen päälle jotka käyttäjä avasi — ne piti ensin sulkea ja vierittää nähdäkseen mitä paneelissa edes on. Fokus menee nyt paneeliin itseensä (`tabindex="-1"`), joten näppäimistö- ja ruudunlukijakäyttäjät ohjautuvat yhä paneeliin, mutta kenttään kirjoitetaan vasta kun käyttäjä sitä napauttaa
+- paneelin avaus käyttää `focus({ preventScroll: true })`, joten näkymä ei hyppää
+
+### Lisätty
+
+- `tests/station-selection.test.mjs`: testi joka kaataa buildin jos paneelin avaus fokusoi tekstikentän uudelleen
+
 ## 1.9.1 – 2026-07-28
 
 ### Korjattu

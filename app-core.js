@@ -1,9 +1,9 @@
-import { RISK_LEVELS, buildStationView } from "./risk.js?v=1.9.1";
-import { demoCameras, demoMeasurements, demoMetadata } from "./demo-data.js?v=1.9.1";
-import { escapeHtml, bindImageFallback } from "./dom-utils.js?v=1.9.1";
-import { digitrafficJson } from "./api-client.js?v=1.9.1";
-import { EVENTS, emit } from "./events.js?v=1.9.1";
-import { nearestCamera, renderStationDetailHtml } from "./station-detail.js?v=1.9.1";
+import { RISK_LEVELS, buildStationView } from "./risk.js?v=1.9.2";
+import { demoCameras, demoMeasurements, demoMetadata } from "./demo-data.js?v=1.9.2";
+import { escapeHtml, bindImageFallback } from "./dom-utils.js?v=1.9.2";
+import { digitrafficJson } from "./api-client.js?v=1.9.2";
+import { EVENTS, emit } from "./events.js?v=1.9.2";
+import { nearestCamera, renderStationDetailHtml } from "./station-detail.js?v=1.9.2";
 
 const REFRESH_SECONDS = 60;
 const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
@@ -467,7 +467,13 @@ function setSidebarOpen(open) {
   document.body.classList.toggle("sidebar-open", state.sidebarOpen);
 
   if (state.sidebarOpen) {
-    window.setTimeout(() => elements.stationSearch.focus(), 180);
+    // Move focus into the panel, but to the panel itself rather than to the
+    // station search field. This sidebar only opens on mobile, where
+    // focusing a text input pops the on-screen keyboard over the very
+    // filters the user just asked to see -- they then have to dismiss it
+    // and scroll to find out what the options even are. Let them tap a
+    // field when they actually want to type in one.
+    window.setTimeout(() => elements.filterSidebar.focus({ preventScroll: true }), 180);
   } else {
     hideSearchResults();
   }

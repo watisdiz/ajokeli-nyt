@@ -1,4 +1,4 @@
-const BUILD_VERSION = "1.9.1";
+const BUILD_VERSION = "1.9.2";
 const asset = (path) => `${path}?v=${BUILD_VERSION}`;
 
 await import(asset("./request-guard.js"));

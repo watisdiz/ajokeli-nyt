@@ -78,6 +78,13 @@ selainautomaatiolla.
   valinnasta. Korjaantuu itsestään kun uudelleenyritys onnistuu.
   Korjattavissa `traffic-feature.js`:n yhteenvedon renderöinnissä.
 
+- **Fyysinen puhelin tuotti ensimmäisen oikean löydöksen 28.7.2026:**
+  suodatinpaneelin avaus nosti näppäimistön, koska fokus meni
+  tekstikenttään. Emulointi ei paljastanut tätä lainkaan — 360 × 800
+  -näkymässä ei ole näppäimistöä joka peittäisi puolet ruudusta.
+  Korjattu 1.9.2:ssa. Tämä on hyvä muistutus siitä, miksi alla oleva
+  kohta ei ole muodollisuus.
+
 - **Yhä vahvistamatta oikealla puhelimella.** Emulointi 360 × 800:ssa ei
   kata kosketuskohteiden kokoa, iOS Safarin ja Android Chromen
   renderöintieroja, `env(safe-area-inset-*)`:ia eikä puhelinraudan
