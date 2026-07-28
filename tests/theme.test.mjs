@@ -1,7 +1,17 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readFile } from "node:fs/promises";
-import { createHarness, freshImport } from "./dom-harness.mjs";
+import { createHarness, freshImport, waitFor } from "./dom-harness.mjs";
+import { EVENTS } from "../events.js";
+import { demoCameras, demoMeasurements, demoMetadata } from "../demo-data.js";
+
+function buildFetchHandlers() {
+  return [
+    ["/api/weather/v1/stations/data", () => demoMeasurements],
+    ["/api/weather/v1/stations", () => demoMetadata],
+    ["/api/weathercam/v1/stations", () => demoCameras],
+  ];
+}
 
 // Two kinds of theme coverage:
 //
@@ -76,4 +86,48 @@ test("map overlays take their background from theme tokens", async () => {
     /background:\s*rgba\(7,\s*16,\s*29/,
     "hardcoded dark navy background reintroduced",
   );
+});
+
+// The map cannot read CSS variables, so it learns about the theme over the
+// event bus and swaps its basemap. The swap is the risky part: setStyle
+// replaces the whole style, and the station, route, traffic and forecast
+// layers live in it.
+test("switching theme swaps the basemap and keeps the app's own layers", async () => {
+  const harness = await createHarness({ fetchHandlers: buildFetchHandlers() });
+  const { document, window } = harness;
+
+  try {
+    await freshImport("../app-core.js");
+    await waitFor(() => document.querySelector("#data-timestamp").textContent.length > 0);
+
+    const map = window.__ajokeliMap;
+    // jsdom reports no light preference, so the map starts on the dark style.
+    assert.match(map._styleUrl ?? "", /fiord/);
+
+    window.dispatchEvent(
+      new window.CustomEvent(EVENTS.THEME_CHANGED, { detail: { theme: "light" } }),
+    );
+    await waitFor(() => /positron/.test(map._styleUrl ?? ""));
+
+    const transformed = map._transformedStyle;
+    assert.ok(transformed, "expected transformStyle to run during the swap");
+    assert.ok(
+      Object.keys(transformed.sources).includes("weather-stations"),
+      `station source lost in the swap: ${Object.keys(transformed.sources).join(", ")}`,
+    );
+    assert.ok(
+      transformed.layers.some((layer) => layer.id === "weather-station-points"),
+      "station layer lost in the swap",
+    );
+    // The incoming basemap must still be there underneath.
+    assert.ok(Object.keys(transformed.sources).includes("openmaptiles"));
+    assert.equal(transformed.layers[0].id, "background");
+
+    window.dispatchEvent(
+      new window.CustomEvent(EVENTS.THEME_CHANGED, { detail: { theme: "dark" } }),
+    );
+    await waitFor(() => /fiord/.test(map._styleUrl ?? ""));
+  } finally {
+    harness.cleanup();
+  }
 });

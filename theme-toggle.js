@@ -1,13 +1,8 @@
+import { resolveTheme } from "./dom-utils.js?v=1.9.3";
+import { EVENTS, emit } from "./events.js?v=1.9.3";
+
 const STORAGE_KEY = "ajokeli-theme";
 const root = document.documentElement;
-
-function systemPrefersLight() {
-  return window.matchMedia("(prefers-color-scheme: light)").matches;
-}
-
-function currentTheme() {
-  return root.dataset.theme || (systemPrefersLight() ? "light" : "dark");
-}
 
 function applyTheme(theme) {
   root.dataset.theme = theme;
@@ -17,6 +12,10 @@ function applyTheme(theme) {
     // Storage disabled — theme still applies for this page load, just
     // won't persist across reloads.
   }
+  // The map picks its basemap from the theme and cannot read CSS variables,
+  // so it needs telling. Goes over the event bus like every other
+  // cross-feature signal.
+  emit(EVENTS.THEME_CHANGED, { theme });
 }
 
 function labelFor(theme) {
@@ -31,7 +30,7 @@ function injectToggle() {
   const actions = document.querySelector(".topbar-actions");
   if (!actions || actions.querySelector("#theme-toggle-button")) return;
 
-  const theme = currentTheme();
+  const theme = resolveTheme();
   const button = document.createElement("button");
   button.id = "theme-toggle-button";
   button.className = "icon-button theme-toggle-button";
@@ -41,7 +40,7 @@ function injectToggle() {
   actions.prepend(button);
 
   button.addEventListener("click", () => {
-    const next = currentTheme() === "light" ? "dark" : "light";
+    const next = resolveTheme() === "light" ? "dark" : "light";
     applyTheme(next);
     button.textContent = iconFor(next);
     button.setAttribute("aria-label", labelFor(next));

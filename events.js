@@ -5,6 +5,7 @@ export const EVENTS = {
   OBSERVATIONS_CHANGED: "ajokeli:observations-changed",
   REQUEST_COMPLETE: "ajokeli:request-complete",
   REQUEST_TIMEOUT: "ajokeli:request-timeout",
+  THEME_CHANGED: "ajokeli:theme-changed",
 };
 
 export function emit(name, detail) {

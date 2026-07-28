@@ -9,9 +9,13 @@ import { JSDOM } from "jsdom";
 // event-bus wiring between modules, not just their source text.
 
 class FakeMap {
-  constructor() {
+  constructor(options = {}) {
     this._sources = new Map();
     this._layers = new Map();
+    // The initial basemap arrives through the constructor, not setStyle, so
+    // record it here too — otherwise a test cannot see which style the app
+    // chose on load.
+    this._styleUrl = options.style ?? null;
     globalThis.window.__ajokeliMap = this;
   }
 
@@ -64,6 +68,27 @@ class FakeMap {
 
   getLayer(id) {
     return this._layers.get(id);
+  }
+
+  // Enough of setStyle to exercise the basemap swap: it records the URL and
+  // runs the caller's transformStyle against a stand-in "new basemap", so a
+  // test can check that the app's own sources and layers survive.
+  setStyle(url, options = {}) {
+    this._styleUrl = url;
+
+    if (typeof options.transformStyle === "function") {
+      const previous = {
+        sources: Object.fromEntries([...this._sources].map(([id, source]) => [id, { ...source }])),
+        layers: [...this._layers.values()],
+      };
+      const next = {
+        sources: { openmaptiles: { type: "vector" } },
+        layers: [{ id: "background", type: "background" }],
+      };
+      this._transformedStyle = options.transformStyle(previous, next);
+    }
+
+    return this;
   }
 
   setLayoutProperty() {}

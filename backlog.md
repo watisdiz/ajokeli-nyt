@@ -150,10 +150,13 @@ rakennat lisää — se todennäköisesti muuttaa tämän listan järjestystä.
    joten kuvio ja `privacy.html`:n lupaus kestävät tämän sellaisenaan.
    Pieni työ, varma hyöty.
 
-2. **Tumma karttatausta tummaan teemaan.** `MAP_STYLE_URL` on
-   kovakoodattu vaaleaan `positron`iin, joten kartta hohtaa valkoisena
-   tummassa teemassa. Juuri pimeä aamu ennen lähtöä on se hetki jolloin
-   tummaa teemaa käytetään. OpenFreeMapilla on valmis tumma tyyli.
+2. ~~**Tumma karttatausta tummaan teemaan.**~~ **Tehty 1.9.3:ssa.**
+   Tummassa teemassa käytetään Fiordia, vaaleassa Positronia, ja vaihto
+   tapahtuu tapahtumaväylän kautta ilman uudelleenlatausta. Huom:
+   OpenFreeMapilla ei ole `dark-matter`-tyyliä; ainoa tumma vaihtoehto on
+   Fiord (`#45516E`), joka on vaaleampi kuin sovelluksen oma tausta
+   (`#07101d`). Riittää tarkoitukseen, mutta kartta ei sulaudu
+   käyttöliittymään.
 
 3. **Service worker + offline-kuori.** Palvelua katsotaan ennen lähtöä ja
    tien päällä, missä yhteys pätkii; nyt katkos on tyhjä sivu.

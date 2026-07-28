@@ -6,10 +6,10 @@ import {
   matchForecastSectionsToRoute,
   normalizeForecastSections,
   routeBoundingBox,
-} from "./forecast.js?v=1.9.2";
-import { escapeHtml } from "./dom-utils.js?v=1.9.2";
-import { digitrafficJson } from "./api-client.js?v=1.9.2";
-import { EVENTS, emit } from "./events.js?v=1.9.2";
+} from "./forecast.js?v=1.9.3";
+import { escapeHtml } from "./dom-utils.js?v=1.9.3";
+import { digitrafficJson } from "./api-client.js?v=1.9.3";
+import { EVENTS, emit } from "./events.js?v=1.9.3";
 
 const METADATA_PATH = "/api/weather/v1/forecast-sections-simple";
 const FORECASTS_PATH = "/api/weather/v1/forecast-sections-simple/forecasts";

@@ -5,6 +5,19 @@ Versiot noudattavat semanttista versionumerointia.
 
 ## Unreleased
 
+## 1.9.3 – 2026-07-28
+
+### Lisätty
+
+- **karttatausta seuraa teemaa.** Karttatyyli oli kovakoodattu vaaleaan OpenFreeMapin Positroniin, joten kartta hohti valkoisena tummassa teemassa — juuri silloin kun tummaa teemaa käytetään, eli pimeänä aamuna ennen lähtöä. Tummassa teemassa käytetään nyt Fiord-tyyliä, vaaleassa edelleen Positronia
+- teema välittyy kartalle `events.js`:n väylän kautta (`ajokeli:theme-changed`), koska MapLibre ei voi lukea CSS-muuttujia. Vaihto tapahtuu ilman sivun uudelleenlatausta
+- jaettu `resolveTheme()` `dom-utils.js`:ssä: tallennettu valinta voittaa, muuten seurataan järjestelmän asetusta. Sama sääntö oli aiemmin vain `theme-toggle.js`:ssä, ja kartta tarvitsee siihen saman vastauksen
+
+### Muutettu
+
+- pohjakartan vaihto käyttää `setStyle`in `transformStyle`-koukkua, joka siirtää sovelluksen omat lähteet ja tasot uuteen tyyliin. Ilman sitä `setStyle` pudottaisi asema-, reitti-, liikenne- ja ennustetasot. Todennettu oikeassa selaimessa reitti aktiivisena: kaikki yhdeksän omaa tasoa säilyivät
+- `tests/dom-harness.mjs`:n `FakeMap` osaa nyt `setStyle`in ja tallentaa konstruktorin tyylin, joten vaihto on testattavissa
+
 ## 1.9.2 – 2026-07-28
 
 ### Korjattu

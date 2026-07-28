@@ -1,6 +1,6 @@
 # Beta-testauksen tarkistuslista
 
-Tämä lista tukee Ajokeli nyt -version 1.9.2 manuaalista päästä päähän -testausta ennen laajempaa jakamista.
+Tämä lista tukee Ajokeli nyt -version 1.9.3 manuaalista päästä päähän -testausta ennen laajempaa jakamista.
 
 ## Tilanne 27.7.2026
 

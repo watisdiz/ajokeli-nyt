@@ -1,15 +1,15 @@
-import { buildStationView, formatNumber } from "./risk.js?v=1.9.2";
-import { demoCameras, demoMeasurements, demoMetadata } from "./demo-data.js?v=1.9.2";
+import { buildStationView, formatNumber } from "./risk.js?v=1.9.3";
+import { demoCameras, demoMeasurements, demoMetadata } from "./demo-data.js?v=1.9.3";
 import {
   ROUTE_CORRIDOR_KM,
   analyzeRouteStations,
   formatRouteDistance,
   formatRouteDuration,
-} from "./route.js?v=1.9.2";
-import { escapeHtml, bindImageFallback } from "./dom-utils.js?v=1.9.2";
-import { digitrafficJson } from "./api-client.js?v=1.9.2";
-import { EVENTS, emit } from "./events.js?v=1.9.2";
-import { nearestCamera, renderStationDetailHtml } from "./station-detail.js?v=1.9.2";
+} from "./route.js?v=1.9.3";
+import { escapeHtml, bindImageFallback } from "./dom-utils.js?v=1.9.3";
+import { digitrafficJson } from "./api-client.js?v=1.9.3";
+import { EVENTS, emit } from "./events.js?v=1.9.3";
+import { nearestCamera, renderStationDetailHtml } from "./station-detail.js?v=1.9.3";
 
 const NOMINATIM_API = "https://nominatim.openstreetmap.org/search";
 const OSRM_API = "https://router.project-osrm.org/route/v1/driving";

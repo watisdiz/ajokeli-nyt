@@ -1,12 +1,20 @@
-import { RISK_LEVELS, buildStationView } from "./risk.js?v=1.9.2";
-import { demoCameras, demoMeasurements, demoMetadata } from "./demo-data.js?v=1.9.2";
-import { escapeHtml, bindImageFallback } from "./dom-utils.js?v=1.9.2";
-import { digitrafficJson } from "./api-client.js?v=1.9.2";
-import { EVENTS, emit } from "./events.js?v=1.9.2";
-import { nearestCamera, renderStationDetailHtml } from "./station-detail.js?v=1.9.2";
+import { RISK_LEVELS, buildStationView } from "./risk.js?v=1.9.3";
+import { demoCameras, demoMeasurements, demoMetadata } from "./demo-data.js?v=1.9.3";
+import { escapeHtml, bindImageFallback, resolveTheme } from "./dom-utils.js?v=1.9.3";
+import { digitrafficJson } from "./api-client.js?v=1.9.3";
+import { EVENTS, emit } from "./events.js?v=1.9.3";
+import { nearestCamera, renderStationDetailHtml } from "./station-detail.js?v=1.9.3";
 
 const REFRESH_SECONDS = 60;
-const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
+// OpenFreeMap's only dark style is fiord. Its background (#45516E) is
+// lighter than the app chrome (#07101d), so the map does not disappear into
+// the UI — but it stops the basemap glaring white next to a dark interface,
+// which is the whole point: the dark theme gets used before a dark winter
+// morning drive.
+const MAP_STYLES = {
+  light: "https://tiles.openfreemap.org/styles/positron",
+  dark: "https://tiles.openfreemap.org/styles/fiord",
+};
 const MAP_SOURCE_ID = "weather-stations";
 const MAP_LAYER_ID = "weather-station-points";
 const MOBILE_BREAKPOINT = 760;
@@ -65,10 +73,42 @@ function announce(message) {
   }, 20);
 }
 
+// setStyle swaps the whole style, which would drop the station, route,
+// traffic and forecast layers the feature modules added. Anything whose
+// source is not part of the incoming basemap belongs to us, so carry it
+// across rather than asking every module to rebuild itself.
+function keepFeatureLayers(previous, next) {
+  if (!previous) return next;
+
+  const baseSources = new Set(Object.keys(next.sources ?? {}));
+  const ourSources = Object.fromEntries(
+    Object.entries(previous.sources ?? {}).filter(([id]) => !baseSources.has(id)),
+  );
+  const ourLayers = (previous.layers ?? []).filter(
+    (layer) => layer.source && !baseSources.has(layer.source),
+  );
+
+  return {
+    ...next,
+    sources: { ...next.sources, ...ourSources },
+    layers: [...(next.layers ?? []), ...ourLayers],
+  };
+}
+
+function applyMapStyle(theme) {
+  const styleUrl = MAP_STYLES[theme] ?? MAP_STYLES.dark;
+  if (!state.map || state.mapStyleUrl === styleUrl) return;
+
+  state.mapStyleUrl = styleUrl;
+  state.map.setStyle(styleUrl, { transformStyle: keepFeatureLayers });
+}
+
 function initMap() {
+  state.mapStyleUrl = MAP_STYLES[resolveTheme()] ?? MAP_STYLES.dark;
+
   state.map = new maplibregl.Map({
     container: "map",
-    style: MAP_STYLE_URL,
+    style: state.mapStyleUrl,
     center: [25.2, 64.4],
     zoom: 4.35,
     minZoom: 3.5,
@@ -673,6 +713,10 @@ function bindEvents() {
   window.addEventListener("resize", () => {
     if (!isMobile() && state.sidebarOpen) setSidebarOpen(false);
     state.map?.resize();
+  });
+
+  window.addEventListener(EVENTS.THEME_CHANGED, (event) => {
+    applyMapStyle(event.detail?.theme ?? resolveTheme());
   });
 }
 
