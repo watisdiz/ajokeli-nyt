@@ -105,7 +105,10 @@ Versiosta 1.7.1 alkaen:
 - beta-testaukselle on oma [tarkistuslista](./BETA_TESTING.md)
 - palvelulla on oma [tietosuojakuvaus](./privacy.html)
 
-Cloudflare Web Analyticsia tai muuta analytiikkaa ei ole otettu käyttöön.
+Sovellus itse ei sisällä analytiikkaa. Cloudflare lisää palvelimen puolella
+jokaiseen HTML-vastaukseen oman Web Analytics -skriptinsä, mutta sivun
+Content-Security-Policy estää sen suorituksen, joten se ei kerää dataa eikä
+aseta evästeitä.
 
 ## Paikkahaun ja reitityksen rajaus
 

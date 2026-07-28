@@ -88,11 +88,23 @@ fyysinen puhelin.
   aseteta. `privacy.html`:n lupaus ("ei evästeitä, kirjautumista tai
   analytiikkaa") ja `README.md`:n vastaava väite siis pitävät yhä.
 
-  Riski on, että lupaus on voimassa vain CSP:n ansiosta, ei asetuksen.
-  Jos `script-src`:ää joskus löysätään, analytiikka kytkeytyy hiljaisesti
-  päälle ja sivu alkaa rikkoa omaa tietosuojakuvaustaan. **Oikea korjaus
-  on kytkeä Web Analytics pois Cloudflaren hallintapaneelista** — se on
-  tilin asetus, ei repon muutos, eli tämä odottaa ylläpitäjää.
+  **Päätös 27.7.2026: asetus jätetään päälle.** Ylläpitäjä katsoi, ettei
+  tämä ole prioriteetti, ja että oletuksena kerättävä data on hyväksyttävää.
+  Älä nosta tätä uudelleen avoimena tehtävänä. `README.md` päivitettiin
+  samalla kuvaamaan todellisuutta — se väitti aiemmin virheellisesti, ettei
+  Web Analyticsia ole otettu käyttöön.
+
+  Se mikä jää voimaan on **ehdollinen riski**: lupaus "ei analytiikkaa"
+  on tosi vain koska CSP estää beaconin. CLAUDE.md ennakoi, että
+  `script-src`:ää joudutaan muokkaamaan kun uusi ulkoinen isäntä
+  lisätään — se joka sen tekee ajattelee karttapalvelinta, ei
+  analytiikkaa. **Käsittele jokaista `script-src`-muutosta myös
+  tietosuojapäätöksenä** ja tarkista `privacy.html`:n lupaus sen jälkeen.
+
+  Tarkennus: Web Analytics ei ole se, mikä antaa Cloudflarelle näkyvyyden.
+  Käänteisproxyna se näkee ja lokittaa joka pyynnön beaconista
+  riippumatta, joten `privacy.html`:ää ei pidä lukea niin ettei Cloudflare
+  tiedä mitään.
 
 ## Kehitysympäristö
 
