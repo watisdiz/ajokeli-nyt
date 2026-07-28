@@ -1,1 +1,1 @@
-await import("./forecast-feature.js");
+await import("./forecast-feature.js?v=1.9.1");

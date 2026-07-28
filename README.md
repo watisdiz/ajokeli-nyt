@@ -2,7 +2,7 @@
 
 Ajokeli nyt näyttää Suomen tiesääasemien ajantasaiset mittaukset kartalla, laskee niistä läpinäkyvän keliriski-indikaattorin ja kokoaa ajoreitin läheiset keli-, ennuste- ja liikennetiedot yhteen.
 
-Nykyinen versio on **1.9.0 beta**.
+Nykyinen versio on **1.9.1 beta**.
 
 ## Käytetyt palvelut
 
@@ -203,7 +203,7 @@ Kartta käyttää MapLibre GL JS 5.24.0:aa CDN:stä ja OpenFreeMapin Positron-ty
 - Nominatim: OpenStreetMap-aineiston hakupalvelu
 - OSRM: BSD-2-Clause, reititys OpenStreetMap-aineistolla
 
-Digitraffic-haut käyttävät ajonaikaisesti tunnistetta `AjokeliNyt/MVP 1.9.0`. Tunniste ei sisällä henkilötietoja.
+Digitraffic-haut käyttävät ajonaikaisesti tunnistetta `AjokeliNyt/MVP 1.9.1`. Tunniste ei sisällä henkilötietoja.
 
 ## Vastuunrajaus
 

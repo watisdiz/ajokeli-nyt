@@ -3,7 +3,7 @@ import {
   distanceToRouteKm,
   distanceToRouteKmIndexed,
   pointToSegmentDistanceKm,
-} from "./route.js";
+} from "./route.js?v=1.9.1";
 
 export const FORECAST_CORRIDOR_KM = 5;
 

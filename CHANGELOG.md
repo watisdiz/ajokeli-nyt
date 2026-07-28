@@ -5,6 +5,17 @@ Versiot noudattavat semanttista versionumerointia.
 
 ## Unreleased
 
+## 1.9.1 – 2026-07-28
+
+### Korjattu
+
+- **moduulien välimuistiversiointi ulotettiin logiikkamoduuleihin.** `BUILD_VERSION` ohitti välimuistin vain niille moduuleille jotka `app.js` nimeää itse; kaikki mitä ne puolestaan importtasivat (`route.js`, `traffic.js`, `forecast.js`, `risk.js`, `events.js`, `dom-utils.js`, …) haettiin paljaasta osoitteesta ja jäi 4 tunniksi välimuistiin. Jokainen relatiivinen importti kantaa nyt `?v=`-parametrin
+- tämä muuttui 1.9.0:ssa kosmeettisesta vaaraksi: `traffic.js` importtaa `buildRouteIndex`-symbolin `route.js`:stä nimellä, joten vanhentunut `route.js` tuoreen `traffic.js`:n kanssa ei enää tarkoita vanhaa käytöstä vaan sitä, ettei **sovellus käynnisty lainkaan**. Vika todettiin selaimessa, ei pääteltiin
+
+### Lisätty
+
+- `tests/beta.test.mjs` tarkistaa jokaisen relatiivisen importin kaikissa moduuleissa `package.json`:in versiota vasten, joten yksikin unohtunut `?v=` kaataa testit
+
 ## 1.9.0 – 2026-07-27
 
 ### Korjattu

@@ -1,4 +1,4 @@
-import { buildRouteIndex, distanceToRouteKm, distanceToRouteKmIndexed } from "./route.js";
+import { buildRouteIndex, distanceToRouteKm, distanceToRouteKmIndexed } from "./route.js?v=1.9.1";
 
 export const TRAFFIC_CORRIDOR_KM = 2;
 

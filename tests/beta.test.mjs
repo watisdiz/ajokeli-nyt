@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 
 import {
@@ -112,4 +112,42 @@ test("beta runtime keeps stable route features and excludes radar processing", a
   assert.match(checklist, /Vantaa → Vaasa/);
   assert.match(checklist, /Pitkien reittien suorituskyky/);
   assert.match(readme, /suorituskyky- ja luotettavuusongelmien vuoksi/);
+});
+
+// BUILD_VERSION only cache-busts what app.js imports by name. Everything
+// those modules import in turn is fetched at a bare URL, and Pages serves
+// those with max-age=14400 -- so a returning visitor can end up running a
+// new feature module against a four-hour-old logic module. When 1.9.0 added
+// buildRouteIndex to route.js, that skew stopped being cosmetic: traffic.js
+// imports the new symbol by name, so a stale route.js makes the app fail to
+// boot rather than just behave like the old version. Every relative import
+// therefore carries the version too.
+test("every relative import is pinned to the current version", async () => {
+  const pkg = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
+  const root = new URL("../", import.meta.url);
+
+  const files = (await readdir(root)).filter(
+    (name) => name.endsWith(".js") && !name.startsWith("eslint.config"),
+  );
+  assert.ok(files.length > 10, `expected to find the app modules, got ${files.length}`);
+
+  const problems = [];
+
+  for (const name of files) {
+    const source = await readFile(new URL(name, root), "utf8");
+
+    // app.js builds its own versioned URLs through asset(), so its bare
+    // strings are intentional.
+    if (name === "app.js") continue;
+
+    for (const [, specifier] of source.matchAll(/["'](\.\/[^"']+\.js[^"']*)["']/g)) {
+      if (!specifier.includes("?v=")) {
+        problems.push(`${name}: ${specifier} has no ?v=`);
+      } else if (!specifier.endsWith(`?v=${pkg.version}`)) {
+        problems.push(`${name}: ${specifier} is not pinned to ${pkg.version}`);
+      }
+    }
+  }
+
+  assert.deepEqual(problems, [], `unpinned imports:\n${problems.join("\n")}`);
 });

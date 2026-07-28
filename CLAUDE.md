@@ -103,7 +103,8 @@ latauksessa. Kaikki on nostettava yhdessä:
 2. `app.js` → `BUILD_VERSION`
 3. `beta.js` → `APP_VERSION`
 4. `privacy.html` → näkyvä "Beta · versio X" -teksti
-5. `request-guard.js` → **kaksi** `?v=` -parametria import-poluissa
+5. **jokaisen moduulin relatiiviset importit** → `?v=` -parametri
+   (`sed -i 's/vanha/uusi/g' *.js` hoitaa kaikki kerralla)
 6. `CHANGELOG.md` → uusi päivätty osio Unreleasedin tilalle
 7. `README.md` → "Nykyinen versio" ja Digitraffic-tunniste
 8. `BETA_TESTING.md` → tarkistuslistan johdanto
@@ -114,11 +115,20 @@ latauksessa. Kaikki on nostettava yhdessä:
 tarkistaa kohdat 2–5 sekä 7–9. Jos jokin jää nostamatta, `npm test` kaatuu — älä
 kovakoodaa versionumeroa testiin takaisin.
 
-Kohta 9 ei ole valinnainen: `BUILD_VERSION` ohittaa välimuistin vain
-`app.js`:n _importtaamille_ moduuleille, eikä se voi auttaa `app.js`:ää,
-`styles.css`:ää tai `theme-init.js`:ää itseään. GitHub Pages tarjoilee ne
-`max-age=14400`:llä. Kun 1.8.1 julkaistiin ilman näitä parametreja,
-käyttäjät saivat uuden JavaScriptin vanhan tyylitiedoston kanssa.
+Kohdat 5 ja 9 eivät ole valinnaisia. GitHub Pages tarjoilee kaiken
+`max-age=14400`:llä (4 h), ja `BUILD_VERSION` ohittaa välimuistin vain
+niille moduuleille jotka `app.js` nimeää itse. Kaikki muu jää
+välimuistiin, ellei sitä versioida erikseen:
+
+- Kun 1.8.1 julkaistiin ilman kohtaa 9, käyttäjät saivat uuden
+  JavaScriptin vanhan tyylitiedoston kanssa.
+- Kohta 5 on pahempi. Jos `route.js` on välimuistista vanha mutta
+  `traffic.js` tuore, `import { buildRouteIndex } from "./route.js"`
+  kaatuu — **sovellus ei käynnisty lainkaan**, ei vain käyttäydy
+  vanhasti. Siksi jokainen relatiivinen importti versioidaan.
+
+`tests/beta.test.mjs` tarkistaa jokaisen relatiivisen importin
+`package.json`:ia vasten, joten yksikin unohtunut kaataa testit.
 
 ## Tunnetut sudenkuopat
 

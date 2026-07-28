@@ -1,7 +1,12 @@
-import { APP_VERSION, buildShareUrl, parseSharedRoute, pickClosestDeparture } from "./beta.js";
-import { escapeHtml } from "./dom-utils.js";
-import { formatRouteDistance, formatRouteDuration } from "./route.js";
-import { EVENTS } from "./events.js";
+import {
+  APP_VERSION,
+  buildShareUrl,
+  parseSharedRoute,
+  pickClosestDeparture,
+} from "./beta.js?v=1.9.1";
+import { escapeHtml } from "./dom-utils.js?v=1.9.1";
+import { formatRouteDistance, formatRouteDuration } from "./route.js?v=1.9.1";
+import { EVENTS } from "./events.js?v=1.9.1";
 
 const routePanel = document.querySelector(".route-panel");
 const routeSummary = document.querySelector("#route-summary");

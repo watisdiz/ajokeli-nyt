@@ -55,7 +55,9 @@ test("wrapper cache-busts and loads the stable application features", () => {
   assert.match(wrapper, /asset\("\.\/beta-feature\.js"\)/);
   assert.doesNotMatch(wrapper, /radar-feature|radar-polish|unified-map-mode/);
   assert.match(wrapper, /window\.__ajokeliMap/);
-  assert.match(forecastBootstrap, /await import\("\.\/forecast-feature\.js"\)/);
+  // The version parameter is asserted against package.json in beta.test.mjs;
+  // here it only matters that the bootstrap still pulls in the feature.
+  assert.match(forecastBootstrap, /await import\("\.\/forecast-feature\.js\?v=[\d.]+"\)/);
   assert.match(core, /function setSidebarOpen/);
   assert.match(core, /function renderSearchResults/);
 });
