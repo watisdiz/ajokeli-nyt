@@ -5,6 +5,19 @@ Versiot noudattavat semanttista versionumerointia.
 
 ## Unreleased
 
+## 1.9.0 – 2026-07-27
+
+### Korjattu
+
+- **reitin laskenta ei enää jäädytä käyttöliittymää.** Reittiosumien haku vertasi jokaista kohdetta reittiviivan jokaiseen segmenttiin, eli koko Suomen 579 liikennehäiriötä × 3 886 segmenttiä. Vantaa–Vaasa-reitillä pääsäie oli kiinni 6,4–8,1 sekuntia, mikä rikkoi beta-testauksen hyväksymisehdon. Reittisegmentit viedään nyt hilaindeksiin, jolloin jokainen piste mittaa vain lähellä olevat segmentit
+- mitattu samalla aineistolla ennen ja jälkeen: liikennetilanne 18 770 ms → 123 ms, tiejaksoennuste 2 076 ms → 719 ms, tiesääasemat 227 ms → 23 ms. Pisin yhtenäinen jumi koko sovelluksessa: Vantaa–Vaasa 8 109 ms → 237 ms, Oulu–Rovaniemi 4 431 ms → 105 ms, Helsinki–Turku 3 353 ms → 87 ms
+- lopputulokset ovat muuttumattomat: samat 39 liikennehäiriötä, 35 tiejaksoa ja 51 tiesääasemaa kuin ennen
+
+### Lisätty
+
+- `route.js`: `buildRouteIndex` ja `distanceToRouteKmIndexed`. Indeksin solu on korridorin levyinen, joten haku 3 × 3 -solualueelta löytää varmasti kaikki korridorin sisällä olevat segmentit
+- `tests/route.test.mjs`: kaksi vastaavuustestiä, jotka vertaavat indeksoitua polkua tyhjentävään hakuun satunnaistetulla reitillä ja vaativat identtiset tulokset korridorin sisällä — sekä sen, ettei indeksi koskaan aliarvioi etäisyyttä korridorin ulkopuolella
+
 ## 1.8.2 – 2026-07-27
 
 ### Korjattu

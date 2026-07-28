@@ -89,6 +89,124 @@ export function distanceToRouteKm(point, routeCoordinates = []) {
   return nearest;
 }
 
+// Matching stations, roadworks and forecast sections against a route means
+// asking "how far is this point from the route" thousands of times, and
+// distanceToRouteKm walks every segment each time. On a long route
+// (Vantaa-Vaasa is ~3900 segments) against all of Finland's ~580 traffic
+// incidents that is hundreds of millions of distance calculations, which
+// blocked the main thread for the better part of 20 seconds.
+//
+// The index buckets segments into a grid whose cells are corridorKm across,
+// so a lookup only measures the segments in the 3x3 block of cells around
+// the point. Cells that size guarantee the block covers the whole corridor:
+// anything within corridorKm of the point is at most one cell away in each
+// direction. Segments are filed under every cell their bounding box touches,
+// so a segment crossing a cell without ending in it is still found.
+export function buildRouteIndex(routeCoordinates = [], corridorKm = ROUTE_CORRIDOR_KM) {
+  if (!Array.isArray(routeCoordinates) || routeCoordinates.length < 2) return null;
+
+  let maxAbsLat = 0;
+  for (const coordinate of routeCoordinates) {
+    const lat = Math.abs(Number(coordinate?.[1]));
+    if (Number.isFinite(lat) && lat > maxAbsLat) maxAbsLat = lat;
+  }
+
+  const cellLat = corridorKm / EARTH_KM_PER_DEGREE;
+  // A degree of longitude covers less ground the further north you go, so
+  // size the cells for the highest latitude the route reaches. Wider cells
+  // than strictly needed further south only add candidates, never lose them.
+  const shrink = Math.max(0.05, Math.cos((Math.min(89, maxAbsLat) * Math.PI) / 180));
+  const cellLon = corridorKm / (EARTH_KM_PER_DEGREE * shrink);
+
+  const cells = new Map();
+  const fileSegment = (ix, iy, segmentIndex) => {
+    const key = `${ix}:${iy}`;
+    const bucket = cells.get(key);
+    if (bucket) bucket.push(segmentIndex);
+    else cells.set(key, [segmentIndex]);
+  };
+
+  for (let index = 0; index < routeCoordinates.length - 1; index += 1) {
+    const start = routeCoordinates[index];
+    const end = routeCoordinates[index + 1];
+    const lon0 = Number(start?.[0]);
+    const lat0 = Number(start?.[1]);
+    const lon1 = Number(end?.[0]);
+    const lat1 = Number(end?.[1]);
+    if (![lon0, lat0, lon1, lat1].every(Number.isFinite)) continue;
+
+    const ixMin = Math.floor(Math.min(lon0, lon1) / cellLon);
+    const ixMax = Math.floor(Math.max(lon0, lon1) / cellLon);
+    const iyMin = Math.floor(Math.min(lat0, lat1) / cellLat);
+    const iyMax = Math.floor(Math.max(lat0, lat1) / cellLat);
+
+    for (let ix = ixMin; ix <= ixMax; ix += 1) {
+      for (let iy = iyMin; iy <= iyMax; iy += 1) fileSegment(ix, iy, index);
+    }
+  }
+
+  return { cells, cellLon, cellLat, routeCoordinates };
+}
+
+// Same contract as distanceToRouteKm, but only exact for points inside the
+// corridor the index was built for. Points with no segment nearby come back
+// as Infinity instead of their true distance -- every caller filters on
+// "<= corridorKm", so that is the same answer where it matters.
+export function distanceToRouteKmIndexed(point, index) {
+  if (!index) return distanceToRouteKm(point, []);
+
+  const lon = Number(point?.[0]);
+  const lat = Number(point?.[1]);
+  if (!Number.isFinite(lon) || !Number.isFinite(lat)) {
+    return { distanceKm: Number.POSITIVE_INFINITY, routePosition: Number.POSITIVE_INFINITY };
+  }
+
+  const { cells, cellLon, cellLat, routeCoordinates } = index;
+  const ix = Math.floor(lon / cellLon);
+  const iy = Math.floor(lat / cellLat);
+
+  let nearest = {
+    distanceKm: Number.POSITIVE_INFINITY,
+    routePosition: Number.POSITIVE_INFINITY,
+    segmentIndex: -1,
+  };
+  let seen = null;
+
+  for (let dx = -1; dx <= 1; dx += 1) {
+    for (let dy = -1; dy <= 1; dy += 1) {
+      const bucket = cells.get(`${ix + dx}:${iy + dy}`);
+      if (!bucket) continue;
+
+      for (const segmentIndex of bucket) {
+        // Segments filed under several cells would otherwise be measured
+        // more than once. Only allocate the guard when there is something
+        // to guard, which is the common case for short segments.
+        if (bucket.length > 1 || dx || dy) {
+          if (seen === null) seen = new Set();
+          if (seen.has(segmentIndex)) continue;
+          seen.add(segmentIndex);
+        }
+
+        const measurement = pointToSegmentDistanceKm(
+          point,
+          routeCoordinates[segmentIndex],
+          routeCoordinates[segmentIndex + 1],
+        );
+
+        if (measurement.distanceKm < nearest.distanceKm) {
+          nearest = {
+            distanceKm: measurement.distanceKm,
+            routePosition: segmentIndex + measurement.fraction,
+            segmentIndex,
+          };
+        }
+      }
+    }
+  }
+
+  return nearest;
+}
+
 function levelOrder(station) {
   return Number.isFinite(Number(station?.level?.order)) ? Number(station.level.order) : -1;
 }
@@ -147,9 +265,13 @@ export function analyzeRouteStations(
   routeCoordinates = [],
   corridorKm = ROUTE_CORRIDOR_KM,
 ) {
+  const index = buildRouteIndex(routeCoordinates, corridorKm);
+
   const nearbyStations = stations
     .map((station) => {
-      const distance = distanceToRouteKm(station.coordinates, routeCoordinates);
+      const distance = index
+        ? distanceToRouteKmIndexed(station.coordinates, index)
+        : distanceToRouteKm(station.coordinates, routeCoordinates);
       return {
         station,
         distanceFromRouteKm: distance.distanceKm,

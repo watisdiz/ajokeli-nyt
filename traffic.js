@@ -1,4 +1,4 @@
-import { distanceToRouteKm } from "./route.js";
+import { buildRouteIndex, distanceToRouteKm, distanceToRouteKmIndexed } from "./route.js";
 
 export const TRAFFIC_CORRIDOR_KM = 2;
 
@@ -288,7 +288,11 @@ function sampleLine(line, maximum = 48) {
   return sampled;
 }
 
-export function geometryRouteDistance(geometry, routeCoordinates = []) {
+// `index` is optional: callers matching many incidents against one route
+// pass a shared route index so each point only measures nearby segments.
+// Without it this falls back to walking the whole route, which keeps the
+// exported signature usable on its own.
+export function geometryRouteDistance(geometry, routeCoordinates = [], index = null) {
   let nearest = {
     distanceKm: Number.POSITIVE_INFINITY,
     routePosition: Number.POSITIVE_INFINITY,
@@ -296,7 +300,9 @@ export function geometryRouteDistance(geometry, routeCoordinates = []) {
 
   for (const line of coordinateLines(geometry)) {
     for (const coordinate of sampleLine(line)) {
-      const distance = distanceToRouteKm(coordinate, routeCoordinates);
+      const distance = index
+        ? distanceToRouteKmIndexed(coordinate, index)
+        : distanceToRouteKm(coordinate, routeCoordinates);
       if (distance.distanceKm < nearest.distanceKm) {
         nearest = {
           distanceKm: distance.distanceKm,
@@ -314,10 +320,12 @@ export function analyzeRouteTraffic(
   routeCoordinates = [],
   corridorKm = TRAFFIC_CORRIDOR_KM,
 ) {
+  const index = buildRouteIndex(routeCoordinates, corridorKm);
+
   const matched = incidents
     .map((incident) => ({
       incident,
-      ...geometryRouteDistance(incident.geometry, routeCoordinates),
+      ...geometryRouteDistance(incident.geometry, routeCoordinates, index),
     }))
     .filter((item) => item.distanceKm <= corridorKm)
     .sort((a, b) => {

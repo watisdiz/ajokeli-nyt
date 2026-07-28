@@ -5,48 +5,29 @@ poimi tästä kun on aika jatkaa.
 
 ## Mihin jäätiin 27.7.2026
 
-Tuotannossa on **1.8.2**. Sinä päivänä julkaistiin 1.8.1 (vaalean teeman
-kontrastikorjaus) ja 1.8.2 (`?v=` myös `index.html`:n omiin assetteihin),
-ja [BETA_TESTING.md](BETA_TESTING.md) ajettiin suurelta osin läpi
-selainautomaatiolla tuotanto-URLia vasten.
+Tuotannossa on **1.9.0**. Sinä päivänä julkaistiin 1.8.1 (vaalean teeman
+kontrastikorjaus), 1.8.2 (`?v=` myös `index.html`:n omiin assetteihin) ja
+1.9.0 (reitin laskennan hilaindeksi), ja [BETA_TESTING.md](BETA_TESTING.md)
+ajettiin suurelta osin läpi selainautomaatiolla.
 
-**Seuraava askel: profiloi reitin laskennan jäätyminen** (ks. Suorituskyky).
-Se on ainoa tiedossa oleva asia, joka estää betan hyväksymisehdon
-täyttymisen. Sen jälkeen jäljellä ovat offline-testaus, ruudunlukija ja
-fyysinen puhelin.
+**Seuraava askel: kolme jäljellä olevaa testauskohtaa** — offline- ja
+aikakatkaisutilat selaimen kehittäjätyökaluilla, ruudunlukija, ja
+testaus fyysisellä puhelimella. Ne ovat viimeiset asiat betan
+hyväksymisehdon ja laajemman jaon välissä.
 
 ## Suorituskyky
 
-- **Reitin laskenta jäädyttää pääsäikeen sekunneiksi.** Mitattu
-  tuotannossa `PerformanceObserver`in `longtask`-merkinnöillä:
-  Tikkurila–Helsinki 1,0 s · Helsinki–Turku 3,4 s · Oulu–Rovaniemi 4,4 s ·
-  **Vantaa–Vaasa 6,4–8,1 s**. Jumi on yksi yhtenäinen long task, ei monta
-  pientä. Reitit valmistuvat oikein eikä JS-virheitä tule.
+- **Ratkaistu 1.9.0:ssa.** Reitin laskenta jäädytti pääsäikeen jopa 8
+  sekunniksi, koska reittiosumien haku vertasi jokaista kohdetta
+  reittiviivan jokaiseen segmenttiin (koko Suomen 579 liikennehäiriötä ×
+  3 886 segmenttiä). Reittisegmentit ovat nyt hilaindeksissä
+  (`buildRouteIndex`), ja pisin jumi on 237 ms. Mittaukset: CHANGELOG 1.9.0.
 
-  Tämä rikkoo [BETA_TESTING.md](BETA_TESTING.md):n hyväksymisehdon
-  "Vantaa–Vaasa-reitti ei jäädytä käyttöliittymää", eli **beta ei ole
-  valmis laajempaan jakoon ennen kuin tämä on korjattu.**
-
-  Juurisyy on selvittämättä, mutta rajattu:
-
-  - tapahtumaväylän `route-changed` / `traffic-changed` /
-    `forecast-changed` laukeavat vasta long taskin **lopussa**, joten kyse
-    on synkronisesta laskennasta verkkovastausten saavuttua — ei verkon
-    odottamisesta
-  - kesto skaalautuu reitin pituuden mukaan, ei asemamäärän
-    (Oulu–Rovaniemi jumittaa 4,4 s vain 25 asemalla)
-  - ennustejaksot on suljettu pois epäillyistä: koko Suomen
-    `forecast-sections-simple` on vain 277 jaksoa / 3 668
-    koordinaattiparia ja latautuu 154 ms:ssä
-
-  Seuraava askel on profiloida `route.js`:n ja `traffic.js`:n
-  reittiosumalaskenta — todennäköisin epäilty on reittiviivan pisteiden ×
-  kohteiden etäisyysvertailu. Jos korjaus vaatii työn pilkkomista, muista
-  ettei tästä saa tulla uutta raskaan selainpuolen datankäsittelyn
-  tapausta (ks. CLAUDE.md:n sudenkuopat).
-
-  Huom: mitattu automaatioselaimessa, joka voi olla oikeaa konetta
-  hitaampi — suuruusluokka on silti todellinen.
+  Jos tähän joskus palataan, jäljellä oleva kallein kohta on
+  `forecast.js`:n `distanceGeometryToRouteKm` (719 ms Vantaa–Vaasalla).
+  Hilaindeksi ei auta sen toista silmukkaa, joka mittaa 220 alanäytteistettyä
+  reittipistettä tiejakson viivaa vasten. Ei kiireellinen — 719 ms jakautuu
+  usealle taskille eikä näy jäätymisenä.
 
 ## Testaus ja laatu
 

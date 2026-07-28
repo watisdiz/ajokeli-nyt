@@ -1,4 +1,9 @@
-import { distanceToRouteKm, pointToSegmentDistanceKm } from "./route.js";
+import {
+  buildRouteIndex,
+  distanceToRouteKm,
+  distanceToRouteKmIndexed,
+  pointToSegmentDistanceKm,
+} from "./route.js";
 
 export const FORECAST_CORRIDOR_KM = 5;
 
@@ -131,7 +136,13 @@ function pointToLineDistanceKm(point, line) {
   return nearest;
 }
 
-export function distanceGeometryToRouteKm(geometry, routeCoordinates = []) {
+// `index` is optional and works the same way as in traffic.js: build it once
+// per route in the caller, and every section point measures only the segments
+// near it instead of all of them.
+export function distanceGeometryToRouteKm(geometry, routeCoordinates = [], index = null) {
+  const routeDistance = (point) =>
+    index ? distanceToRouteKmIndexed(point, index) : distanceToRouteKm(point, routeCoordinates);
+
   if (!Array.isArray(routeCoordinates) || routeCoordinates.length < 2) {
     return {
       distanceKm: Number.POSITIVE_INFINITY,
@@ -157,7 +168,7 @@ export function distanceGeometryToRouteKm(geometry, routeCoordinates = []) {
     const line = sampleLine(rawLine, 100);
 
     for (const point of line) {
-      const measurement = distanceToRouteKm(point, routeCoordinates);
+      const measurement = routeDistance(point);
       if (measurement.distanceKm < nearest.distanceKm) {
         nearest = {
           distanceKm: measurement.distanceKm,
@@ -169,7 +180,7 @@ export function distanceGeometryToRouteKm(geometry, routeCoordinates = []) {
     for (const routePoint of sampledRoute) {
       const distanceKm = pointToLineDistanceKm(routePoint, line);
       if (distanceKm < nearest.distanceKm) {
-        const routeMeasurement = distanceToRouteKm(routePoint, routeCoordinates);
+        const routeMeasurement = routeDistance(routePoint);
         nearest = {
           distanceKm,
           routePosition: routeMeasurement.routePosition,
@@ -237,9 +248,11 @@ export function matchForecastSectionsToRoute(
   routeCoordinates = [],
   corridorKm = FORECAST_CORRIDOR_KM,
 ) {
+  const index = buildRouteIndex(routeCoordinates, corridorKm);
+
   return sections
     .map((section) => {
-      const distance = distanceGeometryToRouteKm(section.geometry, routeCoordinates);
+      const distance = distanceGeometryToRouteKm(section.geometry, routeCoordinates, index);
       return {
         section,
         distanceKm: distance.distanceKm,

@@ -1,15 +1,17 @@
 # Beta-testauksen tarkistuslista
 
-Tämä lista tukee Ajokeli nyt -version 1.8.2 manuaalista päästä päähän -testausta ennen laajempaa jakamista.
+Tämä lista tukee Ajokeli nyt -version 1.9.0 manuaalista päästä päähän -testausta ennen laajempaa jakamista.
 
 ## Tilanne 27.7.2026
 
-Lista on ajettu suurelta osin selainautomaatiolla 360 × 800 -näkymässä
-tuotantoa vasten. **Hyväksymisehto ei täyty**: Vantaa–Vaasa jäädyttää
-käyttöliittymän 6,4–8,1 sekunniksi.
+Lista on ajettu suurelta osin selainautomaatiolla 360 × 800 -näkymässä.
+Kaikki viisi testireittiä menevät läpi, ja 1.9.0:n jälkeen pisin
+yhtenäinen jumi Vantaa–Vaasa-reitillä on 237 ms (oli 6,4–8,1 s), eli
+pitkien reittien suorituskykyehto täyttyy.
 
 Ajamatta ovat offline- ja aikakatkaisutilat, ruudunlukija sekä testaus
-fyysisellä puhelimella. Yksityiskohtainen tilanne ja mittaustulokset:
+fyysisellä puhelimella — **hyväksymisehto ei siis vielä täyty näiltä
+osin.** Yksityiskohtainen tilanne ja mittaustulokset:
 [backlog.md](backlog.md).
 
 ## Testireitit
