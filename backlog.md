@@ -16,10 +16,12 @@ vahtimana: `index.html`:n assetit, `app.js`:n nimeämät moduulit ja
 moduulien keskinäiset importit. Tämä kannattaa pitää mielessä — sama
 juurisyy tuotti kolme eri vikaa kolmessa peräkkäisessä julkaisussa.
 
-**Seuraava askel: kolme jäljellä olevaa testauskohtaa** — offline- ja
-aikakatkaisutilat selaimen kehittäjätyökaluilla, ruudunlukija, ja
+Virhetilanteet ajettiin 28.7.2026 ja menivät läpi (ks. Testaus ja laatu).
+
+**Seuraava askel: kaksi jäljellä olevaa testauskohtaa** — ruudunlukija ja
 testaus fyysisellä puhelimella. Ne ovat viimeiset asiat betan
-hyväksymisehdon ja laajemman jaon välissä.
+hyväksymisehdon ja laajemman jaon välissä. Jälkimmäistä ei voi tehdä
+selainautomaatiolla.
 
 ## Suorituskyky
 
@@ -45,15 +47,36 @@ hyväksymisehdon ja laajemman jaon välissä.
   vaakavieritystä, Escape sulkee hakutulokset (`aria-expanded` kääntyy)
   ja mobiilipaneelin, fokusrengas määritelty tokeneilla.
 
-  **Ajamatta:** offline- ja aikakatkaisutilat tarkoituksellisesti
-  testattuina (selaimen kehittäjätyökaluilla) sekä ruudunlukija.
+  **Ajamatta:** enää ruudunlukija.
 
-- **Yksi todentamaton kohta:** kartan latausvirheen uudelleenyritys
-  palautti kartan (280 asemaa, virhebanneri piiloon), mutta jäi
-  varmistamatta tapahtuiko se **ilman sivun uudelleenlatausta** —
-  inspektointiyhteys katkesi juuri klikkauksen kohdalla. Hyväksymisehto
-  vaatii nimenomaan palautumisen ilman uudelleenlatausta, joten tämä
-  pitää toistaa.
+- **Virhetilanteet ajettu 28.7.2026 — kaikki kuusi kohtaa läpi.** Vika
+  injektoitiin ennen moduulien latausta, jolloin `request-guard.js`
+  kääri injektoidun `fetch`in ja virhe eteni täsmälleen kuten oikea
+  katkos. Sovelluskoodiin ei koskettu.
+
+  - paikkahaun aikakatkaisu: _"Paikkahaku epäonnistui (…). Yritä hetken
+    kuluttua uudelleen."_, Hae-painike palautuu käyttöön
+  - reitityksen aikakatkaisu: selkeä virhe, lähetyspainike **ei jää**
+    pois käytöstä
+  - tiesäävirhe: kartta ei kaadu, banneri tarjoaa uudelleenyrityksen ja
+    demo-tilan
+  - liikennevirhe: havainnot, ennuste ja kartta toimivat
+  - ennustevirhe: havainnot ja liikennetilanne toimivat, paneeli sanoo
+    sen ääneen
+  - oikea aikakatkaisu (12 s) todennettu antamalla pyynnön riippua:
+    `ajokeli:request-timeout` laukeaa ja teksti kertoo aikakatkaisusta
+
+- **Palautuminen ilman sivun uudelleenlatausta on nyt todennettu**
+  (aiemmin avoin kohta). Uudelleenyritys palautti sekä tiesäädatan että
+  liikennetiedot täyteen tilaan, ja `performance.getEntriesByType(
+"navigation").length` pysyi arvossa 1 — sivu ei latatunut uudelleen.
+
+- **Löydös, pieni:** liikennekatkoksen aikana reittiyhteenvedon merkki
+  jää tilaan "Ladataan…", vaikka sen alla oleva paneeli kertoo oikein
+  ettei dataa saatu. Ennuste tekee saman tilanteen oikein näyttämällä
+  "Ei saatavilla", joten kyse on epäjohdonmukaisuudesta, ei tietoisesta
+  valinnasta. Korjaantuu itsestään kun uudelleenyritys onnistuu.
+  Korjattavissa `traffic-feature.js`:n yhteenvedon renderöinnissä.
 
 - **Yhä vahvistamatta oikealla puhelimella.** Emulointi 360 × 800:ssa ei
   kata kosketuskohteiden kokoa, iOS Safarin ja Android Chromen

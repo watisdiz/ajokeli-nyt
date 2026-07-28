@@ -9,10 +9,12 @@ Kaikki viisi testireittiä menevät läpi, ja 1.9.0:n jälkeen pisin
 yhtenäinen jumi Vantaa–Vaasa-reitillä on 237 ms (oli 6,4–8,1 s), eli
 pitkien reittien suorituskykyehto täyttyy.
 
-Ajamatta ovat offline- ja aikakatkaisutilat, ruudunlukija sekä testaus
-fyysisellä puhelimella — **hyväksymisehto ei siis vielä täyty näiltä
-osin.** Yksityiskohtainen tilanne ja mittaustulokset:
-[backlog.md](backlog.md).
+Virhetilanteet on ajettu 28.7.2026 ja kaikki kuusi kohtaa menivät läpi,
+mukaan lukien palautuminen ilman sivun uudelleenlatausta.
+
+Ajamatta ovat enää ruudunlukija ja testaus fyysisellä puhelimella —
+**hyväksymisehto ei siis vielä täyty näiltä osin.** Yksityiskohtainen
+tilanne ja mittaustulokset: [backlog.md](backlog.md).
 
 ## Testireitit
 
