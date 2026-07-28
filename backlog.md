@@ -5,11 +5,16 @@ poimi tästä kun on aika jatkaa.
 
 ## Mihin jäätiin 28.7.2026
 
-Tuotannossa on **1.9.1**. Julkaistut: 1.8.1 (vaalean teeman
+Tuotannossa on **1.9.5**. Julkaistut: 1.8.1 (vaalean teeman
 kontrastikorjaus), 1.8.2 (`?v=` `index.html`:n omiin assetteihin), 1.9.0
-(reitin laskennan hilaindeksi) ja 1.9.1 (`?v=` kaikkiin relatiivisiin
-importteihin). [BETA_TESTING.md](BETA_TESTING.md) ajettiin suurelta osin
-läpi selainautomaatiolla.
+(reitin laskennan hilaindeksi), 1.9.1 (`?v=` kaikkiin relatiivisiin
+importteihin), 1.9.2 (mobiilipaneeli ei avaa näppäimistöä), 1.9.3 (tumma
+karttatausta), 1.9.4 (suodattimet reitin asemiin) ja 1.9.5 (anturikohtainen
+tuoreus). [BETA_TESTING.md](BETA_TESTING.md) ajettiin suurelta osin läpi
+selainautomaatiolla.
+
+Tämä rivi ajautui kolmen julkaisun ajan ennen kuin ulkopuolinen katselmointi
+huomasi sen. `tests/beta.test.mjs` vahtii sitä nyt `package.json`:ia vasten.
 
 Välimuistiversiointi on nyt kunnossa kolmella tasolla ja testien
 vahtimana: `index.html`:n assetit, `app.js`:n nimeämät moduulit ja

@@ -79,10 +79,73 @@ test("freezing rain and ice are extreme", () => {
 });
 
 test("old measurements are marked stale", () => {
-  const oldTime = "2026-01-15T11:30:00Z";
+  const oldTime = "2026-01-15T11:00:00Z"; // an hour old, well past the limit
   const result = evaluateStation(station([sensor("TIE_1", -2, undefined, oldTime)], oldTime), now);
   assert.equal(result.level.key, "stale");
   assert.equal(result.score, null);
+  assert.match(result.reasons[0], /minuuttia vanha/);
+});
+
+// Freshness used to be taken as the newest timestamp anywhere on the station,
+// so a current reading from an unrelated sensor made an old core measurement
+// look current and it got scored anyway. Measured against the live payload,
+// 15% of stations have sensor times that diverge within the station, by up to
+// 22 hours.
+test("a stale core measurement is not rescued by a fresh unrelated sensor", () => {
+  const oldTime = "2026-01-15T11:00:00Z";
+  const result = evaluateStation(
+    station(
+      [
+        sensor("TIE_1", -2, undefined, oldTime),
+        sensor("ILMAN_KOSTEUS", 80, undefined, now.toISOString()),
+      ],
+      oldTime,
+    ),
+    now,
+  );
+
+  assert.equal(result.level.key, "stale", "old road temperature must not be scored");
+  assert.equal(result.score, null);
+});
+
+// dataUpdatedTime is when the payload was assembled, not when anything was
+// measured. On its own it must never make a station look current.
+test("a fresh payload timestamp does not make stale sensors current", () => {
+  const oldTime = "2026-01-15T11:00:00Z";
+  const result = evaluateStation(
+    station(
+      [sensor("TIE_1", -2, undefined, oldTime), sensor("KELI_1", 3, "Luminen", oldTime)],
+      now.toISOString(),
+    ),
+    now,
+  );
+
+  assert.equal(result.level.key, "stale");
+  assert.equal(result.ageMs, Number.POSITIVE_INFINITY);
+});
+
+test("a station with no core sensors is stale for a different reason", () => {
+  const result = evaluateStation(
+    station([sensor("ILMAN_KOSTEUS", 80, undefined, now.toISOString())], now.toISOString()),
+    now,
+  );
+
+  assert.equal(result.level.key, "stale");
+  assert.match(result.reasons[0], /ei ole saatavilla/);
+});
+
+// The threshold has to clear Digitraffic's own cadence: core sensors arrive
+// every 16-17 minutes at the median, so a reading in that range is normal
+// operation and must still be scored.
+test("a measurement at the observed reporting cadence is still scored", () => {
+  const seventeenMinutes = "2026-01-15T11:43:00Z";
+  const result = evaluateStation(
+    station([sensor("TIE_1", -2, undefined, seventeenMinutes)], seventeenMinutes),
+    now,
+  );
+
+  assert.notEqual(result.level.key, "stale");
+  assert.equal(typeof result.score, "number");
 });
 
 test("haversine distance is approximately correct", () => {

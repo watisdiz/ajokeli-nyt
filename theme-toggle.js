@@ -1,5 +1,5 @@
-import { resolveTheme } from "./dom-utils.js?v=1.9.4";
-import { EVENTS, emit } from "./events.js?v=1.9.4";
+import { resolveTheme } from "./dom-utils.js?v=1.9.5";
+import { EVENTS, emit } from "./events.js?v=1.9.5";
 
 const STORAGE_KEY = "ajokeli-theme";
 const root = document.documentElement;

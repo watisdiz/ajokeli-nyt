@@ -77,7 +77,7 @@ Commit-viestit ja koodikommentit **englanniksi**.
 Ennen committia:
 
 ```
-npm test              # 38 testiä, node:test + jsdom
+npm test              # node:test + jsdom
 npm run lint          # ESLint
 npm run format:check  # Prettier
 ```

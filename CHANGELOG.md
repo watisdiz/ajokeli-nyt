@@ -5,6 +5,29 @@ Versiot noudattavat semanttista versionumerointia.
 
 ## Unreleased
 
+## 1.9.5 – 2026-07-28
+
+Korjaukset perustuvat ulkopuoliseen tekniseen katselmointiin (Codex, 2026-07-28).
+
+### Korjattu
+
+- **tuoreus arvioidaan nyt anturikohtaisesti.** Aiemmin aseman ikä oli uusin aikaleima mistä tahansa anturista, joten tunnin vanha tienpinnan lämpötila peri tuoreen kosteusmittauksen aikaleiman ja pisteytettiin ajantasaisena. Mitattuna live-datasta: 503 asemasta 77:llä (15 %) anturien aikaleimat eriävät, suurin hajonta 22 tuntia, ja kuusi asemaa raportoi tuoreena vaikka ydinanturi oli yli rajan
+- `dataUpdatedTime` ei enää yksin tee asemasta tuoretta. Se on payloadin kokoamisaika, ei mittausaika — aiemmin se riitti kelpuuttamaan aseman jonka kaikki anturit olivat vanhoja
+- **vanhentumisraja 15 → 30 minuuttia.** Mitattuna Digitrafficin ydinantureiden mediaani-ikä on 16–17 min ja p90 18–19 min, eli vanha raja oli lyhyempi kuin havaintosykli. Anturikohtainen tuoreus 15 minuutilla olisi merkinnyt kaikki 503 asemaa vanhentuneiksi. 30 minuuttia on noin kaksi raportointikierrosta ja sietää yhden väliin jääneen. Korjauksen jälkeen 495 asemaa 526:sta pisteytetään
+- **Digitraffic-haun uudelleenyritys rajattiin oikeaan virheeseen.** `catch` uusi pyynnön minkä tahansa poikkeuksen jälkeen, myös aikakatkaisun — joten kaatunut yhteys kulutti `request-guard`:n 12 sekunnin budjetin kahdesti ja käyttäjä odotti virhettä 24 sekuntia. Uusinta tehdään enää `TypeError`ille, joka on se muoto jonka torjuttu preflight tuottaa
+
+### Lisätty
+
+- regressiotestit sekoitetuille aikaleimoille: vanha ydinanturi tuoreen sivuanturin kanssa, tuore `dataUpdatedTime` vanhojen anturien kanssa, ydinanturien puuttuminen kokonaan, ja havaintosyklin mittainen mittaus joka on yhä pisteytettävä
+- `tests/api-client.test.mjs`: preflight uusitaan, aikakatkaisua ja abortia ei
+- `tests/beta.test.mjs` vahtii `backlog.md`:n ilmoittamaa tuotantoversiota `package.json`:ia vasten
+
+### Muutettu
+
+- `README.md` ja pisteytysdialogi kuvaavat anturikohtaisen tuoreuden ja 30 minuutin rajan
+- `README.md` kertoo nyt oikein, että Cloudflaren analytiikkaskripti **suoritetaan `privacy.html`:ssä**, jolla ei ole CSP:tä. Aiempi teksti väitti CSP:n estävän sen kaikkialla
+- `CLAUDE.md`:stä poistettiin testien lukumäärä, joka oli ajautunut jo kahdesti
+
 ## 1.9.4 – 2026-07-28
 
 ### Korjattu

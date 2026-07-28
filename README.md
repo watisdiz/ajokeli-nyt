@@ -2,7 +2,7 @@
 
 Ajokeli nyt näyttää Suomen tiesääasemien ajantasaiset mittaukset kartalla, laskee niistä läpinäkyvän keliriski-indikaattorin ja kokoaa ajoreitin läheiset keli-, ennuste- ja liikennetiedot yhteen.
 
-Nykyinen versio on **1.9.4 beta**.
+Nykyinen versio on **1.9.5 beta**.
 
 ## Käytetyt palvelut
 
@@ -106,9 +106,14 @@ Versiosta 1.7.1 alkaen:
 - palvelulla on oma [tietosuojakuvaus](./privacy.html)
 
 Sovellus itse ei sisällä analytiikkaa. Cloudflare lisää palvelimen puolella
-jokaiseen HTML-vastaukseen oman Web Analytics -skriptinsä, mutta sivun
-Content-Security-Policy estää sen suorituksen, joten se ei kerää dataa eikä
-aseta evästeitä.
+jokaiseen HTML-vastaukseen oman Web Analytics -skriptinsä.
+
+Sovellussivulla (`index.html`) sivun Content-Security-Policy estää sen
+suorituksen. **`privacy.html`:ssä ei ole CSP:tä, joten siellä skripti
+suoritetaan** ja lähettää sivulatauksen Cloudflarelle. Evästeitä se ei aseta.
+Tämä on tiedossa oleva ristiriita tietosuojakuvauksen kanssa; oikea korjaus on
+CSP vastausheaderina kaikille sivuille tai Web Analyticsin kytkeminen pois
+Cloudflaren hallintapaneelista.
 
 ## Paikkahaun ja reitityksen rajaus
 
@@ -175,7 +180,11 @@ Luokat:
 - 4–6: Vaikea
 - 7+: Erittäin vaikea
 
-Yli 15 minuuttia vanha mittaus näytetään harmaana.
+Tuoreus arvioidaan anturikohtaisesti: jokainen pisteytykseen vaikuttava arvo
+on oltava mitattu viimeisen 30 minuutin aikana. Jos yksikään keskeinen havainto
+ei ole sitä tuoreempi, asema näytetään harmaana. Raja on mitoitettu Digitrafficin
+todellisen havaintosyklin mukaan — ydinanturit raportoivat noin 16–17 minuutin
+välein, joten 30 minuuttia sietää yhden väliin jääneen kierroksen.
 
 ## Tekninen rakenne
 
@@ -203,7 +212,7 @@ Kartta käyttää MapLibre GL JS 5.24.0:aa CDN:stä ja OpenFreeMapin tyylejä: v
 - Nominatim: OpenStreetMap-aineiston hakupalvelu
 - OSRM: BSD-2-Clause, reititys OpenStreetMap-aineistolla
 
-Digitraffic-haut käyttävät ajonaikaisesti tunnistetta `AjokeliNyt/MVP 1.9.4`. Tunniste ei sisällä henkilötietoja.
+Digitraffic-haut käyttävät ajonaikaisesti tunnistetta `AjokeliNyt/MVP 1.9.5`. Tunniste ei sisällä henkilötietoja.
 
 ## Vastuunrajaus
 

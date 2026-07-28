@@ -95,6 +95,14 @@ test("beta runtime keeps stable route features and excludes radar processing", a
       `index.html does not cache-bust ${asset} at ${version}`,
     );
   }
+  // The backlog states which version is in production, and that line drifted
+  // three releases behind before an outside review caught it. One number tied
+  // to package.json is worth guarding; the rest of the prose is not.
+  const backlog = await readFile(new URL("../backlog.md", import.meta.url), "utf8");
+  assert.ok(
+    backlog.includes(`Tuotannossa on **${version}**`),
+    `backlog.md still names a different production version than ${version}`,
+  );
   assert.match(app, /asset\("\.\/request-guard\.js"\)/);
   assert.match(app, /asset\("\.\/route-feature\.js"\)/);
   assert.match(app, /asset\("\.\/traffic-feature\.js"\)/);

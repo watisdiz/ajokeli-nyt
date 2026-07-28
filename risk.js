@@ -1,5 +1,12 @@
 const MINUTE_MS = 60_000;
-export const STALE_AFTER_MS = 15 * MINUTE_MS;
+// Measured against the live Digitraffic payload on 2026-07-28: the median age
+// of every core sensor type (TIE, KELI, SADE, NAKYVYYS_KM, SATEEN_OLOMUOTO)
+// is 16-17 minutes, p90 is 18-19. The old 15-minute limit was therefore
+// shorter than the observation cadence itself -- applying it per sensor would
+// have marked all 503 stations stale. 30 minutes is roughly two reporting
+// cycles, which tolerates one missed round and still leaves 8 stations
+// correctly flagged as stale.
+export const STALE_AFTER_MS = 30 * MINUTE_MS;
 
 export const RISK_LEVELS = {
   normal: { key: "normal", label: "Normaali", color: "#35c789", order: 0 },
@@ -27,6 +34,21 @@ export function latestMeasurementTime(sensorValues = [], fallback) {
   const fallbackTime = Date.parse(fallback);
   if (Number.isFinite(fallbackTime)) timestamps.push(fallbackTime);
   return timestamps.length ? new Date(Math.max(...timestamps)).toISOString() : null;
+}
+
+// Freshness is judged per sensor, not per station. A station reports its
+// sensors at slightly different times, and taking the newest one let an old
+// core reading inherit a fresh sensor's timestamp: an hour-old road
+// temperature next to a current humidity reading scored as if both were
+// current. Sensors without a parsable time are dropped -- the live payload
+// has none, so this costs nothing and avoids vouching for unknown data.
+function freshSensors(sensorValues = [], now = new Date()) {
+  const cutoff = now.getTime() - STALE_AFTER_MS;
+  return sensorValues.filter((sensor) => {
+    if (!isUsable(sensor)) return false;
+    const measured = Date.parse(sensor.measuredTime);
+    return Number.isFinite(measured) && measured >= cutoff;
+  });
 }
 
 function sensorEntries(sensorValues = []) {
@@ -204,11 +226,28 @@ export function formatNumber(value, digits = 1) {
     : "–";
 }
 
+function hasCoreObservation(entries) {
+  return (
+    Number.isFinite(minimumValue(entries, ["TIE"])) ||
+    sensorsByPrefix(entries, ["KELI"]).length > 0 ||
+    Boolean(firstSensor(entries, ["SATEEN_OLOMUOTO_PWDXX"])) ||
+    Boolean(firstSensor(entries, ["SADE"])) ||
+    Number.isFinite(minimumValue(entries, ["NAKYVYYS_KM"]))
+  );
+}
+
 export function evaluateStation(stationData, now = new Date()) {
   const sensorValues = stationData?.sensorValues ?? [];
-  const entries = sensorEntries(sensorValues);
+  const fresh = freshSensors(sensorValues, now);
+  const entries = sensorEntries(fresh);
+  // What the station last reported at all. Shown as "Havainto X sitten", and
+  // the only thing worth showing when nothing is fresh enough to score --
+  // note it deliberately includes dataUpdatedTime, which is a payload stamp
+  // rather than a measurement and must never gate scoring on its own.
   const latestTime = latestMeasurementTime(sensorValues, stationData?.dataUpdatedTime);
-  const ageMs = latestTime ? now.getTime() - Date.parse(latestTime) : Number.POSITIVE_INFINITY;
+  // How old the data behind the score actually is.
+  const scoredTime = latestMeasurementTime(fresh);
+  const ageMs = scoredTime ? now.getTime() - Date.parse(scoredTime) : Number.POSITIVE_INFINITY;
 
   const roadTemperature = minimumValue(entries, ["TIE"]);
   const airTemperature = firstSensor(entries, ["ILMA"]);
@@ -220,21 +259,18 @@ export function evaluateStation(stationData, now = new Date()) {
   const precipitationType = firstSensor(entries, ["SATEEN_OLOMUOTO_PWDXX"]);
   const simpleRain = firstSensor(entries, ["SADE"]);
 
-  const hasCoreMeasurement =
-    Number.isFinite(roadTemperature) ||
-    surfaceSensors.length > 0 ||
-    precipitationType ||
-    simpleRain ||
-    Number.isFinite(visibility);
+  const hasCoreMeasurement = hasCoreObservation(entries);
+  // Distinguishes "the station reported, but too long ago" from "this station
+  // does not measure the things the score needs at all".
+  const coreWentStale = !hasCoreMeasurement && hasCoreObservation(sensorEntries(sensorValues));
 
-  if (!hasCoreMeasurement || ageMs > STALE_AFTER_MS) {
+  if (!hasCoreMeasurement) {
     return {
       score: null,
       level: RISK_LEVELS.stale,
-      reasons:
-        ageMs > STALE_AFTER_MS && latestTime
-          ? ["Mittaus on yli 15 minuuttia vanha."]
-          : ["Keskeisiä kelihavaintoja ei ole saatavilla."],
+      reasons: coreWentStale
+        ? [`Mittaus on yli ${Math.round(STALE_AFTER_MS / MINUTE_MS)} minuuttia vanha.`]
+        : ["Keskeisiä kelihavaintoja ei ole saatavilla."],
       latestTime,
       ageMs,
       metrics: {
