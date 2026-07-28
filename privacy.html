@@ -2,12 +2,33 @@
 <html lang="fi">
   <head>
     <meta charset="UTF-8" />
+    <!-- Cloudflare injects its Web Analytics beacon into every HTML response
+         at the edge. index.html's policy blocked it; this page had none, so
+         the script ran on the very page that promises no analytics. This page
+         has no scripts of its own, so 'none' is the honest value.
+
+         This is a stopgap, not the fix. A meta policy cannot carry
+         frame-ancestors, and over plain HTTP it can be stripped along with
+         the rest of the document -- the domain still does not force HTTPS.
+         The real fix is a CSP response header for every page. -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="
+        default-src 'self';
+        script-src 'none';
+        style-src 'self' 'unsafe-inline';
+        img-src 'self' data:;
+        font-src 'self';
+        base-uri 'self';
+        form-action 'self';
+      "
+    />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Ajokeli nyt -palvelun tietosuojakuvaus." />
     <meta name="theme-color" content="#0b1220" />
     <title>Tietosuoja · Ajokeli nyt</title>
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=1.9.5" />
     <style>
       .privacy-shell {
         width: min(760px, calc(100% - 32px));

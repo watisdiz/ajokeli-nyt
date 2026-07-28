@@ -16,6 +16,12 @@ Korjaukset perustuvat ulkopuoliseen tekniseen katselmointiin (Codex, 2026-07-28)
 - **vanhentumisraja 15 → 30 minuuttia.** Mitattuna Digitrafficin ydinantureiden mediaani-ikä on 16–17 min ja p90 18–19 min, eli vanha raja oli lyhyempi kuin havaintosykli. Anturikohtainen tuoreus 15 minuutilla olisi merkinnyt kaikki 503 asemaa vanhentuneiksi. 30 minuuttia on noin kaksi raportointikierrosta ja sietää yhden väliin jääneen. Korjauksen jälkeen 495 asemaa 526:sta pisteytetään
 - **Digitraffic-haun uudelleenyritys rajattiin oikeaan virheeseen.** `catch` uusi pyynnön minkä tahansa poikkeuksen jälkeen, myös aikakatkaisun — joten kaatunut yhteys kulutti `request-guard`:n 12 sekunnin budjetin kahdesti ja käyttäjä odotti virhettä 24 sekuntia. Uusinta tehdään enää `TypeError`ille, joka on se muoto jonka torjuttu preflight tuottaa
 
+### Tietosuoja
+
+- **`privacy.html` sai oman Content-Security-Policyn.** Cloudflare injektoi Web Analytics -skriptin jokaiseen HTML-vastaukseen. `index.html`:n CSP esti sen, mutta tietosuojasivulla ei ollut CSP:tä lainkaan, joten skripti **suoritettiin juuri sillä sivulla joka lupaa ettei analytiikkaa käytetä** (`__cfBeacon` syntyi, `responseStatus: 200`). Sivulla ei ole omia skriptejä, joten politiikka on `script-src 'none'`
+- tämä on laastari, ei lopullinen korjaus: meta-CSP ei kanna `frame-ancestors`-direktiiviä, ja koska domain ei pakota HTTPS:ää, se voidaan riisua muun dokumentin mukana. Oikea korjaus on CSP vastausheaderina kaikille sivuille
+- `privacy.html` viittasi `styles.css`:ään ilman `?v=`-parametria — sama välimuistivika joka korjattiin `index.html`:ään 1.8.2:ssa. Testi vahtii nyt myös tämän
+
 ### Lisätty
 
 - regressiotestit sekoitetuille aikaleimoille: vanha ydinanturi tuoreen sivuanturin kanssa, tuore `dataUpdatedTime` vanhojen anturien kanssa, ydinanturien puuttuminen kokonaan, ja havaintosyklin mittainen mittaus joka on yhä pisteytettävä

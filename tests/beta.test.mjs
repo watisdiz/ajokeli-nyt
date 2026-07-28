@@ -95,6 +95,16 @@ test("beta runtime keeps stable route features and excludes radar processing", a
       `index.html does not cache-bust ${asset} at ${version}`,
     );
   }
+  // privacy.html was missed when index.html got its version parameters, so it
+  // could serve a four-hour-old stylesheet after a release.
+  assert.ok(
+    privacy.includes(`./styles.css?v=${version}`),
+    `privacy.html does not cache-bust its stylesheet at ${version}`,
+  );
+  // Cloudflare injects an analytics beacon into every page. Without a policy
+  // here it executed on the page that promises no analytics.
+  assert.match(privacy, /http-equiv="Content-Security-Policy"/);
+  assert.match(privacy, /script-src 'none'/);
   // The backlog states which version is in production, and that line drifted
   // three releases behind before an outside review caught it. One number tied
   // to package.json is worth guarding; the rest of the prose is not.
