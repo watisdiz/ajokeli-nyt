@@ -3,12 +3,18 @@
 Ideoita ja kesken jääneitä huomioita (ks. CHANGELOG.md). Ei aikataulutettu —
 poimi tästä kun on aika jatkaa.
 
-## Mihin jäätiin 27.7.2026
+## Mihin jäätiin 28.7.2026
 
-Tuotannossa on **1.9.0**. Sinä päivänä julkaistiin 1.8.1 (vaalean teeman
-kontrastikorjaus), 1.8.2 (`?v=` myös `index.html`:n omiin assetteihin) ja
-1.9.0 (reitin laskennan hilaindeksi), ja [BETA_TESTING.md](BETA_TESTING.md)
-ajettiin suurelta osin läpi selainautomaatiolla.
+Tuotannossa on **1.9.1**. Julkaistut: 1.8.1 (vaalean teeman
+kontrastikorjaus), 1.8.2 (`?v=` `index.html`:n omiin assetteihin), 1.9.0
+(reitin laskennan hilaindeksi) ja 1.9.1 (`?v=` kaikkiin relatiivisiin
+importteihin). [BETA_TESTING.md](BETA_TESTING.md) ajettiin suurelta osin
+läpi selainautomaatiolla.
+
+Välimuistiversiointi on nyt kunnossa kolmella tasolla ja testien
+vahtimana: `index.html`:n assetit, `app.js`:n nimeämät moduulit ja
+moduulien keskinäiset importit. Tämä kannattaa pitää mielessä — sama
+juurisyy tuotti kolme eri vikaa kolmessa peräkkäisessä julkaisussa.
 
 **Seuraava askel: kolme jäljellä olevaa testauskohtaa** — offline- ja
 aikakatkaisutilat selaimen kehittäjätyökaluilla, ruudunlukija, ja
