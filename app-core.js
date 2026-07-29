@@ -1,9 +1,9 @@
-import { RISK_LEVELS, buildStationView } from "./risk.js?v=1.9.5";
-import { demoCameras, demoMeasurements, demoMetadata } from "./demo-data.js?v=1.9.5";
-import { escapeHtml, bindImageFallback, resolveTheme } from "./dom-utils.js?v=1.9.5";
-import { digitrafficJson } from "./api-client.js?v=1.9.5";
-import { EVENTS, emit } from "./events.js?v=1.9.5";
-import { nearestCamera, renderStationDetailHtml } from "./station-detail.js?v=1.9.5";
+import { RISK_LEVELS, buildStationView } from "./risk.js?v=1.9.6";
+import { demoCameras, demoMeasurements, demoMetadata } from "./demo-data.js?v=1.9.6";
+import { escapeHtml, bindImageFallback, resolveTheme } from "./dom-utils.js?v=1.9.6";
+import { digitrafficJson } from "./api-client.js?v=1.9.6";
+import { EVENTS, emit } from "./events.js?v=1.9.6";
+import { nearestCamera, renderStationDetailHtml } from "./station-detail.js?v=1.9.6";
 
 const REFRESH_SECONDS = 60;
 // OpenFreeMap's only dark style is fiord. Its background (#45516E) is

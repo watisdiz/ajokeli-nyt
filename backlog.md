@@ -5,13 +5,21 @@ poimi tästä kun on aika jatkaa.
 
 ## Mihin jäätiin 28.7.2026
 
-Tuotannossa on **1.9.5**. Julkaistut: 1.8.1 (vaalean teeman
+Tuotannossa on **1.9.6**. Julkaistut: 1.8.1 (vaalean teeman
 kontrastikorjaus), 1.8.2 (`?v=` `index.html`:n omiin assetteihin), 1.9.0
 (reitin laskennan hilaindeksi), 1.9.1 (`?v=` kaikkiin relatiivisiin
 importteihin), 1.9.2 (mobiilipaneeli ei avaa näppäimistöä), 1.9.3 (tumma
-karttatausta), 1.9.4 (suodattimet reitin asemiin) ja 1.9.5 (anturikohtainen
-tuoreus). [BETA_TESTING.md](BETA_TESTING.md) ajettiin suurelta osin läpi
+karttatausta), 1.9.4 (suodattimet reitin asemiin), 1.9.5 (anturikohtainen
+tuoreus) ja 1.9.6 (saapumisaikaan perustuva ennuste, ennustehaun
+kilpajuoksu). [BETA_TESTING.md](BETA_TESTING.md) ajettiin suurelta osin läpi
 selainautomaatiolla.
+
+**Ulkopuolisen katselmoinnin (Codex, 28.7.2026) tila:** F1 (HTTPS), F2
+(tuoreus), F3 (uudelleenyritys), F4 (saapumisaika), F5 (kilpajuoksu) ja F11
+(dokumentaatio) korjattu. F7 osittain — `privacy.html` sai CSP:n ja
+`nosniff` on päällä, mutta CSP vastausheaderina on yhä tekemättä. F6
+(Nominatim/OSRM), F8 (bootstrap-globaalit), F9 (kaksi havaintopolkua) ja
+F10 (listarajat) ovat auki, kaikki P1–P2.
 
 Tämä rivi ajautui kolmen julkaisun ajan ennen kuin ulkopuolinen katselmointi
 huomasi sen. `tests/beta.test.mjs` vahtii sitä nyt `package.json`:ia vasten.

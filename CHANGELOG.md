@@ -5,6 +5,26 @@ Versiot noudattavat semanttista versionumerointia.
 
 ## Unreleased
 
+## 1.9.6 – 2026-07-28
+
+Jatkoa ulkopuolisen katselmoinnin korjauksiin (Codex, 2026-07-28). Löydökset F4 ja F5.
+
+### Korjattu
+
+- **jokainen tiejakso arvioidaan nyt sillä hetkellä, jolloin sinne ehtii** — ei lähtöhetkellä. Aiemmin koko reitin jokainen jakso luettiin samalla `targetTime`-arvolla, joten viiden tunnin päässä oleva jakso arvioitiin sen mukaan millainen keli oli lähtöhetkellä. Saapumisaika johdetaan reitin kokonaiskestosta ja jakson sijainnista reittiviivalla; ennusteet tulevat tunnin välein, joten tämä tarkkuus riittää eikä vaadi OSRM:ltä lisätietoja
+- **ennustehaku ei enää jätä vanhaa tulosta näkyviin.** Jos toinen reitti valittiin ensimmäisen ennustehaun ollessa kesken, uusi haku hylättiin kokonaan (`if (state.loading) return`) ja vanha kirjoitti silti tuloksensa — yhden reitin ennuste jäi näkyviin toiselle reitille pysyvästi. Haut numeroidaan nyt juoksevasti ja vain uusin saa kirjoittaa tuloksen, myös virhetilanteessa
+
+### Lisätty
+
+- `forecast.js`: `estimateArrivalTime`. Ilman reittitietoja se palauttaa lähtöajan, joten vanha käytös säilyy kutsujille jotka eivät sitä anna
+- `tests/forecast-race.test.mjs`: kaksi reittimuutosta ja vastaukset käänteisessä järjestyksessä — vanha koodi kaataa tämän
+- testi joka varmistaa että reitin alussa ja lopussa oleva jakso saavat eri ennustehetken
+
+### Muutettu
+
+- ennustepaneelin selite kertoo nyt mitä luku tarkoittaa: "Jokainen tiejakso arvioidaan sillä hetkellä, jolloin valitulta lähtöajalta ehtii sinne"
+- `README.md` kuvaa saapumisaikaan perustuvan arvion
+
 ## 1.9.5 – 2026-07-28
 
 Korjaukset perustuvat ulkopuoliseen tekniseen katselmointiin (Codex, 2026-07-28).

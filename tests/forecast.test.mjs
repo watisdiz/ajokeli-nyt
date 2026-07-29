@@ -171,3 +171,51 @@ test("analyzes route forecast and compares departure times", () => {
   assert.ok(comparison.best);
   assert.equal(comparison.best.analysis.worstLevel.key, "difficult");
 });
+
+// Sections are reached at different times on a long drive. Evaluating them all
+// at the departure time meant a section five hours out was judged on the
+// conditions at the moment the driver left.
+test("each section is read at its own estimated arrival time", () => {
+  const departure = "2026-01-15T06:00:00Z";
+  const hourly = (hour, condition) => ({
+    time: `2026-01-15T0${hour}:00:00Z`,
+    timeMs: Date.parse(`2026-01-15T0${hour}:00:00Z`),
+    overallRoadCondition: condition,
+  });
+
+  // Same forecast series for both sections: calm at departure, bad later.
+  const forecasts = [
+    hourly(6, "NORMAL_CONDITION"),
+    hourly(7, "NORMAL_CONDITION"),
+    hourly(8, "NORMAL_CONDITION"),
+    hourly(9, "EXTREMELY_POOR_CONDITION"),
+  ];
+
+  const section = (id, routePosition) => ({
+    section: { id, description: id, forecasts },
+    distanceKm: 0.5,
+    routePosition,
+  });
+
+  const matched = [section("start", 0), section("end", 100)];
+  // Three hours of driving across 100 segments.
+  const journey = { durationSeconds: 3 * 3600, segmentCount: 100 };
+
+  const analysis = analyzeForecastAtTime(matched, departure, journey);
+  const byId = Object.fromEntries(analysis.records.map((r) => [r.section.id, r]));
+
+  assert.equal(byId.start.forecast.overallRoadCondition, "NORMAL_CONDITION");
+  assert.equal(
+    byId.end.forecast.overallRoadCondition,
+    "EXTREMELY_POOR_CONDITION",
+    "the far section must be read at arrival, not at departure",
+  );
+  assert.equal(byId.start.arrivalTime, "2026-01-15T06:00:00.000Z");
+  assert.equal(byId.end.arrivalTime, "2026-01-15T09:00:00.000Z");
+
+  // Without journey information the old behaviour stands: everything at
+  // departure time.
+  const flat = analyzeForecastAtTime(matched, departure);
+  const flatById = Object.fromEntries(flat.records.map((r) => [r.section.id, r]));
+  assert.equal(flatById.end.forecast.overallRoadCondition, "NORMAL_CONDITION");
+});

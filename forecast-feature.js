@@ -6,10 +6,10 @@ import {
   matchForecastSectionsToRoute,
   normalizeForecastSections,
   routeBoundingBox,
-} from "./forecast.js?v=1.9.5";
-import { escapeHtml } from "./dom-utils.js?v=1.9.5";
-import { digitrafficJson } from "./api-client.js?v=1.9.5";
-import { EVENTS, emit } from "./events.js?v=1.9.5";
+} from "./forecast.js?v=1.9.6";
+import { escapeHtml } from "./dom-utils.js?v=1.9.6";
+import { digitrafficJson } from "./api-client.js?v=1.9.6";
+import { EVENTS, emit } from "./events.js?v=1.9.6";
 
 const METADATA_PATH = "/api/weather/v1/forecast-sections-simple";
 const FORECASTS_PATH = "/api/weather/v1/forecast-sections-simple/forecasts";
@@ -30,6 +30,11 @@ const state = {
   comparison: null,
   selectedTime: null,
   loading: false,
+  // Bumped per forecast load so a slow older request can tell it has been
+  // superseded and must not write its result.
+  generation: 0,
+  // Route duration and segment count, used to place each section in time.
+  journey: null,
   popup: null,
   cache: new Map(),
 };
@@ -183,7 +188,14 @@ async function synchronizeWithRoute(force = false) {
   if (!state.route) return;
   const coordinates = state.route.geometry.coordinates;
 
-  if (state.loading) return;
+  // Last request wins. Bailing out while another load was in flight meant the
+  // newer route never fetched its forecast at all, while the older request
+  // still wrote its result -- so one route's forecast stayed on screen for a
+  // different route, and nothing ever corrected it.
+  state.generation += 1;
+  const generation = state.generation;
+  const isCurrent = () => state.generation === generation;
+
   state.loading = true;
   renderLoadingSummary();
 
@@ -201,6 +213,10 @@ async function synchronizeWithRoute(force = false) {
 
   try {
     const sections = await loadForecastData(coordinates, force);
+    // A newer route took over while this was in flight; its result is the one
+    // that belongs on screen.
+    if (!isCurrent()) return;
+
     state.matchedSections = matchForecastSectionsToRoute(
       sections,
       coordinates,
@@ -221,13 +237,26 @@ async function synchronizeWithRoute(force = false) {
       state.selectedTime = state.departureOptions[0].time;
     }
 
-    state.comparison = compareDepartureOptions(state.matchedSections, state.departureOptions);
+    // Lets each section be read at the time the driver actually reaches it,
+    // rather than all of them at the departure time.
+    state.journey = {
+      durationSeconds: Number(state.route?.duration),
+      segmentCount: Math.max(1, coordinates.length - 1),
+    };
+    state.comparison = compareDepartureOptions(
+      state.matchedSections,
+      state.departureOptions,
+      state.journey,
+    );
 
     renderForecastSummary();
     renderMapForecast();
     hideStatus();
   } catch (error) {
     console.error(error);
+    // An older request failing must not blank out a newer route's forecast.
+    if (!isCurrent()) return;
+
     state.matchedSections = [];
     state.departureOptions = [];
     state.comparison = null;
@@ -241,7 +270,9 @@ async function synchronizeWithRoute(force = false) {
     );
     renderMapForecast();
   } finally {
-    state.loading = false;
+    // Only the newest request owns the loading flag; a stale one clearing it
+    // would claim the in-flight load had finished.
+    if (isCurrent()) state.loading = false;
   }
 }
 
@@ -336,7 +367,7 @@ function renderForecastSummary() {
       <div>
         <h3>Keliennuste ja lähtöaika</h3>
         <span class="forecast-summary-note">
-          Tiejaksokohtainen ennuste valitulle lähtöajalle
+          Jokainen tiejakso arvioidaan sillä hetkellä, jolloin valitulta lähtöajalta ehtii sinne
         </span>
       </div>
     </div>

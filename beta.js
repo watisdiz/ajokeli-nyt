@@ -1,4 +1,4 @@
-export const APP_VERSION = "1.9.5";
+export const APP_VERSION = "1.9.6";
 
 export function normalizeShareLabel(value) {
   return String(value ?? "")

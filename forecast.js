@@ -3,7 +3,7 @@ import {
   distanceToRouteKm,
   distanceToRouteKmIndexed,
   pointToSegmentDistanceKm,
-} from "./route.js?v=1.9.5";
+} from "./route.js?v=1.9.6";
 
 export const FORECAST_CORRIDOR_KM = 5;
 
@@ -443,15 +443,43 @@ export function buildDepartureOptions(
   return selected;
 }
 
-export function analyzeForecastAtTime(matchedSections = [], targetTime) {
+// Sections are reached at different points in the drive, so reading them all
+// at the departure time answers the wrong question on a long route: a section
+// five hours out was judged on the conditions at the moment the driver leaves.
+//
+// `journey` carries the route's total duration and segment count, which is
+// enough to place each section in time. Progress is approximated from position
+// along the polyline rather than OSRM's per-leg annotations -- forecasts come
+// in hourly steps, so that resolution is sufficient and it keeps the routing
+// request small. Without `journey` the behaviour is the old one.
+export function estimateArrivalTime(departureTime, routePosition, journey = null) {
+  const departureMs = new Date(departureTime).getTime();
+  if (!Number.isFinite(departureMs)) return null;
+
+  const durationSeconds = Number(journey?.durationSeconds);
+  const segmentCount = Number(journey?.segmentCount);
+  if (!Number.isFinite(durationSeconds) || !Number.isFinite(segmentCount) || segmentCount <= 0) {
+    return new Date(departureMs);
+  }
+
+  const position = Number(routePosition);
+  if (!Number.isFinite(position)) return new Date(departureMs);
+
+  const progress = Math.min(1, Math.max(0, position / segmentCount));
+  return new Date(departureMs + progress * durationSeconds * 1000);
+}
+
+export function analyzeForecastAtTime(matchedSections = [], targetTime, journey = null) {
   const records = [];
 
   for (const match of matchedSections) {
-    const forecast = selectForecastForTime(match.section.forecasts, targetTime);
+    const arrivalTime = estimateArrivalTime(targetTime, match.routePosition, journey);
+    const forecast = selectForecastForTime(match.section.forecasts, arrivalTime ?? targetTime);
     if (!forecast) continue;
 
     records.push({
       ...match,
+      arrivalTime: arrivalTime ? arrivalTime.toISOString() : null,
       forecast,
       level: forecastLevel(forecast),
       reasons: forecastReasonTexts(forecast),
@@ -511,9 +539,9 @@ function comparisonScore(analysis) {
   );
 }
 
-export function compareDepartureOptions(matchedSections = [], options = []) {
+export function compareDepartureOptions(matchedSections = [], options = [], journey = null) {
   const comparisons = options.map((option) => {
-    const analysis = analyzeForecastAtTime(matchedSections, option.time);
+    const analysis = analyzeForecastAtTime(matchedSections, option.time, journey);
     return {
       option,
       analysis,

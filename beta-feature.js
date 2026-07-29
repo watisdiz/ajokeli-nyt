@@ -3,10 +3,10 @@ import {
   buildShareUrl,
   parseSharedRoute,
   pickClosestDeparture,
-} from "./beta.js?v=1.9.5";
-import { escapeHtml } from "./dom-utils.js?v=1.9.5";
-import { formatRouteDistance, formatRouteDuration } from "./route.js?v=1.9.5";
-import { EVENTS } from "./events.js?v=1.9.5";
+} from "./beta.js?v=1.9.6";
+import { escapeHtml } from "./dom-utils.js?v=1.9.6";
+import { formatRouteDistance, formatRouteDuration } from "./route.js?v=1.9.6";
+import { EVENTS } from "./events.js?v=1.9.6";
 
 const routePanel = document.querySelector(".route-panel");
 const routeSummary = document.querySelector("#route-summary");
